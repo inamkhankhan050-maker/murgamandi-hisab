@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<title>Katai Daily Customer Entry · MurgaMandi Hisab</title>
+<link rel="icon" href="../../assets/icons/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="appbar">
+  <div class="appbar-in">
+    <a class="back" href="../../index.html" aria-label="Back to home">‹ Home</a>
+    <div class="brand"><h1>Katai Daily Customer Entry</h1><p>MurgaMandi Hisab · Katai</p></div>
+    <div class="sp"></div>
+    <span class="chip" id="saveState"><span class="dot"></span><span id="saveText">Saved on this device</span></span>
+    <span class="chip hide-m">Sheet <b id="sheetNo" class="sheet-no">#1</b></span>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="notice" id="storageNotice" hidden>Auto-save is not available in this browser window, so entries will not survive a refresh.</p>
+  <div class="print-head"><div><h2 id="printFirm">Katai Daily Entry</h2><p>Katai Daily Customer Entry</p></div><p id="printDate"></p></div>
+
+  <section class="card toolbar" aria-label="Actions">
+    <label class="search"><span class="sr">Search customer</span><input id="search" type="search" placeholder="Search customer…" autocomplete="off"></label>
+    <label class="tb-fld"><span class="sr">Firm / Dukaan name</span><input id="dFirm" placeholder="Firm / Dukaan name" autocomplete="off" maxlength="80"></label>
+    <label class="tb-fld tb-date"><span class="sr">Date</span><input id="dDate" type="date"></label>
+    <div class="tb-sp"></div>
+    <button class="btn primary" id="btnAdd" type="button">+ Add Customer</button>
+    <button class="btn" id="btnRates" type="button" aria-expanded="false" aria-controls="ratesCard">Aaj ke Rate</button>
+    <button class="btn" id="btnExcel" type="button">Export to Excel</button>
+    <button class="btn" id="btnCsv" type="button">CSV</button>
+    <button class="btn" id="btnPrint" type="button">Print / Save PDF</button>
+    <button class="btn wa" id="btnWa" type="button"><img src="../../assets/icons/whatsapp.svg" alt="" width="16" height="16">WhatsApp PDF</button>
+    <button class="btn danger" id="btnClear" type="button">New Day / Clear All</button>
+  </section>
+
+  <section class="card rates" id="ratesCard" hidden aria-label="Today's rates">
+    <h3>Aaj ke Rate <em>(new customers start with these rates)</em></h3>
+    <div class="rate-grid" id="rateGrid"></div>
+    <div class="rate-acts"><button class="btn" id="btnFillRates" type="button">Fill empty rates of all customers</button></div>
+  </section>
+
+  <div class="d-main">
+    <section class="card list" aria-label="Customers">
+      <h3>Customers</h3>
+      <div class="t-scroll">
+        <table class="ctable">
+          <thead><tr><th class="c-idx">#</th><th>Customer</th><th class="ra">Items</th><th class="ra">Aaj ka Bill</th><th class="ra">Pichla</th><th class="ra">Received</th><th class="ra">Balance</th><th class="c-act"><span class="sr">Actions</span></th></tr></thead>
+          <tbody id="cBody"></tbody>
+          <tfoot><tr><td></td><td>TOTAL</td><td class="ra" id="fItems">0</td><td class="ra" id="fBill">₹0</td><td class="ra" id="fOld">₹0</td><td class="ra" id="fRec">₹0</td><td class="ra" id="fBal">₹0</td><td class="c-act"></td></tr></tfoot>
+        </table>
+      </div>
+      <p class="empty-state" id="cEmpty">Abhi koi customer nahi. "+ Add Customer" dabaiye.</p>
+    </section>
+
+    <section class="card editor" id="editor" aria-label="Customer entry" aria-live="polite">
+      <div class="ed-hd"><h3 id="edTitle">Customer Entry</h3><button class="btn icon" id="edClose" type="button" aria-label="Close editor">✕</button></div>
+      <div id="edBody">
+        <label class="fld"><span>Customer Name</span><input id="eName" autocomplete="off" maxlength="80"></label>
+        <div class="p-table" role="table" aria-label="Katai products">
+          <div class="p-row p-head" role="row"><div>Product</div><div>Unit</div><div class="ra">Qty</div><div class="ra">Rate ₹</div><div class="ra">Amount</div></div>
+          <div id="pBody" role="rowgroup"></div>
+        </div>
+        <div class="led-grid">
+          <label class="fld"><span>Pichla Balance</span><input id="eOld" class="n" inputmode="decimal" autocomplete="off"></label>
+          <label class="fld"><span>Rec Cash</span><input id="eCash" class="n" inputmode="decimal" autocomplete="off"></label>
+          <label class="fld"><span>Rec Online</span><input id="eOnline" class="n" inputmode="decimal" autocomplete="off"></label>
+        </div>
+        <div id="edSum"></div>
+        <p class="s-err" id="eErr" role="alert"></p>
+        <div class="acts"><button class="btn danger" id="edDel" type="button">Delete customer</button><button class="btn wa" id="edWa" type="button"><img src="../../assets/icons/whatsapp.svg" alt="" width="16" height="16">WhatsApp bill</button><button class="btn primary" id="edNext" type="button">Save &amp; next customer</button></div>
+      </div>
+      <p class="empty" id="edEmpty">Kisi customer par click karke uska maal bhariye.</p>
+    </section>
+  </div>
+
+  <section class="card ptotals" aria-label="Product totals">
+    <h3>Aaj ka Product-wise Total</h3>
+    <div class="t-scroll"><table class="ptable"><thead><tr><th>Product</th><th class="ra">KG</th><th class="ra">Pcs</th><th class="ra">Amount</th></tr></thead><tbody id="ptBody"></tbody></table></div>
+  </section>
+
+  <section class="kpis" aria-label="Grand totals">
+    <div class="card kpi"><div class="l">Customers</div><div class="n" id="tCust">0</div></div>
+    <div class="card kpi"><div class="l">Received</div><div class="n" id="tRec">₹0</div><div class="w2" id="tRecSplit"></div></div>
+    <div class="card kpi due-k"><div class="l">Total Balance</div><div class="n" id="tBal">₹0</div></div>
+    <div class="card grand"><div class="l">Aaj ka Total Bill</div><div class="n" id="tBill">₹0</div><div class="w" id="tWords">Zero Rupees Only</div></div>
+  </section>
+</main>
+
+<div class="dlg-bg" id="shareDlg"><div class="dlg" role="dialog" aria-labelledby="shT"><h4 id="shT">WhatsApp par kaise bhejna hai?</h4><p>PDF ya Photo chuniye</p><div class="sh-btns"><button class="btn sh-b" id="shPdf" type="button"><span class="sh-i">📄</span>PDF bhejo</button><button class="btn sh-b" id="shImg" type="button"><span class="sh-i">🖼️</span>Photo bhejo</button></div><div class="acts"><button class="btn" id="shNo" type="button">Cancel</button></div></div></div>
+<div class="dlg-bg" id="dlg"><div class="dlg" role="alertdialog" aria-labelledby="dlgT"><h4 id="dlgT">Are you sure?</h4><p id="dlgP"></p><div class="acts"><button class="btn" id="dlgNo" type="button">Cancel</button><button class="btn danger-fill" id="dlgYes" type="button">Yes</button></div></div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="calc.js"></script>
+<script src="share.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

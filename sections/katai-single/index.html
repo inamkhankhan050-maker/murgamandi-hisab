@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<title>Katai Single Customer Bill · MurgaMandi Hisab</title>
+<link rel="icon" href="../../assets/icons/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="appbar">
+  <div class="appbar-in">
+    <a class="back" href="../../index.html" aria-label="Back to home">‹ Home</a>
+    <div class="brand"><h1>Katai Single Customer Bill</h1><p>MurgaMandi Hisab · Katai</p></div>
+    <div class="sp"></div>
+    <span class="chip" id="saveState"><span class="dot"></span><span id="saveText">Saved on this device</span></span>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="notice" id="storageNotice" hidden>Auto-save is not available in this browser window, so entries will not survive a refresh.</p>
+
+  <section class="card head-card" aria-label="Customer">
+    <div class="head-grid">
+      <label class="fld"><span>Firm / Dukaan Name</span><input id="kFirm" autocomplete="off" maxlength="80"></label>
+      <label class="fld"><span>Customer Name</span><input id="kName" autocomplete="off" maxlength="80"></label>
+      <label class="fld"><span>Date</span><input id="kDate" type="date"></label>
+    </div>
+  </section>
+
+  <div class="k-main">
+    <section class="card" aria-label="Products">
+      <h3>Products</h3>
+      <div class="p-table" role="table" aria-label="Katai products">
+        <div class="p-row p-head" role="row">
+          <div role="columnheader">Product</div><div role="columnheader">Unit</div><div role="columnheader" class="ra">Quantity</div><div role="columnheader" class="ra">Rate (₹)</div><div role="columnheader" class="ra">Amount</div>
+        </div>
+        <div id="pBody" role="rowgroup"></div>
+      </div>
+      <p class="hint">Amount = Quantity × Rate. Leave a product empty if the customer did not take it.</p>
+    </section>
+
+    <aside class="card summary" aria-live="polite">
+      <h3>Bill</h3>
+      <div id="kSummary"></div>
+      <h3 class="sub-h">Hisab / Ledger <em>(optional)</em></h3>
+      <div class="led-grid">
+        <label class="fld"><span>Pichla Balance</span><input id="kOld" class="n" inputmode="decimal" autocomplete="off"></label>
+        <label class="fld"><span>Rec Cash</span><input id="kCash" class="n" inputmode="decimal" autocomplete="off"></label>
+        <label class="fld"><span>Rec Online</span><input id="kOnline" class="n" inputmode="decimal" autocomplete="off"></label>
+      </div>
+      <div id="kLedger"></div>
+      <p class="s-err" id="kErr" role="alert"></p>
+      <div class="acts">
+        <button class="btn danger" id="kClear" type="button">Clear</button>
+        <button class="btn" id="kPrint" type="button">Print / Save PDF</button>
+        <button class="btn wa" id="kShare" type="button"><img src="../../assets/icons/whatsapp.svg" alt="" width="16" height="16">WhatsApp PDF</button>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<div class="dlg-bg" id="shareDlg"><div class="dlg" role="dialog" aria-labelledby="shT"><h4 id="shT">WhatsApp par kaise bhejna hai?</h4><p>PDF ya Photo chuniye</p><div class="sh-btns"><button class="btn sh-b" id="shPdf" type="button"><span class="sh-i">📄</span>PDF bhejo</button><button class="btn sh-b" id="shImg" type="button"><span class="sh-i">🖼️</span>Photo bhejo</button></div><div class="acts"><button class="btn" id="shNo" type="button">Cancel</button></div></div></div>
+<div class="dlg-bg" id="dlg"><div class="dlg" role="alertdialog" aria-labelledby="dlgT"><h4 id="dlgT">Clear this bill?</h4><p id="dlgP">All products and amounts of this bill will be emptied.</p><div class="acts"><button class="btn" id="dlgNo" type="button">Cancel</button><button class="btn danger-fill" id="dlgYes" type="button">Clear</button></div></div></div>
+<div class="toast" id="toast" role="status"></div>
+<div class="rcpt" id="kReceipt" aria-hidden="true"></div>
+
+<script src="calc.js"></script>
+<script src="share.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

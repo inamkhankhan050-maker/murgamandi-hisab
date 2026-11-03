@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<title>Zinda Single Customer Bill · MurgaMandi Hisab</title>
+<link rel="icon" href="../../assets/icons/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="appbar">
+  <div class="appbar-in">
+    <a class="back" href="../../index.html" aria-label="Back to home">‹ Home</a>
+    <div class="brand"><h1>Zinda Single Customer Bill</h1><p>MurgaMandi Hisab · Ghazipur Murga Mandi</p></div>
+    <div class="sp"></div>
+    <span class="chip save-state" id="saveState"><span class="dot"></span><span id="saveText">Saved on this device</span></span>
+    <span class="chip hide-m" id="todayChip"></span>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="notice" id="storageNotice" hidden>Auto-save is not available in this browser window, so entries will not survive a refresh.</p>
+
+  <section class="single" aria-label="Single customer calculator">
+    <div class="card s-in">
+      <h3>Customer &amp; Maal</h3>
+      <label class="fld"><span>Firm / Dukaan Name <em>(print par Ghazipur Murga Mandi ke niche)</em></span><input id="sFirm" autocomplete="off" maxlength="80"></label>
+      <label class="fld"><span>Customer Name <em>(optional)</em></span><input id="sName" autocomplete="off" maxlength="80"></label>
+      <div class="fld3">
+        <label class="fld"><span>Pieces</span><input id="sPieces" class="n" inputmode="numeric" autocomplete="off"></label>
+        <label class="fld"><span>Total KG</span><input id="sKgIn" class="n" inputmode="decimal" autocomplete="off"></label>
+        <label class="fld"><span>Jaal KG <em>(minus)</em></span><input id="sJaal" class="n" inputmode="decimal" autocomplete="off"></label>
+        <label class="fld"><span>Rate / KG (₹)</span><input id="sRate" class="n" inputmode="decimal" autocomplete="off"></label>
+        <label class="fld"><span>Labour ₹ <em>(edit, khali = auto)</em></span><input id="sLabour" class="n" inputmode="decimal" autocomplete="off"></label>
+      </div>
+      <h3 class="sub-h">Hisab / Ledger</h3>
+      <div class="fld3 led">
+        <label class="fld"><span>Pichla Balance (B)</span><input id="sOld" class="n" inputmode="decimal" autocomplete="off"></label>
+        <label class="fld"><span>Rec Cash</span><input id="sCash" class="n" inputmode="decimal" autocomplete="off"></label>
+        <label class="fld"><span>Rec Online</span><input id="sOnline" class="n" inputmode="decimal" autocomplete="off"></label>
+      </div>
+      <p class="s-err" id="sErr" role="alert"></p>
+      <div class="s-acts">
+        <button class="btn danger" id="sClear" type="button">Clear</button>
+        <button class="btn" id="sPrint" type="button">Print / Save PDF</button>
+        <button class="btn wa" id="sShare" type="button"><img src="../../assets/icons/whatsapp.svg" alt="" width="16" height="16">WhatsApp PDF</button>
+        <button class="btn primary" id="sToDaily" type="button">Add to Zinda Daily Entry</button>
+      </div>
+    </div>
+    <div class="card s-out" id="sOut" aria-live="polite"></div>
+  </section>
+
+  <section class="card rules" aria-label="Calculation rules">
+    <h3>Calculation rules</h3>
+    <ul>
+      <li>Net KG = Total KG − Jaal KG. Basic Amount = Net KG × Rate / KG.</li>
+      <li>Samiti = 1% of Basic Amount, rounded down to the whole rupee.</li>
+      <li>Labour by average bird size (Net KG ÷ Pieces): below 2.50 kg → Pieces ÷ 9 × ₹5 · 2.50–2.99 kg → ÷ 8 × ₹5 · 3.00 kg and above → ÷ 7 × ₹5.</li>
+      <li>Labour is adjusted upward (max ₹9.99) so the bill lands on a multiple of ₹10. A labour amount you type replaces the auto labour.</li>
+      <li>Balance Baaki = Pichla Balance + Aaj ka Bill − Rec Cash − Rec Online.</li>
+      <li>Number boxes accept sums like 50+60.5+94.</li>
+    </ul>
+  </section>
+</main>
+
+<div class="dlg-bg" id="shareDlg"><div class="dlg" role="dialog" aria-labelledby="shT"><h4 id="shT">WhatsApp par kaise bhejna hai?</h4><p>PDF ya Photo chuniye</p><div class="sh-btns"><button class="btn sh-b" id="shPdf" type="button"><span class="sh-i">📄</span>PDF bhejo</button><button class="btn sh-b" id="shImg" type="button"><span class="sh-i">🖼️</span>Photo bhejo</button></div><div class="acts"><button class="btn" id="shNo" type="button">Cancel</button></div></div></div>
+<div class="dlg-bg" id="dlg"><div class="dlg" role="alertdialog" aria-labelledby="dlgT"><h4 id="dlgT">Clear this bill?</h4><p id="dlgP">All fields of this bill will be emptied.</p><div class="acts"><button class="btn" id="dlgNo" type="button">Cancel</button><button class="btn danger-fill" id="dlgYes" type="button">Clear</button></div></div></div>
+<div class="toast" id="toast" role="status"></div>
+<div class="rcpt" id="sReceipt" aria-hidden="true"></div>
+
+<script src="calc.js"></script>
+<script src="share.js"></script>
+<script src="keypad.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
