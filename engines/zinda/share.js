@@ -21,11 +21,11 @@
     var txt = function (t, x, y, size, color, weight, align) { g.font = (weight || 400) + ' ' + size + 'px ' + F; g.fillStyle = color || '#111'; g.textAlign = align || 'left'; g.fillText(String(t), x, y); };
     var line = function (y, color, w) { g.fillStyle = color || '#E3E3E3'; g.fillRect(P, y, W - 2 * P, w || 1); };
     var y = 80;
-    txt('Ghazipur Murga Mandi', P, y, 40, '#166534', 700);
+    txt('Ghazipur Murga Mandi', P, y, 40, '#1D4ED8', 700);
     txt(m.date, W - P, y, 22, '#444', 400, 'right');
     if (m.firm) { y += 40; txt(m.firm, P, y, 28, '#111', 700); }
     y += 30; txt('WHOLESALE BILL', P, y, 18, '#666', 600);
-    y += 18; line(y, '#166534', 4);
+    y += 18; line(y, '#1D4ED8', 4);
     y += 56; txt(m.name, P, y, 32, '#111', 700);
     y += 22;
     var bw = (W - 2 * P - 2 * 16) / 3;
@@ -40,14 +40,14 @@
       txt(r[0], P + 4, y, 24, '#222'); txt(r[1], P + 4 + w0 + 14, y, 17, '#777');
       txt(r[2], W - P - 4, y, 24, '#111', 600, 'right'); y += 12; line(y);
     });
-    line(y, '#166534', 3);
-    y += 50; txt('Aaj ka Bill', P + 4, y, 30, '#166534', 700); txt(m.billText, W - P - 4, y, 32, '#166534', 700, 'right');
+    line(y, '#1D4ED8', 3);
+    y += 50; txt('Aaj ka Bill', P + 4, y, 30, '#1D4ED8', 700); txt(m.billText, W - P - 4, y, 32, '#1D4ED8', 700, 'right');
     y += 16;
     if (m.led.length) {
       y += 14;
       m.led.forEach(function (r) { y += 36; txt(r[0], P + 4, y, 22, '#222', r[2] ? 700 : 400); txt(r[1], W - P - 4, y, 22, '#111', r[2] ? 700 : 500, 'right'); y += 10; line(y); });
-      line(y, '#9A3412', 3);
-      y += 50; var bc = m.balPaise < 0 ? '#166534' : '#9A3412';
+      line(y, '#B45309', 3);
+      y += 50; var bc = m.balPaise < 0 ? '#1D4ED8' : '#B45309';
       txt('Balance Baaki', P + 4, y, 30, bc, 700); txt(m.balText, W - P - 4, y, 32, bc, 700, 'right'); y += 16;
     }
     if (m.words) { y += 40; txt(m.words, W - P - 4, y, 20, '#444', 400, 'right'); }
@@ -69,16 +69,16 @@
       g.fillText(t, x, y);
     };
     var y = 70;
-    txt('Ghazipur Murga Mandi', P, y, 38, '#166534', 700); txt(spec.date, W - P, y, 22, '#444', 400, 'right');
+    txt('Ghazipur Murga Mandi', P, y, 38, '#1D4ED8', 700); txt(spec.date, W - P, y, 22, '#444', 400, 'right');
     if (spec.sub) { y += 38; txt(spec.sub, P, y, 26, '#111', 700); }
     y += 30; txt(spec.title.toUpperCase(), P, y, 17, '#666', 600);
-    y += 16; g.fillStyle = '#166534'; g.fillRect(P, y, W - 2 * P, 4);
-    y += 20; g.fillStyle = '#F1F5F2'; g.fillRect(P, y, W - 2 * P, 44);
+    y += 16; g.fillStyle = '#1D4ED8'; g.fillRect(P, y, W - 2 * P, 4);
+    y += 20; g.fillStyle = '#F1F5F9'; g.fillRect(P, y, W - 2 * P, 44);
     var x = P; spec.cols.forEach(function (c) { txt(c.h, c.r ? x + c.w - 10 : x + 10, y + 29, 16, '#334', 700, c.r ? 'right' : 'left'); x += c.w; });
     y += 44;
     spec.rows.forEach(function (row, i) {
       var b = spec.bold && spec.bold.indexOf(i) >= 0;
-      if (b) { g.fillStyle = '#E7F7EC'; g.fillRect(P, y, W - 2 * P, RH); }
+      if (b) { g.fillStyle = '#EAF2FF'; g.fillRect(P, y, W - 2 * P, RH); }
       x = P; spec.cols.forEach(function (c, j) { var v = row[j] == null ? '' : row[j]; txt(v, c.r ? x + c.w - 10 : x + 10, y + 29, 20, (c.color && !b) ? c.color : '#111', b || c.b ? 700 : 400, c.r ? 'right' : 'left', c.w - 16); x += c.w; });
       y += RH; g.fillStyle = '#E3E3E3'; g.fillRect(P, y - 1, W - 2 * P, 1);
     });

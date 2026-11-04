@@ -12,7 +12,7 @@
 <header class="appbar">
   <div class="appbar-in">
     <a class="back" href="../../index.html" aria-label="Back to home">‹ Home</a>
-    <div class="brand"><h1>Zinda Single Customer Bill</h1><p>MurgaMandi Hisab · Ghazipur Murga Mandi</p></div>
+    <div class="brand"><h1>Zinda Single Customer Bill</h1><p>MurgaMandi Hisab · Zinda</p></div>
     <div class="sp"></div>
     <span class="chip save-state" id="saveState"><span class="dot"></span><span id="saveText">Saved on this device</span></span>
     <span class="chip hide-m" id="todayChip"></span>
@@ -26,7 +26,11 @@
     <div class="card s-in">
       <h3>Customer &amp; Maal</h3>
       <label class="fld"><span>Firm / Dukaan Name <em>(print par Ghazipur Murga Mandi ke niche)</em></span><input id="sFirm" autocomplete="off" maxlength="80"></label>
-      <label class="fld"><span>Customer Name <em>(optional)</em></span><input id="sName" autocomplete="off" maxlength="80"></label>
+      <div class="fld2">
+        <label class="fld"><span>Customer Name <em>(needed to save)</em></span><input id="sName" autocomplete="off" maxlength="80" list="custList"></label>
+        <label class="fld"><span>Bill Date</span><input id="sDate" type="date"></label>
+      </div>
+      <datalist id="custList"></datalist>
       <div class="fld3">
         <label class="fld"><span>Pieces</span><input id="sPieces" class="n" inputmode="numeric" autocomplete="off"></label>
         <label class="fld"><span>Total KG</span><input id="sKgIn" class="n" inputmode="decimal" autocomplete="off"></label>
@@ -40,15 +44,24 @@
         <label class="fld"><span>Rec Cash</span><input id="sCash" class="n" inputmode="decimal" autocomplete="off"></label>
         <label class="fld"><span>Rec Online</span><input id="sOnline" class="n" inputmode="decimal" autocomplete="off"></label>
       </div>
+      <p class="hint-bal" id="sHint" hidden><span id="sHintT"></span> <button class="link-btn" id="sHintUse" type="button">Use as Pichla Balance</button></p>
       <p class="s-err" id="sErr" role="alert"></p>
+      <p class="rec-state" id="sSaved"></p>
       <div class="s-acts">
         <button class="btn danger" id="sClear" type="button">Clear</button>
         <button class="btn" id="sPrint" type="button">Print / Save PDF</button>
         <button class="btn wa" id="sShare" type="button"><img src="../../assets/icons/whatsapp.svg" alt="" width="16" height="16">WhatsApp PDF</button>
-        <button class="btn primary" id="sToDaily" type="button">Add to Zinda Daily Entry</button>
+        <button class="btn" id="sToDaily" type="button">Add to Zinda Daily Entry</button>
+        <button class="btn primary" id="sSave" type="button">Save Bill</button>
       </div>
     </div>
     <div class="card s-out" id="sOut" aria-live="polite"></div>
+  </section>
+
+  <section class="card recent" aria-labelledby="recH">
+    <div class="recent-hd"><h3 id="recH">Saved Zinda single bills</h3><a class="link-btn" href="../statements/index.html">All statements ›</a></div>
+    <div class="t-scroll"><table class="rtable"><thead><tr><th>Date</th><th>Customer</th><th>Firm</th><th class="ra">Bill</th><th class="ra">Cash</th><th class="ra">Online</th><th class="ra">Balance</th><th class="ra"><span class="sr">Actions</span></th></tr></thead><tbody id="sRecent"></tbody></table></div>
+    <p class="empty" id="sRecentEmpty">No saved bills yet. Fill the bill and press "Save Bill".</p>
   </section>
 
   <section class="card rules" aria-label="Calculation rules">
@@ -69,9 +82,11 @@
 <div class="toast" id="toast" role="status"></div>
 <div class="rcpt" id="sReceipt" aria-hidden="true"></div>
 
-<script src="calc.js"></script>
-<script src="share.js"></script>
-<script src="keypad.js"></script>
+<script src="../../shared/storage-service.js"></script>
+<script src="../../shared/data-service.js"></script>
+<script src="../../engines/zinda/calc.js"></script>
+<script src="../../engines/zinda/share.js"></script>
+<script src="../../engines/zinda/keypad.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

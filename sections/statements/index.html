@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<title>Statements &amp; Reports · MurgaMandi Hisab</title>
+<link rel="icon" href="../../assets/icons/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="../../shared/print.css">
+</head>
+<body>
+<header class="appbar">
+  <div class="appbar-in">
+    <a class="back" href="../../index.html" aria-label="Back to home">‹ Home</a>
+    <div class="brand"><h1>Statements &amp; Reports</h1><p>MurgaMandi Hisab · all saved records</p></div>
+    <div class="sp"></div>
+    <span class="chip hide-m" id="countChip"></span>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="notice" id="notice" hidden></p>
+
+  <section class="card filters-card" aria-label="Filters">
+    <div class="filters">
+      <label class="fl"><span>Period</span>
+        <select id="fKind"><option value="day">Daily</option><option value="month">Monthly</option><option value="year">Yearly</option><option value="range">Custom range</option><option value="all">All dates</option></select></label>
+      <label class="fl" data-for="day"><span>Date</span><input id="fDay" type="date"></label>
+      <label class="fl" data-for="month"><span>Month</span><input id="fMonth" type="month"></label>
+      <label class="fl" data-for="year"><span>Year</span><select id="fYear"></select></label>
+      <label class="fl" data-for="range"><span>From</span><input id="fFrom" type="date"></label>
+      <label class="fl" data-for="range"><span>To</span><input id="fTo" type="date"></label>
+      <label class="fl"><span>Section</span><select id="fSection"><option value="all">Zinda + Katai</option><option value="zinda">Zinda only</option><option value="katai">Katai only</option></select></label>
+      <label class="fl grow"><span>Customer</span><select id="fCustomer"></select></label>
+      <label class="fl grow"><span>Firm / Company</span><select id="fFirm"></select></label>
+    </div>
+    <p class="f-note">Showing <b id="fLabel">—</b>. These filters apply to every tab except Single Customer (it has its own dates).</p>
+  </section>
+
+  <nav class="tabs" role="tablist" aria-label="Reports">
+    <button class="tab" role="tab" data-tab="customers" type="button">Customers</button>
+    <button class="tab" role="tab" data-tab="single" type="button">Single Customer</button>
+    <button class="tab" role="tab" data-tab="companies" type="button">Companies</button>
+    <button class="tab" role="tab" data-tab="pnl" type="button">Profit &amp; Loss</button>
+    <button class="tab" role="tab" data-tab="cash" type="button">Cash &amp; Online</button>
+    <button class="tab" role="tab" data-tab="downloads" type="button">Download Center</button>
+  </nav>
+
+  <!-- A. All customer statements -->
+  <section class="panel" id="p-customers" role="tabpanel" aria-label="All customer statements">
+    <div class="kpis" id="aKpis"></div>
+    <div class="card">
+      <div class="card-hd"><h2>All Customer Statements</h2>
+        <div class="dl-row" data-report="allStatements"><span>Download</span><button class="btn sm" data-fmt="pdf" type="button">PDF</button><button class="btn sm" data-fmt="xlsx" type="button">Excel</button><button class="btn sm" data-fmt="csv" type="button">CSV</button><button class="btn sm" data-fmt="print" type="button">Print</button></div></div>
+      <div class="t-wrap"><table class="xtable" id="aTable"><thead><tr><th>Customer</th><th>Firm / Company</th><th>Section</th><th class="ra">Bills</th><th class="ra">Total Bills</th><th class="ra">Cash</th><th class="ra">Online</th><th class="ra">Opening Bal.</th><th class="ra">Remaining Bal.</th><th>Last entry</th></tr></thead><tbody id="aBody"></tbody><tfoot id="aFoot"></tfoot></table></div>
+      <p class="empty" id="aEmpty">No saved bills or payments for these filters.</p>
+      <p class="method" id="aMethod"></p>
+    </div>
+    <div class="card">
+      <div class="card-hd"><h2>All Customer Billing Records <small id="rCount"></small></h2>
+        <div class="dl-row" data-report="allRecords"><span>Download</span><button class="btn sm" data-fmt="pdf" type="button">PDF</button><button class="btn sm" data-fmt="xlsx" type="button">Excel</button><button class="btn sm" data-fmt="csv" type="button">CSV</button><button class="btn sm" data-fmt="print" type="button">Print</button></div></div>
+      <div class="t-wrap"><table class="xtable" id="rTable"><thead><tr><th>Date</th><th>Type</th><th>Section</th><th>Customer</th><th>Firm</th><th class="ra">Bill</th><th class="ra">Cash</th><th class="ra">Online</th><th class="ra">Prev. Bal.</th><th class="ra">Balance</th><th class="ra"><span class="sr">Actions</span></th></tr></thead><tbody id="rBody"></tbody></table></div>
+      <p class="empty" id="rEmpty">No records for these filters.</p>
+      <button class="btn sm more" id="rMore" type="button" hidden>Show more</button>
+    </div>
+  </section>
+
+  <!-- B. Single customer -->
+  <section class="panel" id="p-single" role="tabpanel" aria-label="Single customer statement" hidden>
+    <div class="card">
+      <h2>Single Customer Statement</h2>
+      <div class="filters">
+        <label class="fl grow"><span>Search customer</span><input id="bSearch" type="search" placeholder="Type a name…" autocomplete="off"></label>
+        <label class="fl grow"><span>Customer</span><select id="bCustomer"></select></label>
+        <label class="fl"><span>From</span><input id="bFrom" type="date"></label>
+        <label class="fl"><span>To</span><input id="bTo" type="date"></label>
+        <label class="fl"><span>Section</span><select id="bSection"><option value="all">Zinda + Katai</option><option value="zinda">Zinda only</option><option value="katai">Katai only</option></select></label>
+      </div>
+      <div id="bOut"></div>
+    </div>
+  </section>
+
+  <!-- C. Companies -->
+  <section class="panel" id="p-companies" role="tabpanel" aria-label="Company-wise records" hidden>
+    <div class="card">
+      <div class="card-hd"><h2>Complete Company-wise Records</h2>
+        <div class="dl-row" data-report="companies"><span>All companies</span><button class="btn sm" data-fmt="pdf" type="button">PDF</button><button class="btn sm" data-fmt="xlsx" type="button">Excel</button><button class="btn sm" data-fmt="csv" type="button">CSV</button><button class="btn sm" data-fmt="print" type="button">Print</button></div></div>
+      <div class="t-wrap"><table class="xtable"><thead><tr><th>Firm / Company</th><th class="ra">Customers</th><th class="ra">Bills</th><th class="ra">Total Bills</th><th class="ra">Cash</th><th class="ra">Online</th><th class="ra">Outstanding</th><th class="ra"><span class="sr">Open</span></th></tr></thead><tbody id="cBody"></tbody><tfoot id="cFoot"></tfoot></table></div>
+      <p class="empty" id="cEmpty">No firm / company names in the saved records for these filters.</p>
+      <p class="method" id="cNote"></p>
+    </div>
+    <div class="card" id="cDetail" hidden>
+      <div class="card-hd"><h2 id="cdTitle">Company</h2>
+        <div class="dl-row" data-report="company"><span>This company</span><button class="btn sm" data-fmt="pdf" type="button">PDF</button><button class="btn sm" data-fmt="xlsx" type="button">Excel</button><button class="btn sm" data-fmt="csv" type="button">CSV</button><button class="btn sm" data-fmt="print" type="button">Print</button></div></div>
+      <div class="kpis" id="cdKpis"></div>
+      <h3 class="sub-h">Customers of this company</h3>
+      <div class="t-wrap"><table class="xtable"><thead><tr><th>Customer</th><th>Section</th><th class="ra">Bills</th><th class="ra">Total Bills</th><th class="ra">Cash</th><th class="ra">Online</th><th class="ra">Outstanding</th></tr></thead><tbody id="cdBody"></tbody></table></div>
+      <h3 class="sub-h">Bills and payments</h3>
+      <div class="t-wrap"><table class="xtable"><thead><tr><th>Date</th><th>Type</th><th>Section</th><th>Customer</th><th class="ra">Bill</th><th class="ra">Cash</th><th class="ra">Online</th><th class="ra">Balance</th></tr></thead><tbody id="cdRec"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- D. Profit & Loss -->
+  <section class="panel" id="p-pnl" role="tabpanel" aria-label="Profit and loss" hidden>
+    <div class="card">
+      <div class="card-hd"><h2>Profit &amp; Loss Statement</h2>
+        <div class="dl-row" data-report="pnl"><span>Download</span><button class="btn sm" data-fmt="pdf" type="button">PDF</button><button class="btn sm" data-fmt="xlsx" type="button">Excel</button><button class="btn sm" data-fmt="csv" type="button">CSV</button><button class="btn sm" data-fmt="print" type="button">Print</button></div></div>
+      <p class="badge-note">Based on recorded income and recorded expenses only. Purchase cost, stock cost and other costs are not recorded, so they are not included.</p>
+      <div class="kpis" id="pKpis"></div>
+      <div class="pnl-grid">
+        <div class="t-wrap"><table class="xtable"><thead><tr><th>Particulars</th><th class="ra">Amount</th></tr></thead><tbody id="pStmt"></tbody></table></div>
+        <div class="t-wrap"><table class="xtable"><thead><tr><th>Expense category</th><th class="ra">Entries</th><th class="ra">Amount</th></tr></thead><tbody id="pCats"></tbody></table></div>
+      </div>
+      <h3 class="sub-h" id="pBreakH">Breakdown</h3>
+      <div class="t-wrap"><table class="xtable"><thead><tr><th id="pBreakK">Date</th><th class="ra">Zinda</th><th class="ra">Katai</th><th class="ra">Income</th><th class="ra">Expenses</th><th class="ra">Net</th></tr></thead><tbody id="pRows"></tbody></table></div>
+      <p class="method">Filters used here: period only (section, customer and firm filters do not apply to Profit &amp; Loss). Net Profit/Loss = Total Recorded Income − Total Recorded Expenses.</p>
+    </div>
+  </section>
+
+  <!-- E. Cash & Online -->
+  <section class="panel" id="p-cash" role="tabpanel" aria-label="Cash and online statement" hidden>
+    <div class="card">
+      <div class="card-hd"><h2>Cash &amp; Online Statement</h2>
+        <div class="dl-row" data-report="cash"><span>Download</span><button class="btn sm" data-fmt="pdf" type="button">PDF</button><button class="btn sm" data-fmt="xlsx" type="button">Excel</button><button class="btn sm" data-fmt="csv" type="button">CSV</button><button class="btn sm" data-fmt="print" type="button">Print</button></div></div>
+      <div class="open-box">
+        <div><b>Opening cash balance</b> <span class="muted">(optional — only if you counted the cash in hand)</span><p class="muted" id="oState"></p></div>
+        <label class="fl"><span>Cash in hand (₹)</span><input id="oAmount" class="n" inputmode="decimal" placeholder="e.g. 25000"></label>
+        <label class="fl"><span>As of date</span><input id="oDate" type="date"></label>
+        <div class="o-acts"><button class="btn primary sm" id="oSave" type="button">Save opening cash</button><button class="btn sm" id="oClear" type="button">Remove</button></div>
+      </div>
+      <div class="cash-grid">
+        <div class="t-wrap"><table class="xtable"><thead><tr><th>Particulars</th><th class="ra">Cash</th><th class="ra">Online (bank / UPI)</th></tr></thead><tbody id="eStmt"></tbody></table></div>
+        <div class="kpis two" id="eKpis"></div>
+      </div>
+      <p class="method" id="eNote"></p>
+      <h3 class="sub-h">Day-wise</h3>
+      <div class="t-wrap"><table class="xtable"><thead><tr><th>Date</th><th class="ra">Cash In</th><th class="ra">Cash Out</th><th class="ra">Net Cash</th><th class="ra">Cash Balance</th><th class="ra">Online In</th><th class="ra">Online Out</th><th class="ra">Net Online</th></tr></thead><tbody id="eRows"></tbody></table></div>
+      <p class="method">Filters used here: period only. Cash in = cash received on saved bills and payments; cash out = expenses paid in cash. Online is never counted as cash.</p>
+    </div>
+  </section>
+
+  <!-- F. Download Center -->
+  <section class="panel" id="p-downloads" role="tabpanel" aria-label="Download center" hidden>
+    <div class="card">
+      <h2>Download Center</h2>
+      <p class="muted">Every file is made from the records saved on this device. Items marked "uses filters" follow the period, section, customer and firm filters at the top.</p>
+      <div class="dc-ctl">
+        <label class="fl"><span>Day (item 4)</span><input id="dDay" type="date"></label>
+        <label class="fl"><span>Month (item 5)</span><input id="dMonth" type="month"></label>
+        <label class="fl"><span>Year (item 6)</span><select id="dYear"></select></label>
+        <label class="fl grow"><span>Customer (item 3)</span><select id="dCustomer"></select></label>
+        <label class="fl grow"><span>Company (item 8)</span><select id="dFirm"></select></label>
+      </div>
+      <ol class="dc-list" id="dcList"></ol>
+    </div>
+  </section>
+</main>
+
+<div class="dlg-bg" id="dlg"><div class="dlg" role="alertdialog" aria-labelledby="dlgT" aria-describedby="dlgP"><h4 id="dlgT">Are you sure?</h4><p id="dlgP"></p><div class="acts"><button class="btn" id="dlgNo" type="button">Cancel</button><button class="btn danger-fill" id="dlgYes" type="button">Yes</button></div></div></div>
+
+<div class="dlg-bg" id="edDlg"><form class="dlg ed" id="edForm" role="dialog" aria-labelledby="edT" novalidate autocomplete="off">
+  <h4 id="edT">Edit record</h4>
+  <p class="muted" id="edInfo"></p>
+  <div class="f2">
+    <label class="fld"><span>Date</span><input id="edDate" type="date"></label>
+    <label class="fld"><span>Customer</span><input id="edName" maxlength="80"></label>
+  </div>
+  <label class="fld"><span>Firm / Company</span><input id="edFirm" maxlength="80"></label>
+  <div class="f3">
+    <label class="fld"><span>Previous balance</span><input id="edPrev" class="n" inputmode="decimal"></label>
+    <label class="fld"><span>Cash received</span><input id="edCash" class="n" inputmode="decimal"></label>
+    <label class="fld"><span>Online received</span><input id="edOnline" class="n" inputmode="decimal"></label>
+  </div>
+  <label class="fld"><span>Note <em>(optional)</em></span><input id="edNote" maxlength="200"></label>
+  <p class="ed-calc" id="edCalc"></p>
+  <p class="f-err" id="edErr" role="alert"></p>
+  <div class="acts"><button class="btn" id="edNo" type="button">Cancel</button><button class="btn primary" id="edYes" type="submit">Save changes</button></div>
+</form></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="../../shared/storage-service.js"></script>
+<script src="../../shared/data-service.js"></script>
+<script src="../../shared/export-service.js"></script>
+<script src="reports.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

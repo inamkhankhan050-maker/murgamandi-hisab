@@ -28,6 +28,7 @@
     <label class="tb-fld"><span class="sr">Firm / Dukaan name</span><input id="dFirm" placeholder="Firm / Dukaan name" autocomplete="off" maxlength="80"></label>
     <label class="tb-fld tb-date"><span class="sr">Date</span><input id="dDate" type="date"></label>
     <div class="tb-sp"></div>
+    <button class="btn primary save-rec" id="btnSaveRec" type="button">Save to Records</button>
     <button class="btn primary" id="btnAdd" type="button">+ Add Customer</button>
     <button class="btn" id="btnRates" type="button" aria-expanded="false" aria-controls="ratesCard">Aaj ke Rate</button>
     <button class="btn" id="btnExcel" type="button">Export to Excel</button>
@@ -46,6 +47,7 @@
   <div class="d-main">
     <section class="card list" aria-label="Customers">
       <h3>Customers</h3>
+      <p class="rec-meta" id="recMeta"></p>
       <div class="t-scroll">
         <table class="ctable">
           <thead><tr><th class="c-idx">#</th><th>Customer</th><th class="ra">Items</th><th class="ra">Aaj ka Bill</th><th class="ra">Pichla</th><th class="ra">Received</th><th class="ra">Balance</th><th class="c-act"><span class="sr">Actions</span></th></tr></thead>
@@ -94,8 +96,10 @@
 <div class="dlg-bg" id="dlg"><div class="dlg" role="alertdialog" aria-labelledby="dlgT"><h4 id="dlgT">Are you sure?</h4><p id="dlgP"></p><div class="acts"><button class="btn" id="dlgNo" type="button">Cancel</button><button class="btn danger-fill" id="dlgYes" type="button">Yes</button></div></div></div>
 <div class="toast" id="toast" role="status"></div>
 
-<script src="calc.js"></script>
-<script src="share.js"></script>
+<script src="../../shared/storage-service.js"></script>
+<script src="../../shared/data-service.js"></script>
+<script src="../../engines/katai/calc.js"></script>
+<script src="../../engines/katai/share.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

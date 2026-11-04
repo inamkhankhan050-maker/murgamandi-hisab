@@ -1,88 +1,107 @@
 # MurgaMandi Hisab
 
-Daily billing for a murga mandi business, with four independent sections:
+Daily billing, expenses and reports for a murga mandi business. Plain HTML, CSS and JavaScript: no build step, no server, no external libraries. Open `index.html` in Chrome (desktop or phone) or host the folder on any static host (it is published with GitHub Pages).
 
-| Section | Folder | Engine |
-|---|---|---|
-| Zinda Single Customer Bill | `sections/zinda-single/` | Original Chicken Calculator engine (`calc.js`) |
-| Zinda Daily Entry | `sections/zinda-daily/` | Original Chicken Calculator engine (`calc.js`) |
-| Katai Single Customer Bill | `sections/katai-single/` | Katai engine (`calc.js`, `KataiSingleCalc`) |
-| Katai Daily Customer Entry | `sections/katai-daily/` | Katai engine (`calc.js`, `KataiDailyCalc`) |
+## Six sections
 
-No build step, no server, no external libraries. Open `index.html` in Chrome (desktop or phone) or host the folder on any static host (GitHub Pages, Netlify).
+| # | Section | Folder | Calculation |
+|---|---------|--------|-------------|
+| 1 | Zinda Single Customer Bill | `sections/zinda-single/` | Original Chicken Calculator engine (`engines/zinda/calc.js`) |
+| 2 | Zinda Daily Entry | `sections/zinda-daily/` | Original Chicken Calculator engine (`engines/zinda/calc.js`) |
+| 3 | Katai Single Customer Bill | `sections/katai-single/` | Katai engine (`engines/katai/calc.js`) |
+| 4 | Katai Daily Customer Entry | `sections/katai-daily/` | Katai engine (`engines/katai/calc.js`) |
+| 5 | Expense Management | `sections/expenses/` | `expense-calc.js` (sums only) |
+| 6 | Statements & Reports | `sections/statements/` | `reports.js` (reads saved records only) |
 
 ## Folder structure
 
 ```
 MurgaMandi-Hisab/
-├── index.html          home dashboard (4 cards)
-├── home.css            home page styles only
-├── home.js             home page script only (today's date)
+├── index.html · style.css · script.js     home: 6 cards, today's figures, backup / restore
 ├── sections/
-│   ├── zinda-single/   index.html · style.css · script.js · calc.js · share.js · keypad.js
-│   ├── zinda-daily/    index.html · style.css · script.js · calc.js · share.js · keypad.js
-│   ├── katai-single/   index.html · style.css · script.js · calc.js · share.js
-│   └── katai-daily/    index.html · style.css · script.js · calc.js · share.js
-├── assets/
-│   ├── images/
-│   └── icons/          logo + section icons + WhatsApp icons (SVG)
+│   ├── zinda-single/   index.html · style.css · script.js
+│   ├── zinda-daily/    index.html · style.css · script.js
+│   ├── katai-single/   index.html · style.css · script.js
+│   ├── katai-daily/    index.html · style.css · script.js
+│   ├── expenses/       index.html · style.css · script.js · expense-calc.js
+│   └── statements/     index.html · style.css · script.js · reports.js
+├── engines/
+│   ├── zinda/          calc.js (original, unchanged) · share.js · keypad.js
+│   └── katai/          calc.js · share.js
+├── shared/
+│   ├── storage-service.js   the only file that touches localStorage
+│   ├── data-service.js      records, IDs, duplicate guard, backup / restore
+│   ├── export-service.js    PDF, Excel (.xlsx), CSV, print
+│   └── print.css            print layout for reports
+├── assets/icons/ · assets/images/
 └── README.md
 ```
 
-Each section is its own page and loads only its own CSS and JavaScript, so an error in one section cannot break another.
+Each section is its own page and loads only its own CSS and JavaScript plus the shared services, so an error in one section cannot break another. Each engine exists once: both Zinda pages load the same `engines/zinda/calc.js`, both Katai pages load `engines/katai/calc.js`. Zinda pages never load Katai code and Katai pages never load Zinda code.
 
-- `script.js` is the section's UI (inputs, rendering, saving, print, export).
-- `calc.js` is the section's calculation engine: pure functions, no DOM.
-- `share.js` draws the bill on a canvas, turns it into a one-page PDF (hand-written, no library) and opens the phone's share sheet for WhatsApp. On a desktop it downloads the file and opens WhatsApp Web.
-- `keypad.js` (Zinda only) is the original + − × ÷ keypad: number boxes accept sums like `50+60.5+94`.
+## Zinda rules (unchanged from the original Chicken Calculator)
 
-## Zinda rules (taken unchanged from the original Chicken Calculator)
+`engines/zinda/calc.js` is a byte-for-byte copy of `calc.js` from https://github.com/inamkhankhan050-maker/chicken-billing (that repository is not modified). Money is integer paise, weight integer grams.
 
-`sections/zinda-single/calc.js` and `sections/zinda-daily/calc.js` are byte-for-byte copies of `calc.js` from
-https://github.com/inamkhankhan050-maker/chicken-billing. All money is integer paise and all weight integer grams, so there are no floating-point errors.
-
-1. Net KG = Total KG − Jaal KG (Jaal must be less than Total KG).
-2. Basic Amount = Net KG × Rate per KG (rounded half-up to the paisa).
-3. Samiti = 1% of Basic Amount, rounded down to the whole rupee.
-4. Labour by average bird size (Net KG ÷ Pieces, 2 decimals):
-   - below 2.50 kg → Pieces ÷ 9 × ₹5
-   - 2.50 to 2.99 kg → Pieces ÷ 8 × ₹5
-   - 3.00 kg and above → Pieces ÷ 7 × ₹5
-5. Labour is adjusted upward so the final bill is a multiple of ₹10; the adjustment is never more than ₹9.99. Basic and Samiti never change.
-6. Balance Baaki = Pichla Balance + Aaj ka Bill − Rec Cash − Rec Online (a negative balance shows as "Adv").
-7. Single bill only (original feature): a labour amount typed in the Labour box replaces the auto labour, with no round-off. Leave it empty for auto labour.
-
-Validation (original): pieces must be a whole number; KG max 3 decimals; rate and money max 2 decimals; no negatives or letters.
-
-Zinda features kept: firm/shop name, customer name, pieces, total KG, jaal KG, rate, labour, previous balance, cash, online, auto calculations, calculation preview, amount in words, print / save PDF, WhatsApp PDF or photo, multiple customers, default rate and default jaal for all rows, customer search, add 1 / add 10 / delete rows, Enter to move down a column, grand totals, Excel (.xls) and CSV export, bill sheet numbers, mobile card layout with a summary screen, auto-save.
-
-"Add to Zinda Daily Entry" on the single bill queues the bill; it is added to the daily sheet the next time Zinda Daily Entry is opened.
-
-The original app's Kharcha / Expense tab is not part of this project (only four sections were requested).
+- Net KG = Total KG − Jaal KG (Jaal must be less than Total KG).
+- Basic Amount = Net KG × Rate (half-up to the paisa).
+- Samiti = 1% of Basic, rounded down to the whole rupee.
+- Labour by average (Net KG ÷ Pieces): below 2.50 → Pieces ÷ 9 × ₹5; 2.50–2.99 → ÷ 8 × ₹5; 3.00 and above → ÷ 7 × ₹5.
+- Labour is adjusted upward so the final bill is a multiple of ₹10 (never more than ₹9.99). Basic and Samiti never change.
+- Balance = Pichla Balance + Aaj ka Bill − Cash − Online (negative shows as "Adv").
+- Single bill only: a typed labour amount replaces auto labour, with no round-off.
 
 ## Katai rules (independent, no Zinda logic)
 
-The Katai engine only does what has been defined so far. It has no labour, samiti, jaal or round-off.
+Products: Thigh, Breast, Tangri, Wings, Full Leg, Haddi, Pota, Panja, Tandoori, Dress. Each line has a Unit (KG or Pcs), Quantity and Rate.
 
-- Products: Thigh, Breast, Tangri, Wings, Full Leg, Haddi, Pota, Panja, Tandoori, Dress.
-- Each product has its own Unit (KG or Pcs), Quantity and Rate.
-- Line Amount = Quantity × Rate (rounded half-up to the paisa). KG allows 3 decimals; Pcs must be whole.
-- A product with a rate but no quantity counts as not taken.
-- Bill Total = sum of line amounts.
-- Remaining Balance = Pichla Balance + Bill Total − Cash − Online (optional ledger).
+- Line Amount = Quantity × Rate (half-up to the paisa). KG allows 3 decimals; Pcs must be whole. A rate with no quantity counts as not taken.
+- Bill Total = sum of lines. Balance = Pichla + Total − Cash − Online.
+- No labour, samiti, discount or rounding has been defined. Add a future Katai rule only in `engines/katai/calc.js`.
 
-Katai Daily also has: "Aaj ke Rate" (a rate per product that new customers start with), product-wise totals for the day, customer search, add/delete with confirmation, Excel export (two sheets: customers and products), CSV, print, WhatsApp PDF of the whole sheet or of one customer, and "New Day / Clear All" with a one-time Undo.
+## Data model and storage
 
-To add a Katai business rule later (a discount, a charge, rounding), change only `computeLine` / `computeBill` / `ledger` in that section's `calc.js`.
+Everything is saved in the browser's localStorage on this device, under one versioned key `mmh.db.v2` (written only by `storage-service.js`). Money is integer paise, dates `YYYY-MM-DD`.
 
-## Data and security
+- `customer` { id, name, key }
+- `bill` { id, section (zinda / katai), source (which page), sourceKey, date, customerId, customerName, firm, amount, cash, online, prevBalance, balance, lines, details }
+- `payment` { id, section, source, date, customer, firm, cash, online, prevBalance, balance } (a daily-sheet row with only money received)
+- `expense` { id, date, categoryId, description, amount, mode (cash / online), paidTo, notes }
+- `category` { id, name } (custom categories; the 9 defaults are built in)
 
-- Everything is stored in the browser's localStorage on this device only (`mmh.*` keys, a separate key per section). Nothing is sent anywhere.
-- Saved data is checked and cleaned on load; corrupt data falls back to a fresh sheet instead of crashing.
-- User text is written to the page with `textContent` or escaped before use; no `eval`.
-- Clearing a bill, deleting a customer or starting a new day asks for confirmation.
-- CSV export guards against spreadsheet formula injection in Katai names.
+Rules: every record gets a unique id. Single bills save with "Save Bill" and can be updated or deleted (with confirmation). Daily sheets save each row under its row id, so saving again updates the same record instead of adding a duplicate. A bill with the same customer, date, amount and section raises a duplicate warning. Corrupt storage is set aside (`mmh.db.v2.corrupt`) and the page starts clean instead of crashing.
 
-## Tested
+Other keys: in-progress sheets and firm names per section (`mmh.zindaSingle.v1`, `mmh.zindaDaily.v1`, `mmh.zindaDaily.inbox`, `mmh.kataiSingle.v1`, `mmh.kataiDaily.v1`, `mmh.kataiDaily.previous`, `mmh.*.firm`) and view settings (`mmh.expenses.view`, `mmh.statements.view`). v1 sheets keep loading.
 
-Checked in headless Chromium and jsdom: all four sections open with no JavaScript errors; Zinda results match the original engine (all three labour slabs and their boundaries, jaal deduction, samiti rounding, ₹10 round-up, ledger, manual labour); Katai pages load no Zinda code; auto-save and reload; corrupt storage; search; add/delete; print; Excel/CSV; WhatsApp PDF generation; desktop and mobile layouts.
+Backup: the home page downloads the whole database as a JSON file. Restore checks the file, shows its record counts, and asks before replacing current data. Take a backup regularly; clearing the browser's data deletes everything.
+
+## Expense Management
+
+9 default categories plus custom ones (a custom category in use cannot be removed). Add, edit, delete (confirmed), search, filter by date, category and payment mode. Daily, monthly, yearly, date-range and all views. Dashboard: today, this month, this year, total cash, total online. Category-wise totals. Statements and category-wise reports in PDF, Excel, CSV and print.
+
+## Statements & Reports: how figures are worked out
+
+Reports only read saved records; they never change a bill or recalculate it.
+
+- **Customer statements.** Bills, cash and online are summed from records in the period. Opening balance = the previous balance written on the customer's first record in the period (or the last recorded balance before it). Remaining balance = the balance on the last record. Zinda and Katai balances are kept separately and added when both are shown. If opening + bills − received does not match the recorded remaining balance, the page flags the difference.
+- **Company-wise records.** Built only from firm names typed on bills. Records without a firm are counted as "no firm", never guessed.
+- **Profit & Loss.** Net = Total recorded income (Zinda + Katai bills) − Total recorded expenses. Based on recorded income and recorded expenses only: purchase and stock costs are not recorded, so this is not a full profit figure.
+- **Cash & Online statement.** Cash received and cash expenses are kept apart from online received and online expenses. Opening cash is an optional amount you enter; without it, closing cash shows as "Not recorded".
+- **Download Center.** 11 downloads (all customer records, all customer statements, single customer statement, daily, monthly, yearly, all company records, company-wise, Profit & Loss, cash statement, expense statement), each as PDF, Excel (.xlsx) or CSV.
+
+## Exports
+
+- Excel: real `.xlsx` written by `export-service.js` (zip + SpreadsheetML). The daily sheets' own quick export is still the v1 `.xls`.
+- PDF: multi-page, with MurgaMandi Hisab branding, title, period, table, totals and page numbers. Amounts print as "Rs.". Names in Hindi script switch that PDF to page images.
+- CSV: UTF-8 with BOM, guarded against spreadsheet formula injection.
+- Print: print stylesheets on every report.
+
+## Security
+
+User text is escaped or set with `textContent`; no `eval`; inputs are validated (no negatives or letters, decimal limits). Nothing is sent to a server.
+
+## Testing
+
+- `node test.js` (jsdom): 342 checks: Zinda engine identical to the original and loaded once, labour slab boundaries, samiti, ₹10 round-up, manual labour, Katai independence, duplicate guard, repeat saves, backup → clear → restore, corrupt storage, a broken shared service, expense add / edit / delete, daily / monthly / yearly totals, customer statements, company grouping, P&L, cash / online separation, CSV guard, escaping. Test fixtures are not shipped.
+- Real Chromium at 1366×900, 820×1180 and 390×844: all 7 pages, every button clicked, save flows, all 33 Download Center files checked with openpyxl and pypdf (columns re-totalled).
+- Not tested: real phones, real print dialogs, restore through a real file picker.

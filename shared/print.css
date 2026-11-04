@@ -1,0 +1,30 @@
+/* MurgaMandi Hisab · print layout for reports made by shared/export-service.js (print option only) */
+#mmhPrint{display:none}
+@media print{
+  body.mmh-printing>*:not(#mmhPrint){display:none!important}
+  body.mmh-printing{background:#fff!important;margin:0}
+  body.mmh-printing #mmhPrint{display:block;color:#0F172A;font:11px/1.4 "Segoe UI",Roboto,"Noto Sans","Noto Sans Devanagari",Arial,sans-serif}
+  @page{size:A4;margin:12mm}
+  #mmhPrint .mp-head{display:flex;justify-content:space-between;align-items:center;background:#1D4ED8;color:#fff;padding:10px 14px;border-bottom:3px solid #0B2A5B;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #mmhPrint .mp-brand{font-size:20px;font-weight:800}
+  #mmhPrint .mp-gen{font-size:10px}
+  #mmhPrint .mp-title{font-size:18px;margin:12px 0 2px}
+  #mmhPrint .mp-sub{margin:0;color:#475569}
+  #mmhPrint .mp-period{margin:2px 0 6px;color:#1D4ED8;font-weight:700}
+  #mmhPrint .mp-meta{display:grid;grid-template-columns:1fr 1fr;gap:2px 16px;margin:4px 0 8px}
+  #mmhPrint .mp-sum{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0 12px}
+  #mmhPrint .mp-box{border-left:3px solid #1D4ED8;background:#EAF2FF;padding:6px 8px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #mmhPrint .mp-box span{display:block;font-size:9px;text-transform:uppercase;color:#475569;font-weight:700}
+  #mmhPrint .mp-box b{font-size:13px}
+  #mmhPrint .mp-h2{font-size:13px;color:#0B2A5B;margin:12px 0 4px}
+  #mmhPrint .mp-table{width:100%;border-collapse:collapse;font-size:10px}
+  #mmhPrint .mp-table th{background:#1D4ED8;color:#fff;text-align:left;padding:4px 5px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #mmhPrint .mp-table td{padding:3px 5px;border-bottom:1px solid #DCE3EE}
+  #mmhPrint .mp-table tbody tr:nth-child(even) td{background:#F5F8FC;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #mmhPrint .mp-table tfoot td{font-weight:800;background:#EAF2FF;border-top:1.5px solid #1D4ED8;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #mmhPrint .mp-table thead{display:table-header-group}
+  #mmhPrint .mp-table tr{break-inside:avoid}
+  #mmhPrint .r{text-align:right;white-space:nowrap}
+  #mmhPrint .mp-empty{color:#475569;font-style:italic}
+  #mmhPrint .mp-note{color:#475569;font-style:italic;margin:8px 0 0}
+}

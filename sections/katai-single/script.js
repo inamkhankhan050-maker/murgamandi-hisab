@@ -1,17 +1,18 @@
 /* ============================================================
    Katai Single Customer Bill — UI layer.
-   Uses only window.KataiSingleCalc (calc.js in this folder).
+   Uses only window.KataiCalc (../../engines/katai/calc.js).
    No Zinda / Chicken Calculator logic is used here.
    ============================================================ */
 (function () {
   'use strict';
-  var K = window.KataiSingleCalc;
+  var K = window.KataiCalc;
   if (!K) { document.body.insertAdjacentHTML('afterbegin', '<p style="padding:16px;color:#B91C1C">Calculation engine failed to load. Please refresh.</p>'); return; }
 
   var KEY = 'mmh.kataiSingle.v1';
   var FIRM_KEY = 'mmh.kataiSingle.firm';
   var $ = function (id) { return document.getElementById(id); };
-  var state = { name: '', date: '', lines: {}, oldBal: '', cash: '', online: '' };
+  var state = { name: '', date: '', lines: {}, oldBal: '', cash: '', online: '', savedId: null };
+  var D = window.MMHData || null, U = D && D.util;   // shared records (Statements & Reports read these)
 
   // ---------- Storage ----------
   var storage = (function () {
@@ -36,7 +37,7 @@
     if (!storage) return;
     var d = null; try { d = JSON.parse(storage.getItem(KEY) || 'null'); } catch (e) { d = null; }
     if (!d || typeof d !== 'object') return;
-    state.name = str(d.name, 80); state.date = str(d.date, 10); state.oldBal = str(d.oldBal); state.cash = str(d.cash); state.online = str(d.online);
+    state.name = str(d.name, 80); state.date = str(d.date, 10); state.savedId = typeof d.savedId === 'string' ? d.savedId : null; state.oldBal = str(d.oldBal); state.cash = str(d.cash); state.online = str(d.online);
     K.PRODUCTS.forEach(function (p) {
       var l = d.lines && d.lines[p.id];
       if (l && typeof l === 'object') state.lines[p.id] = { unit: K.UNITS[l.unit] ? l.unit : 'kg', qty: str(l.qty), rate: str(l.rate) };
@@ -55,7 +56,9 @@
   function heading() { return $('kFirm').value.trim() || 'MurgaMandi Hisab'; }
   var toastT;
   function toast(msg) { var t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, 2600); }
-  function confirmDlg(onYes) {
+  function confirmDlg(title, text, yes, onYes) {
+    if (typeof title === 'function') { onYes = title; title = 'Clear this bill?'; text = 'All products and amounts of this bill will be emptied.'; yes = 'Clear'; }
+    $('dlgT').textContent = title; $('dlgP').textContent = text; $('dlgYes').textContent = yes;
     var d = $('dlg'); d.classList.add('show'); $('dlgNo').focus();
     var close = function () { d.classList.remove('show'); $('dlgYes').onclick = $('dlgNo').onclick = null; };
     $('dlgNo').onclick = close;
@@ -151,12 +154,97 @@
     if (!bill.items) { toast('Pehle kam se kam ek product ki quantity aur rate bhariye'); return; }
     var rows = [], n = 0;
     K.PRODUCTS.forEach(function (p) { var c = bill.lines[p.id]; if (c.status === 'valid') rows.push([++n, p.name, K.qtyText(c.qty, c.unit), K.money(c.ratePaise), K.money(c.amount)]); });
-    var sum = [['Total Bill', K.money(bill.total), '#7C2D12', 1]];
-    if (L.any && L.ok) sum.push(['Pichla Balance', K.money(L.oldBal)], ['Received (Cash + Online)', K.money(L.received)], ['Remaining Balance', K.balanceText(L.balance), '#9A3412', 1]);
+    var sum = [['Total Bill', K.money(bill.total), '#0B4F8A', 1]];
+    if (L.any && L.ok) sum.push(['Pichla Balance', K.money(L.oldBal)], ['Received (Cash + Online)', K.money(L.received)], ['Remaining Balance', K.balanceText(L.balance), '#B45309', 1]);
     var name = state.name.trim() || 'Customer';
-    var cv = window.KataiSingleShare.billCanvas({ heading: heading(), title: 'Katai Bill', customer: name, date: dateText(),
+    var cv = window.KataiShare.billCanvas({ heading: heading(), title: 'Katai Bill', customer: name, date: dateText(),
       cols: [{ h: '#', w: 50 }, { h: 'Product', w: 260, b: 1 }, { h: 'Qty', w: 170, r: 1 }, { h: 'Rate', w: 150, r: 1 }, { h: 'Amount', w: 190, r: 1, b: 1 }], rows: rows, sum: sum });
-    window.KataiSingleShare.share(cv, 'Katai Bill ' + name + ' ' + dateText(), 'Katai Bill · ' + name + ' · ' + dateText());
+    window.KataiShare.share(cv, 'Katai Bill ' + name + ' ' + dateText(), 'Katai Bill · ' + name + ' · ' + dateText());
+  }
+
+  // ---------- Saved records (shared data service) ----------
+  /** The record for the bill on screen, from the Katai engine only. {input} or {error}. */
+  function recordInput() {
+    var bill = K.computeBill(state.lines), name = state.name.trim();
+    if (bill.invalid || bill.incomplete) return { error: 'Products mein galti hai: quantity aur rate dono sahi bhariye' };
+    if (!bill.items) return { error: 'Pehle kam se kam ek product ki quantity aur rate bhariye' };
+    if (!name) return { error: 'Bill save karne ke liye customer name bhariye' };
+    var L = K.ledger(state, bill.total); if (!L.ok) return { error: 'Pichla balance, cash aur online sahi bhariye' };
+    var lines = [];
+    K.PRODUCTS.forEach(function (p) { var c = bill.lines[p.id]; if (c.status === 'valid') lines.push({ product: p.id, name: p.name, unit: c.unit, qty: K.plainQty(c.qty), ratePaise: c.ratePaise, amount: c.amount }); });
+    var inputs = { name: name, oldBal: state.oldBal, cash: state.cash, online: state.online, lines: JSON.parse(JSON.stringify(state.lines)) };
+    return { input: { id: state.savedId || undefined, section: 'katai', source: 'katai-single', date: /^\d{4}-\d{2}-\d{2}$/.test(state.date) ? state.date : todayISO(), customerName: name, firm: $('kFirm').value.trim(),
+      amount: bill.total, cash: L.cash, online: L.online, prevBalance: L.oldBal, balance: L.balance, lines: lines, details: { items: bill.items }, inputs: inputs } };
+  }
+  function saveRecord(allowDuplicate) {
+    if (!D) { toast('Records are not available in this window'); return; }
+    var b = recordInput(); if (b.error) { toast(b.error); return; }
+    var res = D.saveBill(b.input, { allowDuplicate: !!allowDuplicate });
+    if (res.duplicates) {
+      var d = res.duplicates[0];
+      confirmDlg('Possible duplicate bill', 'A Katai bill for ' + d.customerName + ' on ' + U.dateText(d.date) + ' for ' + U.money(d.amount) + ' is already saved. Save this one as well?', 'Save anyway', function () { saveRecord(true); });
+      return;
+    }
+    if (!res.ok) { if (state.savedId && /no longer exists/.test(res.error || '')) state.savedId = null; toast(res.error || 'Could not save'); renderSaved(); save(); return; }
+    state.savedId = res.record.id; save(); renderSaved(); renderRecent(); customerList();
+    toast(res.created ? 'Bill saved for ' + res.record.customerName : 'Saved bill updated');
+  }
+  function sameAsSaved(rec) {
+    var b = recordInput(); if (b.error || !rec) return false;
+    var i = b.input; return rec.date === i.date && rec.customerName === i.customerName && rec.firm === i.firm && rec.amount === i.amount && rec.cash === i.cash && rec.online === i.online && rec.prevBalance === i.prevBalance && JSON.stringify(rec.lines) === JSON.stringify(i.lines);
+  }
+  function renderSaved() {
+    var el = $('kSaved'); if (!el) return;
+    if (!D) { el.textContent = 'Records not available in this window.'; $('kSave').disabled = true; return; }
+    var rec = state.savedId ? D.getBill(state.savedId) : null;
+    if (state.savedId && !rec) state.savedId = null;
+    var same = rec && sameAsSaved(rec);
+    $('kSave').textContent = rec ? 'Update Saved Bill' : 'Save Bill';
+    el.className = 'rec-state' + (rec ? (same ? ' ok' : ' changed') : '');
+    el.textContent = rec ? (same ? 'Saved to records · ' + rec.customerName + ' · ' + U.dateText(rec.date) : 'Changed since saving — press "Update Saved Bill"') : 'Not saved to records yet';
+  }
+  function cellT(tr, text, cls) { var td = document.createElement('td'); if (cls) td.className = cls; td.textContent = text; tr.appendChild(td); return td; }
+  function renderRecent() {
+    var body = $('kRecent'); if (!body) return; body.textContent = '';
+    var list = D ? D.listBills({ source: 'katai-single' }).reverse().slice(0, 25) : [];
+    $('kRecentEmpty').hidden = list.length > 0;
+    list.forEach(function (r) {
+      var tr = document.createElement('tr'); tr.dataset.id = r.id; if (r.id === state.savedId) tr.className = 'cur';
+      cellT(tr, U.dateText(r.date)); cellT(tr, r.customerName, 'b'); cellT(tr, r.firm || '—'); cellT(tr, String((r.lines || []).length), 'ra');
+      cellT(tr, U.money(r.amount), 'ra'); cellT(tr, U.money(r.cash), 'ra'); cellT(tr, U.money(r.online), 'ra'); cellT(tr, U.balanceText(r.balance), 'ra');
+      var td = cellT(tr, '', 'ra acts-c');
+      var e = document.createElement('button'); e.type = 'button'; e.className = 'mini'; e.dataset.act = 'edit'; e.textContent = 'Edit'; td.appendChild(e);
+      var x = document.createElement('button'); x.type = 'button'; x.className = 'mini danger'; x.dataset.act = 'del'; x.textContent = 'Delete'; td.appendChild(x);
+      body.appendChild(tr);
+    });
+  }
+  function loadRecord(id) {
+    var r = D.getBill(id); if (!r) { toast('This bill no longer exists'); renderRecent(); return; }
+    var i = r.inputs || {};
+    state = { name: str(i.name || r.customerName, 80), date: r.date, lines: {}, oldBal: str(i.oldBal), cash: str(i.cash), online: str(i.online), savedId: r.id };
+    K.PRODUCTS.forEach(function (p) { var l = i.lines && i.lines[p.id]; if (l && typeof l === 'object') state.lines[p.id] = { unit: K.UNITS[l.unit] ? l.unit : 'kg', qty: str(l.qty), rate: str(l.rate) }; });
+    $('kFirm').value = r.firm || '';
+    fill(); buildRows(); render(); save(); renderSaved(); renderRecent(); balanceHint(); toast('Bill loaded. Change it and press "Update Saved Bill".');
+  }
+  function onRecentClick(e) {
+    var b = e.target.closest('[data-act]'); if (!b) return;
+    var id = b.closest('tr').dataset.id, r = D.getBill(id); if (!r) { renderRecent(); return; }
+    if (b.dataset.act === 'edit') confirmDlg('Load this saved bill?', r.customerName + ' · ' + U.dateText(r.date) + ' · ' + U.money(r.amount) + '. The entries now in the form will be replaced.', 'Load bill', function () { loadRecord(id); });
+    else confirmDlg('Delete this saved bill?', r.customerName + ' · ' + U.dateText(r.date) + ' · ' + U.money(r.amount) + ' will be removed from records and statements.', 'Delete', function () {
+      D.deleteBill(id); if (state.savedId === id) { state.savedId = null; save(); } renderSaved(); renderRecent(); toast('Saved bill deleted');
+    });
+  }
+  function balanceHint() {
+    var h = $('kHint'); if (!h || !D) return;
+    var name = state.name.trim(), lb = name ? D.lastBalance(name, 'katai', { onOrBefore: state.date || todayISO(), excludeId: state.savedId }) : null;
+    if (!lb) { h.hidden = true; return; }
+    h.hidden = false; h.dataset.paise = String(lb.balance);
+    $('kHintT').textContent = 'Last recorded Katai balance: ' + U.balanceText(lb.balance) + ' (' + U.dateText(lb.date) + ')';
+    $('kHintUse').hidden = lb.balance < 0;
+  }
+  function customerList() {
+    var dl = $('custList'); if (!dl || !D) return; dl.textContent = '';
+    D.listCustomers().slice(0, 500).forEach(function (c) { var o = document.createElement('option'); o.value = c.name; dl.appendChild(o); });
   }
 
   // ---------- Events ----------
@@ -165,7 +253,7 @@
     var onEdit = function (e) {
       var f = e.target.dataset.f, row = e.target.closest('.p-row'); if (!f || !row) return;
       line(row.dataset.id)[f] = String(e.target.value).slice(0, 40);
-      render(); save();
+      render(); save(); renderSaved();
     };
     body.addEventListener('input', onEdit);
     body.addEventListener('change', function (e) { if (e.target.tagName === 'SELECT') onEdit(e); });
@@ -176,13 +264,17 @@
       var i = next && next.querySelector('[data-f="' + e.target.dataset.f + '"]'); if (i) { i.focus(); i.select(); }
     });
     var map = { kName: 'name', kOld: 'oldBal', kCash: 'cash', kOnline: 'online' };
-    Object.keys(map).forEach(function (id) { $(id).addEventListener('input', function () { state[map[id]] = $(id).value.slice(0, 80); render(); save(); }); });
-    $('kDate').addEventListener('change', function () { state.date = /^\d{4}-\d{2}-\d{2}$/.test($('kDate').value) ? $('kDate').value : todayISO(); save(); });
-    $('kFirm').addEventListener('input', function () { if (storage) try { storage.setItem(FIRM_KEY, $('kFirm').value.slice(0, 80)); } catch (e) {} });
+    Object.keys(map).forEach(function (id) { $(id).addEventListener('input', function () { state[map[id]] = $(id).value.slice(0, 80); render(); save(); renderSaved(); }); });
+    $('kDate').addEventListener('change', function () { state.date = /^\d{4}-\d{2}-\d{2}$/.test($('kDate').value) ? $('kDate').value : todayISO(); $('kDate').value = state.date; save(); renderSaved(); balanceHint(); });
+    $('kFirm').addEventListener('input', function () { if (storage) try { storage.setItem(FIRM_KEY, $('kFirm').value.slice(0, 80)); } catch (e) {} renderSaved(); });
+    $('kName').addEventListener('change', balanceHint); $('kName').addEventListener('blur', balanceHint);
+    $('kHintUse').onclick = function () { var p = +$('kHint').dataset.paise; if (!(p >= 0)) return; state.oldBal = String(p / 100); $('kOld').value = state.oldBal; render(); save(); renderSaved(); };
+    $('kSave').onclick = function () { saveRecord(false); };
+    $('kRecent').addEventListener('click', onRecentClick);
     $('kClear').onclick = function () {
       confirmDlg(function () {
-        state = { name: '', date: todayISO(), lines: {}, oldBal: '', cash: '', online: '' };
-        fill(); buildRows(); render(); save(); $('kName').focus();
+        state = { name: '', date: state.date || todayISO(), lines: {}, oldBal: '', cash: '', online: '', savedId: null };
+        fill(); buildRows(); render(); save(); renderSaved(); balanceHint(); $('kName').focus();
       });
     };
     $('kPrint').onclick = doPrint;
@@ -201,10 +293,12 @@
     if (!state.date) state.date = todayISO();
     try { $('kFirm').value = (storage && storage.getItem(FIRM_KEY)) || ''; } catch (e) {}
     fill(); buildRows(); bind();
-    window.KataiSingleShare.init(toast);
-    render();
+    window.KataiShare.init(toast);
+    render(); renderSaved(); renderRecent(); customerList(); balanceHint();
+    if (D && D.status().corrupt) { $('storageNotice').hidden = false; $('storageNotice').textContent = D.status().message; }
+    window.addEventListener('storage', function (e) { if (D && e.key === 'mmh.db.v2') { renderSaved(); renderRecent(); customerList(); } });
   }
   try { init(); } catch (e) { toast('Something went wrong: ' + e.message); if (window.console) console.error(e); }
 
-  window.__kataiSingle = { state: function () { return state; }, render: render };
+  window.__kataiSingle = { state: function () { return state; }, render: render, recordInput: recordInput, saveRecord: saveRecord };
 })();

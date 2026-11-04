@@ -1,11 +1,11 @@
 /* ============================================================
    Katai Daily Customer Entry — UI layer.
-   Uses only window.KataiDailyCalc (calc.js in this folder).
+   Uses only window.KataiCalc (../../engines/katai/calc.js).
    No Zinda / Chicken Calculator logic is used here.
    ============================================================ */
 (function () {
   'use strict';
-  var K = window.KataiDailyCalc;
+  var K = window.KataiCalc;
   if (!K) { document.body.insertAdjacentHTML('afterbegin', '<p style="padding:16px;color:#B91C1C">Calculation engine failed to load. Please refresh.</p>'); return; }
 
   var KEY = 'mmh.kataiDaily.v1', PREV_KEY = 'mmh.kataiDaily.previous', FIRM_KEY = 'mmh.kataiDaily.firm';
@@ -14,6 +14,8 @@
   var uid = function () { return 'k' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); };
   var state = { date: '', sheetNo: 1, rates: {}, customers: [] };
   var selectedId = null;
+  var D = window.MMHData || null, U = D && D.util;   // shared records (Statements & Reports read these)
+  var SRC = 'katai-daily', recIndex = {};
 
   // ---------- Storage ----------
   var storage = (function () {
@@ -113,14 +115,17 @@
   }
   function deleteCustomer(id) {
     var c = cust(id); if (!c) return;
-    confirmDlg('Delete this customer?', (c.name.trim() || 'This customer') + ' and all their products will be removed.', 'Delete', function () {
+    var hasRec = !!recIndex[srcKey(id)];
+    confirmDlg('Delete this customer?', (c.name.trim() || 'This customer') + ' and all their products will be removed.' + (hasRec ? ' The saved record of this customer is also removed from Statements & Reports.' : ''), 'Delete', function () {
+      if (hasRec && D) { D.deleteBySourceKey(srcKey(id)); refreshIndex(); }
       state.customers = state.customers.filter(function (x) { return x.id !== id; });
       if (selectedId === id) selectedId = null;
       renderAll(); save(); toast('Customer deleted');
     });
   }
   function clearAll() {
-    confirmDlg('Start a new day?', 'All customers on this sheet will be removed. The current sheet is kept as a backup you can restore once.', 'Clear All', function () {
+    var st = recordStats(), warn = st.unsaved + st.changed;
+    confirmDlg('Start a new day?', 'All customers on this sheet will be removed. Records already saved stay in Statements & Reports. The current sheet is kept as a backup you can restore once.' + (warn ? ' ' + warn + ' customer(s) are not saved to records yet.' : ''), 'Clear All', function () {
       if (storage) try { storage.setItem(PREV_KEY, JSON.stringify(state)); } catch (e) {}
       state = { date: todayISO(), sheetNo: state.sheetNo + 1, rates: state.rates, customers: [] };
       selectedId = null; $('search').value = ''; $('dDate').value = state.date;
@@ -154,6 +159,10 @@
       tr.appendChild(el('td', 'c-idx', String(i + 1)));
       var nm = el('td', 'c-name'); var nb = el('button', 'link', c.name.trim() || 'Unnamed customer'); nb.type = 'button'; nb.dataset.act = 'edit'; nm.appendChild(nb);
       if (r.bill.invalid || r.bill.incomplete || !r.L.ok) nm.appendChild(el('span', 'status', 'Check'));
+      var rs = rowRecState(c);
+      if (rs === 'saved') nm.appendChild(el('span', 'rec-chip ok', 'Saved'));
+      else if (rs === 'changed') nm.appendChild(el('span', 'rec-chip chg', 'Changed'));
+      else if (rs === 'unsaved') nm.appendChild(el('span', 'rec-chip', 'Not saved'));
       tr.appendChild(nm);
       tr.appendChild(el('td', 'ra', String(r.bill.items)));
       tr.appendChild(el('td', 'ra fin', K.money(r.bill.total)));
@@ -173,7 +182,69 @@
     $('tCust').textContent = String(tot.n); $('tRec').textContent = K.money(tot.rec); $('tRecSplit').textContent = 'Cash ' + K.money(tot.cash) + ' · Online ' + K.money(tot.online);
     $('tBal').textContent = K.balanceText(tot.bal); $('tBill').textContent = K.money(tot.bill); $('tWords').textContent = K.amountInWords(tot.bill);
     $('sheetNo').textContent = '#' + state.sheetNo;
+    updateRecMeta();
     return tot;
+  }
+
+  // ---------- Saved records (one record per customer row, keyed by the row id) ----------
+  function srcKey(id) { return SRC + ':' + id; }
+  function refreshIndex() { recIndex = {}; if (!D) return; D.transactions({ source: SRC }).forEach(function (r) { if (r.sourceKey) recIndex[r.sourceKey] = r; }); }
+  /** What this customer row would save, using only the Katai engine. null = nothing to record. */
+  function rowRecord(c) {
+    var name = String(c.name || '').trim(), r = calc(c);
+    var anyLine = K.PRODUCTS.some(function (p) { var l = r.bill.lines[p.id]; return l.status !== 'empty'; });
+    if (!name) return (r.bill.items || r.L.any) ? { bad: true, why: 'name' } : null;
+    if (r.bill.invalid || r.bill.incomplete || !r.L.ok) return { bad: true };
+    var base = { section: 'katai', source: SRC, sourceKey: srcKey(c.id), date: state.date || todayISO(), customerName: name, firm: $('dFirm').value.trim() };
+    if (r.bill.items) {
+      var lines = [];
+      K.PRODUCTS.forEach(function (p) { var l = r.bill.lines[p.id]; if (l.status === 'valid') lines.push({ product: p.id, name: p.name, unit: l.unit, qty: K.plainQty(l.qty), ratePaise: l.ratePaise, amount: l.amount }); });
+      base.amount = r.bill.total; base.cash = r.L.cash; base.online = r.L.online; base.prevBalance = r.L.oldBal; base.balance = r.L.balance; base.lines = lines; base.details = { items: r.bill.items };
+      return { kind: 'bill', input: base };
+    }
+    if (anyLine) return { bad: true };
+    if (r.L.cash + r.L.online <= 0) return null;
+    base.cash = r.L.cash; base.online = r.L.online; base.prevBalance = r.L.oldBal; base.balance = r.L.balance;
+    return { kind: 'payment', input: base };
+  }
+  function rowRecState(c) {
+    var rr = rowRecord(c), rec = recIndex[srcKey(c.id)];
+    if (!rr) return rec ? 'changed' : 'none';
+    if (rr.bad) return rec ? 'changed' : 'bad';
+    if (!rec) return 'unsaved';
+    var i = rr.input;
+    var same = rec.kind === rr.kind && rec.date === i.date && rec.customerName === i.customerName && (rec.firm || '') === i.firm && rec.cash === i.cash && rec.online === i.online && rec.prevBalance === i.prevBalance && (rr.kind === 'payment' || (rec.amount === i.amount && JSON.stringify(rec.lines) === JSON.stringify(i.lines)));
+    return same ? 'saved' : 'changed';
+  }
+  function recordStats() { var st = { saved: 0, changed: 0, unsaved: 0, bad: 0, none: 0 }; state.customers.forEach(function (c) { st[rowRecState(c)]++; }); return st; }
+  function updateRecMeta() {
+    var m = $('recMeta'); if (!m) return;
+    if (!D) { m.textContent = 'Records not available in this window'; return; }
+    var st = recordStats(), parts = [st.saved + ' saved to records'];
+    if (st.changed) parts.push(st.changed + ' changed since saving');
+    if (st.unsaved) parts.push(st.unsaved + ' not saved');
+    m.textContent = 'Records for ' + U.dateText(state.date) + ': ' + parts.join(' · ');
+    m.classList.toggle('warn-t', !!(st.changed || st.unsaved));
+  }
+  function saveToRecords(allowDuplicate) {
+    if (!D) { toast('Records are not available in this window'); return; }
+    refreshIndex();
+    var items = [], bad = 0, dupNames = [];
+    state.customers.forEach(function (c) {
+      var rr = rowRecord(c); if (!rr) return; if (rr.bad) { bad++; return; }
+      items.push(rr);
+      if (!allowDuplicate && !recIndex[rr.input.sourceKey] && D.findDuplicates(rr.kind, rr.input).length) dupNames.push(rr.input.customerName);
+    });
+    if (!items.length) { toast(bad ? 'Customers have errors (name, quantity or rate). Fix them first.' : 'Nothing to save yet. Add customers with products first.'); return; }
+    if (dupNames.length) {
+      confirmDlg('Possible duplicate entries', 'Already saved for ' + U.dateText(state.date) + ' with the same amount: ' + dupNames.slice(0, 6).join(', ') + (dupNames.length > 6 ? ' and ' + (dupNames.length - 6) + ' more' : '') + '. Save them again?', 'Save anyway', function () { saveToRecords(true); });
+      return;
+    }
+    var res = D.saveBatch(items, { allowDuplicate: true });
+    refreshIndex(); renderList();
+    if (!res.ok) { toast(res.error || 'Could not save records'); return; }
+    var msg = (res.created ? res.created + ' new' : '') + (res.created && res.updated ? ', ' : '') + (res.updated ? res.updated + ' updated' : '');
+    toast('Saved to records: ' + (msg || 'no changes') + (bad ? ' · ' + bad + ' customer(s) with errors skipped' : '') + (res.errors.length ? ' · ' + res.errors.length + ' not saved' : ''));
   }
 
   // ---------- Render: product-wise totals ----------
@@ -288,10 +359,10 @@
     };
     var xml = '<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?>' +
       '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">' +
-      '<Styles><Style ss:ID="h"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#7C2D12" ss:Pattern="Solid"/></Style>' +
+      '<Styles><Style ss:ID="h"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#0B4F8A" ss:Pattern="Solid"/></Style>' +
       '<Style ss:ID="money"><NumberFormat ss:Format="&quot;₹&quot;#,##,##0.00"/></Style>' +
-      '<Style ss:ID="tot"><Font ss:Bold="1"/><Interior ss:Color="#F6F1EE" ss:Pattern="Solid"/></Style>' +
-      '<Style ss:ID="totm"><Font ss:Bold="1"/><Interior ss:Color="#F6F1EE" ss:Pattern="Solid"/><NumberFormat ss:Format="&quot;₹&quot;#,##,##0.00"/></Style></Styles>' +
+      '<Style ss:ID="tot"><Font ss:Bold="1"/><Interior ss:Color="#EEF4FB" ss:Pattern="Solid"/></Style>' +
+      '<Style ss:ID="totm"><Font ss:Bold="1"/><Interior ss:Color="#EEF4FB" ss:Pattern="Solid"/><NumberFormat ss:Format="&quot;₹&quot;#,##,##0.00"/></Style></Styles>' +
       sheet('Customers ' + stamp(), d.ledHead, d.ledRows, d.ledTotal, [3, 4, 5, 6, 7], [1]) +
       sheet('Products ' + stamp(), d.head, d.rows, null, [5, 6], [1, 2, 3]) + '</Workbook>';
     download('katai-daily-' + stamp() + '.xls', 'application/vnd.ms-excel', xml);
@@ -311,12 +382,12 @@
     var r = calc(c); if (!r.bill.items) { toast('Is customer ka koi product complete nahi hai'); return; }
     var rows = [], n = 0;
     K.PRODUCTS.forEach(function (p) { var l = r.bill.lines[p.id]; if (l.status === 'valid') rows.push([++n, p.name, K.qtyText(l.qty, l.unit), K.money(l.ratePaise), K.money(l.amount)]); });
-    var sum = [['Total Bill', K.money(r.bill.total), '#7C2D12', 1]];
-    if (r.L.any && r.L.ok) sum.push(['Pichla Balance', K.money(r.L.oldBal)], ['Received (Cash + Online)', K.money(r.L.received)], ['Remaining Balance', K.balanceText(r.L.balance), '#9A3412', 1]);
+    var sum = [['Total Bill', K.money(r.bill.total), '#0B4F8A', 1]];
+    if (r.L.any && r.L.ok) sum.push(['Pichla Balance', K.money(r.L.oldBal)], ['Received (Cash + Online)', K.money(r.L.received)], ['Remaining Balance', K.balanceText(r.L.balance), '#B45309', 1]);
     var name = c.name.trim() || 'Customer';
-    var cv = window.KataiDailyShare.billCanvas({ heading: heading(), title: 'Katai Bill', customer: name, date: dateText(),
+    var cv = window.KataiShare.billCanvas({ heading: heading(), title: 'Katai Bill', customer: name, date: dateText(),
       cols: [{ h: '#', w: 50 }, { h: 'Product', w: 260, b: 1 }, { h: 'Qty', w: 170, r: 1 }, { h: 'Rate', w: 150, r: 1 }, { h: 'Amount', w: 190, r: 1, b: 1 }], rows: rows, sum: sum });
-    window.KataiDailyShare.share(cv, 'Katai Bill ' + name + ' ' + dateText(), 'Katai Bill · ' + name + ' · ' + dateText());
+    window.KataiShare.share(cv, 'Katai Bill ' + name + ' ' + dateText(), 'Katai Bill · ' + name + ' · ' + dateText());
   }
   function shareSheet() {
     var d = exportData(); if (!d.count) { toast('Pehle kam se kam ek customer ka bill bhariye'); return; }
@@ -325,16 +396,17 @@
     var rows = d.ledRows.map(function (r) { return [r[0], r[1], r[2], M(r[3]), M(r[4]), M(r[5]), M(r[6]), B(r[7])]; });
     var T = d.ledTotal; rows.push(['', 'TOTAL', '', M(T[3]), M(T[4]), M(T[5]), M(T[6]), B(T[7])]);
     var rec = Math.round(parseFloat(T[5]) * 100) + Math.round(parseFloat(T[6]) * 100);
-    var cv = window.KataiDailyShare.billCanvas({ heading: heading(), title: 'Katai Daily Entry · ' + d.count + ' customers', date: dateText(),
+    var cv = window.KataiShare.billCanvas({ heading: heading(), title: 'Katai Daily Entry · ' + d.count + ' customers', date: dateText(),
       cols: [{ h: '#', w: 44 }, { h: 'Customer', w: 240, b: 1 }, { h: 'Items', w: 70, r: 1 }, { h: 'Aaj ka Bill', w: 140, r: 1, b: 1 }, { h: 'Pichla', w: 130, r: 1 }, { h: 'Cash', w: 120, r: 1 }, { h: 'Online', w: 120, r: 1 }, { h: 'Balance', w: 150, r: 1, b: 1 }],
       rows: rows, bold: [rows.length - 1],
-      sum: [['Aaj ka Total Bill', M(T[3]), '#7C2D12', 1], ['Pichla Balance', M(T[4])], ['Received', K.money(rec)], ['Total Balance', B(T[7]), '#9A3412', 1]] });
-    window.KataiDailyShare.share(cv, 'Katai-Daily-' + stamp(), 'Katai Daily · ' + dateText());
+      sum: [['Aaj ka Total Bill', M(T[3]), '#0B4F8A', 1], ['Pichla Balance', M(T[4])], ['Received', K.money(rec)], ['Total Balance', B(T[7]), '#B45309', 1]] });
+    window.KataiShare.share(cv, 'Katai-Daily-' + stamp(), 'Katai Daily · ' + dateText());
   }
 
   // ---------- Events ----------
   function bind() {
     $('btnAdd').onclick = addCustomer;
+    $('btnSaveRec').onclick = function () { saveToRecords(false); };
     $('btnClear').onclick = clearAll;
     $('btnExcel').onclick = exportExcel; $('btnCsv').onclick = exportCSV; $('btnPrint').onclick = doPrint; $('btnWa').onclick = shareSheet;
     $('btnRates').onclick = function () { var c = $('ratesCard'); c.hidden = !c.hidden; $('btnRates').setAttribute('aria-expanded', String(!c.hidden)); };
@@ -342,8 +414,8 @@
     $('rateGrid').addEventListener('input', onRateEdit);
     $('rateGrid').addEventListener('change', function (e) { if (e.target.tagName === 'SELECT') onRateEdit(e); });
     $('search').addEventListener('input', renderList);
-    $('dDate').addEventListener('change', function () { state.date = /^\d{4}-\d{2}-\d{2}$/.test($('dDate').value) ? $('dDate').value : todayISO(); save(); });
-    $('dFirm').addEventListener('input', function () { if (storage) try { storage.setItem(FIRM_KEY, $('dFirm').value.slice(0, 80)); } catch (e) {} });
+    $('dDate').addEventListener('change', function () { state.date = /^\d{4}-\d{2}-\d{2}$/.test($('dDate').value) ? $('dDate').value : todayISO(); $('dDate').value = state.date; save(); renderList(); });
+    $('dFirm').addEventListener('input', function () { if (storage) try { storage.setItem(FIRM_KEY, $('dFirm').value.slice(0, 80)); } catch (e) {} renderList(); });
     $('cBody').addEventListener('click', function (e) {
       var b = e.target.closest('[data-act]'), tr = e.target.closest('tr'); if (!tr) return;
       var id = tr.dataset.id, act = b ? b.dataset.act : 'edit';
@@ -386,11 +458,14 @@
     try { $('dFirm').value = (storage && storage.getItem(FIRM_KEY)) || ''; } catch (e) {}
     $('dDate').value = state.date;
     buildRates(); bind();
-    window.KataiDailyShare.init(toast);
+    window.KataiShare.init(toast);
     selectedId = state.customers[0] ? state.customers[0].id : null;
+    refreshIndex();
     renderAll();
+    if (D && D.status().corrupt) { $('storageNotice').hidden = false; $('storageNotice').textContent = D.status().message; }
+    window.addEventListener('storage', function (e) { if (e.key === 'mmh.db.v2') { refreshIndex(); renderList(); } });
   }
   try { init(); } catch (e) { toast('Something went wrong: ' + e.message); if (window.console) console.error(e); }
 
-  window.__kataiDaily = { state: function () { return state; }, addCustomer: addCustomer, exportData: exportData, productTotals: productTotals, esc: esc };
+  window.__kataiDaily = { state: function () { return state; }, addCustomer: addCustomer, exportData: exportData, productTotals: productTotals, esc: esc, saveToRecords: saveToRecords, recordStats: recordStats };
 })();

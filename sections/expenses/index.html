@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<title>Expense Management · MurgaMandi Hisab</title>
+<link rel="icon" href="../../assets/icons/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="../../shared/print.css">
+</head>
+<body>
+<header class="appbar">
+  <div class="appbar-in">
+    <a class="back" href="../../index.html" aria-label="Back to home">‹ Home</a>
+    <div class="brand"><h1>Expense Management</h1><p>MurgaMandi Hisab · Kharcha</p></div>
+    <div class="sp"></div>
+    <span class="chip hide-m" id="todayChip"></span>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="notice" id="notice" hidden></p>
+
+  <section class="kpis" aria-label="Expense dashboard">
+    <div class="kpi"><span class="l">Today's Total Expenses</span><b class="n" id="kToday">₹0</b><span class="s" id="kTodayN"></span></div>
+    <div class="kpi"><span class="l">This Month's Expenses</span><b class="n" id="kMonth">₹0</b><span class="s" id="kMonthN"></span></div>
+    <div class="kpi"><span class="l">This Year's Expenses</span><b class="n" id="kYear">₹0</b><span class="s" id="kYearN"></span></div>
+    <div class="kpi cash"><span class="l">Total Cash Expenses</span><b class="n" id="kCash">₹0</b><span class="s">all saved records</span></div>
+    <div class="kpi onl"><span class="l">Total Online Expenses</span><b class="n" id="kOnline">₹0</b><span class="s">all saved records</span></div>
+  </section>
+
+  <div class="ex-main">
+    <section class="card form-card" aria-labelledby="formH">
+      <h2 id="formH">Add Expense</h2>
+      <form id="exForm" novalidate autocomplete="off">
+        <div class="f2">
+          <label class="fld"><span>Expense Date</span><input id="fDate" type="date" required></label>
+          <label class="fld"><span>Amount (₹)</span><input id="fAmount" class="n" inputmode="decimal" placeholder="0" required></label>
+        </div>
+        <label class="fld"><span>Expense Category</span><select id="fCat" required></select></label>
+        <label class="fld"><span>Description</span><input id="fDesc" maxlength="200" placeholder="e.g. Truck bhada Ghazipur se dukaan" required></label>
+        <fieldset class="fld modes"><legend>Payment Mode</legend>
+          <label class="mode"><input type="radio" name="fMode" value="cash" checked><span>Cash</span></label>
+          <label class="mode"><input type="radio" name="fMode" value="online"><span>Online</span></label>
+        </fieldset>
+        <div class="f2">
+          <label class="fld"><span>Paid To <em>(optional)</em></span><input id="fPaidTo" maxlength="80"></label>
+          <label class="fld"><span>Notes <em>(optional)</em></span><input id="fNotes" maxlength="300"></label>
+        </div>
+        <p class="f-err" id="fErr" role="alert"></p>
+        <div class="f-acts">
+          <button class="btn" id="fCancel" type="button" hidden>Cancel edit</button>
+          <button class="btn" id="fReset" type="button">Clear form</button>
+          <button class="btn primary" id="fSave" type="submit">Save Expense</button>
+        </div>
+      </form>
+      <details class="cats" id="catBox">
+        <summary>Manage categories</summary>
+        <p class="hint">The 9 standard categories are always available. Add your own below.</p>
+        <div class="cat-add"><input id="catName" maxlength="60" placeholder="New category name" aria-label="New category name"><button class="btn" id="catAdd" type="button">Add category</button></div>
+        <ul class="cat-list" id="catList"></ul>
+      </details>
+    </section>
+
+    <section class="card list-card" aria-labelledby="listH">
+      <div class="list-hd">
+        <h2 id="listH">Expense History</h2>
+        <div class="tabs" role="tablist" aria-label="View">
+          <button class="tab" role="tab" data-view="day" type="button">Daily</button>
+          <button class="tab" role="tab" data-view="month" type="button">Monthly</button>
+          <button class="tab" role="tab" data-view="year" type="button">Yearly</button>
+          <button class="tab" role="tab" data-view="range" type="button">Date range</button>
+          <button class="tab" role="tab" data-view="all" type="button">All</button>
+        </div>
+      </div>
+      <div class="filters">
+        <label class="fl" data-for="day"><span>Date</span><input id="vDay" type="date"></label>
+        <label class="fl" data-for="month"><span>Month</span><input id="vMonth" type="month"></label>
+        <label class="fl" data-for="year"><span>Year</span><select id="vYear"></select></label>
+        <label class="fl" data-for="range"><span>From</span><input id="vFrom" type="date"></label>
+        <label class="fl" data-for="range"><span>To</span><input id="vTo" type="date"></label>
+        <label class="fl"><span>Category</span><select id="vCat"></select></label>
+        <label class="fl"><span>Mode</span><select id="vMode"><option value="all">Cash + Online</option><option value="cash">Cash only</option><option value="online">Online only</option></select></label>
+        <label class="fl grow"><span>Search</span><input id="vSearch" type="search" placeholder="Description, paid to, notes…"></label>
+      </div>
+      <div class="sumbar" aria-live="polite">
+        <div><span>Period</span><b id="sPeriod">—</b></div>
+        <div><span>Total</span><b id="sTotal">₹0</b></div>
+        <div><span>Cash</span><b id="sCash">₹0</b></div>
+        <div><span>Online</span><b id="sOnline">₹0</b></div>
+        <div><span>Entries</span><b id="sCount">0</b></div>
+      </div>
+      <div class="t-wrap">
+        <table class="xtable" id="xTable">
+          <thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Paid To</th><th>Mode</th><th class="ra">Amount</th><th class="ra"><span class="sr">Actions</span></th></tr></thead>
+          <tbody id="xBody"></tbody>
+          <tfoot><tr><td colspan="5">TOTAL</td><td class="ra" id="xTotal">₹0</td><td></td></tr></tfoot>
+        </table>
+      </div>
+      <p class="empty" id="xEmpty">No expenses for this selection.</p>
+
+      <h3 class="sub-h">Category-wise totals</h3>
+      <div class="t-wrap">
+        <table class="xtable cat-t">
+          <thead><tr><th>Category</th><th class="ra">Entries</th><th class="ra">Cash</th><th class="ra">Online</th><th class="ra">Total</th></tr></thead>
+          <tbody id="cBody"></tbody>
+        </table>
+      </div>
+
+      <div class="dl">
+        <div class="dl-g"><span class="dl-l">Download this statement</span>
+          <button class="btn sm" data-dl="view" data-fmt="pdf" type="button">PDF</button>
+          <button class="btn sm" data-dl="view" data-fmt="xlsx" type="button">Excel</button>
+          <button class="btn sm" data-dl="view" data-fmt="csv" type="button">CSV</button>
+          <button class="btn sm" data-dl="view" data-fmt="print" type="button">Print</button>
+        </div>
+        <div class="dl-g"><span class="dl-l">Category-wise report</span>
+          <button class="btn sm" data-dl="cat" data-fmt="pdf" type="button">PDF</button>
+          <button class="btn sm" data-dl="cat" data-fmt="xlsx" type="button">Excel</button>
+          <button class="btn sm" data-dl="cat" data-fmt="csv" type="button">CSV</button>
+          <button class="btn sm" data-dl="cat" data-fmt="print" type="button">Print</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<div class="dlg-bg" id="dlg"><div class="dlg" role="alertdialog" aria-labelledby="dlgT" aria-describedby="dlgP"><h4 id="dlgT">Are you sure?</h4><p id="dlgP"></p><div class="acts"><button class="btn" id="dlgNo" type="button">Cancel</button><button class="btn danger-fill" id="dlgYes" type="button">Yes</button></div></div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="../../shared/storage-service.js"></script>
+<script src="../../shared/data-service.js"></script>
+<script src="../../shared/export-service.js"></script>
+<script src="expense-calc.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

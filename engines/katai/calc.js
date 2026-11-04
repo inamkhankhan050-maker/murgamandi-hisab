@@ -123,4 +123,4 @@
     money: money, balanceText: balanceText, qtyText: qtyText, plain: plain, plainQty: plainQty, amountInWords: amountInWords };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root[NS] = api;
-})(typeof window !== 'undefined' ? window : this, 'KataiDailyCalc');
+})(typeof window !== 'undefined' ? window : this, 'KataiCalc');

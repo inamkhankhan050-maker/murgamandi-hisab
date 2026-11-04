@@ -12,7 +12,7 @@
 <header class="appbar">
   <div class="appbar-in">
     <a class="back" href="../../index.html" aria-label="Back to home">‹ Home</a>
-    <div class="brand"><h1>Zinda Daily Entry</h1><p>MurgaMandi Hisab · Ghazipur Murga Mandi</p></div>
+    <div class="brand"><h1>Zinda Daily Entry</h1><p>MurgaMandi Hisab · Zinda</p></div>
     <div class="sp"></div>
     <span class="chip save-state" id="saveState"><span class="dot"></span><span id="saveText">Saved on this device</span></span>
     <span class="chip hide-m" id="todayChip"></span>
@@ -29,6 +29,7 @@
   <section class="toolbar" aria-label="Actions">
     <label class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span class="sr">Search customer</span><input id="search" type="search" placeholder="Search customer…" autocomplete="off"></label>
     <label class="firm"><span class="sr">Firm / Dukaan name</span><input id="dFirm" placeholder="Firm / Dukaan name" autocomplete="off" maxlength="80"></label>
+    <label class="firm date-f"><span class="sr">Sheet date</span><input id="dDate" type="date" aria-label="Sheet date (records are saved for this date)"></label>
     <div class="pills">
       <span class="pill" title="Applies to every row; a rate you change in a row stays as you set it">Default rate ₹<input id="defaultRate" class="n" inputmode="decimal" aria-label="Default rate per kg, applies to all rows">/kg <small class="pill-note">· sab rows mein</small></span>
       <span class="pill" title="Jaal (crate) weight is subtracted from Total KG in every row; a jaal you change in a row stays as you set it">Default jaal<input id="defaultJaal" class="n" inputmode="decimal" aria-label="Default jaal weight in kg, applies to all rows">kg <small class="pill-note">· sab rows mein</small></span>
@@ -36,6 +37,7 @@
       <span class="pill" title="Average 2.50 kg se kam: pcs ÷ 9 × ₹5 · 2.50–2.99: ÷ 8 × ₹5 · 3 kg+: ÷ 7 × ₹5">Labour <b>÷9 / ÷8 / ÷7 × ₹5</b> avg se</span>
     </div>
     <div class="tb-sp"></div>
+    <button class="btn primary save-rec" id="btnSaveRec" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3h11l3 3v15H5z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/></svg>Save to Records</button>
     <button class="btn primary" id="btnAdd"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Add Customer</button>
     <button class="btn" id="btnAdd10"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18"/></svg>Add 10 Rows</button>
     <button class="btn danger" id="btnClear"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>Clear All</button>
@@ -88,7 +90,7 @@
           </div>
         </div>
       </div>
-      <div class="sheet-meta"><span id="metaCount"></span><span>Press <kbd>Enter</kbd> for the next row, <kbd>Tab</kbd> for the next cell</span></div>
+      <div class="sheet-meta"><span id="metaCount"></span><span id="recMeta" class="rec-meta"></span><span>Press <kbd>Enter</kbd> for the next row, <kbd>Tab</kbd> for the next cell</span></div>
     </section>
 
     <aside class="card preview" id="preview" aria-live="polite"></aside>
@@ -127,16 +129,18 @@
     <div class="card kpi due-k"><div class="l">Balance Baaki</div><div class="n" id="sDue">₹0</div></div>
     <div class="card grand"><div class="l">Grand Total Payable</div><div class="n" id="sGrand">₹0</div><div class="w" id="sWords"></div></div>
   </div>
-  <div class="acts2"><button class="btn" id="mExcel">Export to Excel</button><button class="btn" id="mPrint">Print / PDF</button><button class="btn wa" id="mWa"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.1.1.6-.1 1.1z"/></svg>WhatsApp PDF</button></div>
+  <div class="acts2"><button class="btn primary" id="mSave" type="button">Save to Records</button><button class="btn" id="mExcel">Export to Excel</button><button class="btn" id="mPrint">Print / PDF</button><button class="btn wa" id="mWa"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.1.1.6-.1 1.1z"/></svg>WhatsApp PDF</button></div>
 </div>
 
 <div class="dlg-bg" id="shareDlg"><div class="dlg sh-dlg" role="dialog" aria-labelledby="shT"><h4 id="shT">WhatsApp par kaise bhejna hai?</h4><p>PDF ya Photo chuniye</p><div class="sh-btns"><button class="btn sh-b" id="shPdf"><span class="sh-i">📄</span>PDF bhejo</button><button class="btn sh-b" id="shImg"><span class="sh-i">🖼️</span>Photo bhejo</button></div><div class="acts"><button class="btn" id="shNo">Cancel</button></div></div></div>
 <div class="dlg-bg" id="dlg"><div class="dlg" role="alertdialog" aria-labelledby="dlgT"><h4 id="dlgT">Clear all customers?</h4><p id="dlgP">This removes every entry from this bill. It can't be undone.</p><div class="acts"><button class="btn" id="dlgNo">Cancel</button><button class="btn danger-fill" id="dlgYes">Clear All</button></div></div></div>
 <div class="toast" id="toast" role="status"></div>
 
-<script src="calc.js"></script>
-<script src="share.js"></script>
-<script src="keypad.js"></script>
+<script src="../../shared/storage-service.js"></script>
+<script src="../../shared/data-service.js"></script>
+<script src="../../engines/zinda/calc.js"></script>
+<script src="../../engines/zinda/share.js"></script>
+<script src="../../engines/zinda/keypad.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

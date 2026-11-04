@@ -15,6 +15,8 @@
   var $ = function (id) { return document.getElementById(id); };
   var sF = { name: 'sName', pieces: 'sPieces', kg: 'sKgIn', jaal: 'sJaal', rate: 'sRate', oldBal: 'sOld', cash: 'sCash', online: 'sOnline' };
   var labourManual = false;
+  var D = window.MMHData || null, U = D && D.util;   // shared records (Statements & Reports read these)
+  var savedId = null, billDate = '';
 
   // ---------- Storage (this device only) ----------
   var storage = (function () {
@@ -24,7 +26,7 @@
   function save() {
     if (!storage) return;
     try {
-      storage.setItem(KEY, JSON.stringify({ name: $('sName').value, pieces: $('sPieces').value, kg: $('sKgIn').value, jaal: $('sJaal').value, rate: $('sRate').value, oldBal: $('sOld').value, cash: $('sCash').value, online: $('sOnline').value, labour: labourManual ? $('sLabour').value : '', savedAt: new Date().toISOString() }));
+      storage.setItem(KEY, JSON.stringify({ date: billDate, savedId: savedId, name: $('sName').value, pieces: $('sPieces').value, kg: $('sKgIn').value, jaal: $('sJaal').value, rate: $('sRate').value, oldBal: $('sOld').value, cash: $('sCash').value, online: $('sOnline').value, labour: labourManual ? $('sLabour').value : '', savedAt: new Date().toISOString() }));
       $('saveText').textContent = 'Saved on this device'; $('saveState').classList.remove('off');
     } catch (e) { $('saveText').textContent = 'Not saved (storage full)'; $('saveState').classList.add('off'); }
   }
@@ -39,7 +41,7 @@
   function rc(k, v) { return '<div class="rc"><span class="k">' + k + '</span><span class="val">' + v + '</span></div>'; }
   function m2(p) { return C.formatINR(p, { decimals: p % 100 ? 2 : 0 }); }
   function dueText(p) { return p < 0 ? 'Adv ' + C.formatINR(-p, { decimals: p % 100 ? 2 : 0 }) : C.formatINR(p, { decimals: p % 100 ? 2 : 0 }); }
-  function todayText() { return new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); }
+  function todayText() { var p = String(billDate || '').split('-'), d = p.length === 3 ? new Date(+p[0], +p[1] - 1, +p[2]) : new Date(); if (isNaN(d.getTime())) d = new Date(); return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); }
   var toastT;
   function toast(msg) { var t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, 2600); }
   function confirmDlg(title, text, yesLabel, onYes) {
@@ -185,7 +187,93 @@
 
   function clearBill() {
     ['sName', 'sPieces', 'sKgIn', 'sJaal', 'sRate', 'sOld', 'sCash', 'sOnline', 'sLabour'].forEach(function (id) { $(id).value = ''; });
-    labourManual = false; render(); save(); $('sPieces').focus();
+    labourManual = false; savedId = null; render(); save(); renderSaved(); balanceHint(); $('sPieces').focus();
+  }
+
+  // ---------- Saved records (shared data service) ----------
+  function todayISO() { var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+  /** The record for the bill on screen, built only from the original engine's figures. {input} or {error}. */
+  function recordInput() {
+    var name = $('sName').value.trim();
+    var row = singleRow(), v = C.validateRow(row);
+    if (!v.ok) return { error: 'Pehle pieces, KG aur rate sahi bhariye' };
+    if (!name) return { error: 'Bill save karne ke liye customer name bhariye' };
+    var m = manualLabour(); if (isNaN(m)) return { error: 'Labour sahi bhariye (0 or more, max 2 decimals)' };
+    var r = calcSingle(v); if (r.final == null) return { error: r.warning || 'Final amount not calculated' };
+    var L = C.ledger(row, r.final); if (!L.ok) return { error: 'Pichla balance, cash aur online sahi bhariye' };
+    return { input: { id: savedId || undefined, section: 'zinda', source: 'zinda-single', date: billDate || todayISO(), customerName: name, firm: $('sFirm').value.trim(),
+      amount: r.final, cash: L.cash, online: L.online, prevBalance: L.oldBal, balance: L.due,
+      details: { pieces: v.pieces, grams: v.grams, jaalGrams: v.jaalGrams, netGrams: v.netGrams, ratePaise: v.ratePaise, basic: r.basic, samiti: r.samiti, labour: r.labourAdjusted, labourOriginal: r.labourOriginal, adjustment: r.adjustment, labourManual: !!r.manual },
+      inputs: { name: name, pieces: $('sPieces').value.trim(), kg: $('sKgIn').value.trim(), jaal: $('sJaal').value.trim(), rate: $('sRate').value.trim(), oldBal: $('sOld').value.trim(), cash: $('sCash').value.trim(), online: $('sOnline').value.trim(), labour: labourManual ? $('sLabour').value.trim() : '' } } };
+  }
+  function saveRecord(allowDuplicate) {
+    if (!D) { toast('Records are not available in this window'); return; }
+    var b = recordInput(); if (b.error) { toast(b.error); return; }
+    var res = D.saveBill(b.input, { allowDuplicate: !!allowDuplicate });
+    if (res.duplicates) {
+      var d = res.duplicates[0];
+      confirmDlg('Possible duplicate bill', 'A Zinda bill for ' + d.customerName + ' on ' + U.dateText(d.date) + ' for ' + U.money(d.amount) + ' is already saved. Save this one as well?', 'Save anyway', function () { saveRecord(true); });
+      return;
+    }
+    if (!res.ok) { if (savedId && /no longer exists/.test(res.error || '')) savedId = null; toast(res.error || 'Could not save'); renderSaved(); save(); return; }
+    savedId = res.record.id; save(); renderSaved(); renderRecent(); customerList();
+    toast(res.created ? 'Bill saved for ' + res.record.customerName : 'Saved bill updated');
+  }
+  function sameAsSaved(rec) {
+    var b = recordInput(); if (b.error || !rec) return false;
+    var i = b.input; return rec.date === i.date && rec.customerName === i.customerName && rec.firm === i.firm && rec.amount === i.amount && rec.cash === i.cash && rec.online === i.online && rec.prevBalance === i.prevBalance;
+  }
+  function renderSaved() {
+    var el = $('sSaved'); if (!el) return;
+    if (!D) { el.textContent = 'Records not available in this window.'; $('sSave').disabled = true; return; }
+    var rec = savedId ? D.getBill(savedId) : null;
+    if (savedId && !rec) savedId = null;
+    $('sSave').textContent = rec ? 'Update Saved Bill' : 'Save Bill';
+    el.className = 'rec-state' + (rec ? (sameAsSaved(rec) ? ' ok' : ' changed') : '');
+    el.textContent = rec ? (sameAsSaved(rec) ? 'Saved to records · ' + rec.customerName + ' · ' + U.dateText(rec.date) : 'Changed since saving — press "Update Saved Bill"') : 'Not saved to records yet';
+  }
+  function cellT(tr, text, cls) { var td = document.createElement('td'); if (cls) td.className = cls; td.textContent = text; tr.appendChild(td); return td; }
+  function renderRecent() {
+    var body = $('sRecent'); if (!body) return; body.textContent = '';
+    var list = D ? D.listBills({ source: 'zinda-single' }).reverse().slice(0, 25) : [];
+    $('sRecentEmpty').hidden = list.length > 0;
+    list.forEach(function (r) {
+      var tr = document.createElement('tr'); tr.dataset.id = r.id; if (r.id === savedId) tr.className = 'cur';
+      cellT(tr, U.dateText(r.date)); cellT(tr, r.customerName, 'b'); cellT(tr, r.firm || '—');
+      cellT(tr, U.money(r.amount), 'ra'); cellT(tr, U.money(r.cash), 'ra'); cellT(tr, U.money(r.online), 'ra'); cellT(tr, U.balanceText(r.balance), 'ra');
+      var td = cellT(tr, '', 'ra acts-c');
+      var e = document.createElement('button'); e.type = 'button'; e.className = 'mini'; e.dataset.act = 'edit'; e.textContent = 'Edit'; td.appendChild(e);
+      var x = document.createElement('button'); x.type = 'button'; x.className = 'mini danger'; x.dataset.act = 'del'; x.textContent = 'Delete'; td.appendChild(x);
+      body.appendChild(tr);
+    });
+  }
+  function loadRecord(id) {
+    var r = D.getBill(id); if (!r) { toast('This bill no longer exists'); renderRecent(); return; }
+    var i = r.inputs || {};
+    $('sName').value = i.name || r.customerName; $('sPieces').value = i.pieces || ''; $('sKgIn').value = i.kg || ''; $('sJaal').value = i.jaal || ''; $('sRate').value = i.rate || '';
+    $('sOld').value = i.oldBal || ''; $('sCash').value = i.cash || ''; $('sOnline').value = i.online || ''; $('sLabour').value = i.labour || ''; labourManual = !!i.labour;
+    $('sFirm').value = r.firm || ''; billDate = r.date; $('sDate').value = r.date; savedId = r.id;
+    render(); save(); renderSaved(); renderRecent(); balanceHint(); toast('Bill loaded. Change it and press "Update Saved Bill".');
+  }
+  function onRecentClick(e) {
+    var b = e.target.closest('[data-act]'); if (!b) return;
+    var id = b.closest('tr').dataset.id, r = D.getBill(id); if (!r) { renderRecent(); return; }
+    if (b.dataset.act === 'edit') confirmDlg('Load this saved bill?', r.customerName + ' · ' + U.dateText(r.date) + ' · ' + U.money(r.amount) + '. The entries now in the form will be replaced.', 'Load bill', function () { loadRecord(id); });
+    else confirmDlg('Delete this saved bill?', r.customerName + ' · ' + U.dateText(r.date) + ' · ' + U.money(r.amount) + ' will be removed from records and statements.', 'Delete', function () {
+      D.deleteBill(id); if (savedId === id) { savedId = null; save(); } renderSaved(); renderRecent(); toast('Saved bill deleted');
+    });
+  }
+  function balanceHint() {
+    var h = $('sHint'); if (!h || !D) return;
+    var name = $('sName').value.trim(), lb = name ? D.lastBalance(name, 'zinda', { onOrBefore: billDate || todayISO(), excludeId: savedId }) : null;
+    if (!lb) { h.hidden = true; return; }
+    h.hidden = false; h.dataset.paise = String(lb.balance);
+    $('sHintT').textContent = 'Last recorded Zinda balance: ' + U.balanceText(lb.balance) + ' (' + U.dateText(lb.date) + ')';
+    $('sHintUse').hidden = lb.balance < 0;
+  }
+  function customerList() {
+    var dl = $('custList'); if (!dl || !D) return; dl.textContent = '';
+    D.listCustomers().slice(0, 500).forEach(function (c) { var o = document.createElement('option'); o.value = c.name; dl.appendChild(o); });
   }
 
   // ---------- Init ----------
@@ -193,12 +281,20 @@
     $('todayChip').textContent = new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
     if (!storage) { $('storageNotice').hidden = false; $('saveState').classList.add('off'); $('saveText').textContent = 'Not saved'; }
     var s = load();
-    if (s) { Object.keys(sF).forEach(function (f) { $(sF[f]).value = str(s[f]); }); $('sLabour').value = str(s.labour); labourManual = !!str(s.labour); }
+    if (s) { Object.keys(sF).forEach(function (f) { $(sF[f]).value = str(s[f]); }); $('sLabour').value = str(s.labour); labourManual = !!str(s.labour); savedId = typeof s.savedId === 'string' ? s.savedId : null; billDate = /^\d{4}-\d{2}-\d{2}$/.test(s.date) ? s.date : ''; }
+    if (!billDate) billDate = todayISO();
+    $('sDate').value = billDate;
+    $('sDate').addEventListener('change', function () { billDate = /^\d{4}-\d{2}-\d{2}$/.test($('sDate').value) ? $('sDate').value : todayISO(); $('sDate').value = billDate; save(); renderSaved(); balanceHint(); });
     try { $('sFirm').value = (storage && storage.getItem(FIRM_KEY)) || ''; } catch (e) {}
-    $('sFirm').addEventListener('input', function () { if (storage) try { storage.setItem(FIRM_KEY, $('sFirm').value); } catch (e) {} });
+    $('sFirm').addEventListener('input', function () { if (storage) try { storage.setItem(FIRM_KEY, $('sFirm').value); } catch (e) {} renderSaved(); });
     $('sLabour').addEventListener('input', function () { labourManual = $('sLabour').value.trim() !== ''; render(); save(); });
     $('sLabour').addEventListener('blur', function () { if (!labourManual) render(); });
-    Object.keys(sF).forEach(function (f) { $(sF[f]).addEventListener('input', function () { render(); save(); }); });
+    Object.keys(sF).forEach(function (f) { $(sF[f]).addEventListener('input', function () { render(); save(); renderSaved(); }); });
+    $('sName').addEventListener('change', balanceHint); $('sName').addEventListener('blur', balanceHint);
+    $('sHintUse').onclick = function () { var p = +$('sHint').dataset.paise; if (!(p >= 0)) return; $('sOld').value = String(p / 100); render(); save(); renderSaved(); };
+    $('sSave').onclick = function () { saveRecord(false); };
+    $('sRecent').addEventListener('click', onRecentClick);
+    $('sLabour').addEventListener('input', renderSaved);
     $('sClear').onclick = function () { confirmDlg('Clear this bill?', 'All fields of this bill will be emptied.', 'Clear', clearBill); };
     $('sPrint').onclick = doPrint;
     $('sShare').onclick = shareReceipt;
@@ -206,10 +302,12 @@
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { $('dlg').classList.remove('show'); $('shareDlg').classList.remove('show'); } });
     window.ZindaShare.init(toast);
     window.ZindaKeypad.init();
-    render();
+    render(); renderSaved(); renderRecent(); customerList(); balanceHint();
+    if (D && D.status().corrupt) { $('storageNotice').hidden = false; $('storageNotice').textContent = D.status().message; }
+    window.addEventListener('storage', function (e) { if (D && e.key === 'mmh.db.v2') { renderSaved(); renderRecent(); customerList(); } });
   }
   try { init(); } catch (e) { toast('Something went wrong: ' + e.message); if (window.console) console.error(e); }
 
   // Exposed for automated tests only
-  window.__zindaSingle = { render: render, calcSingle: calcSingle, receiptModel: receiptModel };
+  window.__zindaSingle = { render: render, calcSingle: calcSingle, receiptModel: receiptModel, recordInput: recordInput, saveRecord: saveRecord, savedId: function () { return savedId; } };
 })();

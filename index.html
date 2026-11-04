@@ -4,58 +4,100 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
-<meta name="description" content="MurgaMandi Hisab: Zinda and Katai billing for daily mandi business.">
+<meta name="description" content="MurgaMandi Hisab: Zinda and Katai billing, expenses, statements and reports for a murga mandi business.">
 <title>MurgaMandi Hisab</title>
 <link rel="icon" href="assets/icons/logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="home.css">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header class="hero">
   <div class="hero-in">
-    <img class="logo" src="assets/icons/logo.svg" alt="" width="52" height="52">
-    <div>
+    <img class="logo" src="assets/icons/logo.svg" alt="" width="54" height="54">
+    <div class="hero-t">
       <h1>MurgaMandi Hisab</h1>
-      <p>Zinda aur Katai ka roz ka hisab, ek jagah</p>
+      <p>Zinda aur Katai billing, kharcha aur statements · ek jagah</p>
     </div>
     <span class="today" id="today"></span>
   </div>
 </header>
 
 <main class="wrap">
-  <h2 class="group-h zinda">Zinda <small>live birds · original Chicken Calculator rules</small></h2>
-  <div class="grid">
-    <a class="tile zinda" href="sections/zinda-single/index.html">
-      <img src="assets/icons/zinda-single.svg" alt="" width="44" height="44">
-      <span class="t">Zinda Single Customer Bill</span>
-      <span class="d">One customer: pieces, KG, jaal, rate, samiti, labour and balance. Print or WhatsApp PDF.</span>
-      <span class="go">Open ›</span>
-    </a>
-    <a class="tile zinda" href="sections/zinda-daily/index.html">
-      <img src="assets/icons/zinda-daily.svg" alt="" width="44" height="44">
-      <span class="t">Zinda Daily Entry</span>
-      <span class="d">All customers of the day in one sheet with grand totals, search, Excel export and print.</span>
-      <span class="go">Open ›</span>
-    </a>
-  </div>
+  <p class="notice" id="dbNotice" hidden></p>
 
-  <h2 class="group-h katai">Katai <small>cut products · separate billing</small></h2>
-  <div class="grid">
-    <a class="tile katai" href="sections/katai-single/index.html">
-      <img src="assets/icons/katai-single.svg" alt="" width="44" height="44">
+  <section class="glance" id="glance" aria-label="Today at a glance">
+    <div class="g-card"><span class="g-l">Aaj ke Bills</span><b class="g-n" id="gBills">—</b><span class="g-s" id="gBillsN"></span></div>
+    <div class="g-card"><span class="g-l">Aaj Received</span><b class="g-n" id="gRec">—</b><span class="g-s" id="gRecSplit"></span></div>
+    <div class="g-card"><span class="g-l">Aaj ka Kharcha</span><b class="g-n" id="gExp">—</b><span class="g-s" id="gExpN"></span></div>
+    <div class="g-card"><span class="g-l">Saved Records</span><b class="g-n" id="gRecords">—</b><span class="g-s" id="gCust"></span></div>
+  </section>
+
+  <h2 class="sec-h">Sections</h2>
+  <nav class="grid" aria-label="Sections">
+    <a class="tile" href="sections/zinda-single/index.html">
+      <span class="ic"><img src="assets/icons/zinda-single.svg" alt="" width="34" height="34"></span>
+      <span class="tag">Zinda</span>
+      <span class="t">Zinda Single Customer Bill</span>
+      <span class="d">One customer: pieces, KG, jaal, rate, samiti, labour and balance. Save, print or WhatsApp.</span>
+      <span class="go">Open ›</span>
+    </a>
+    <a class="tile" href="sections/zinda-daily/index.html">
+      <span class="ic"><img src="assets/icons/zinda-daily.svg" alt="" width="34" height="34"></span>
+      <span class="tag">Zinda</span>
+      <span class="t">Zinda Daily Entry</span>
+      <span class="d">All Zinda customers of the day in one sheet with grand totals. Save the day to records.</span>
+      <span class="go">Open ›</span>
+    </a>
+    <a class="tile" href="sections/katai-single/index.html">
+      <span class="ic"><img src="assets/icons/katai-single.svg" alt="" width="34" height="34"></span>
+      <span class="tag k">Katai</span>
       <span class="t">Katai Single Customer Bill</span>
       <span class="d">Thigh, Breast, Tangri, Wings, Full Leg, Haddi, Pota, Panja, Tandoori and Dress in one bill.</span>
       <span class="go">Open ›</span>
     </a>
-    <a class="tile katai" href="sections/katai-daily/index.html">
-      <img src="assets/icons/katai-daily.svg" alt="" width="44" height="44">
+    <a class="tile" href="sections/katai-daily/index.html">
+      <span class="ic"><img src="assets/icons/katai-daily.svg" alt="" width="34" height="34"></span>
+      <span class="tag k">Katai</span>
       <span class="t">Katai Daily Customer Entry</span>
-      <span class="d">Many Katai customers per day, day rates, product-wise totals, Excel export and print.</span>
+      <span class="d">Many Katai customers per day, day rates and product-wise totals. Save the day to records.</span>
       <span class="go">Open ›</span>
     </a>
-  </div>
+    <a class="tile" href="sections/expenses/index.html">
+      <span class="ic"><img src="assets/icons/expenses.svg" alt="" width="34" height="34"></span>
+      <span class="tag b">Business</span>
+      <span class="t">Expense Management</span>
+      <span class="d">Truck, labour, nashta, loading, diesel and more. Daily, monthly and yearly totals with downloads.</span>
+      <span class="go">Open ›</span>
+    </a>
+    <a class="tile" href="sections/statements/index.html">
+      <span class="ic"><img src="assets/icons/statements.svg" alt="" width="34" height="34"></span>
+      <span class="tag b">Business</span>
+      <span class="t">Statements &amp; Reports</span>
+      <span class="d">Customer and company statements, Profit &amp; Loss, cash &amp; online statement and a download center.</span>
+      <span class="go">Open ›</span>
+    </a>
+  </nav>
+
+  <section class="card backup" aria-labelledby="bkH">
+    <div class="bk-ic"><img src="assets/icons/backup.svg" alt="" width="34" height="34"></div>
+    <div class="bk-t">
+      <h2 id="bkH">Backup &amp; Restore</h2>
+      <p>All records stay in this browser on this device. Download a backup regularly and keep it safe (Google Drive, WhatsApp to yourself, pen drive).</p>
+      <p class="bk-last" id="bkLast"></p>
+    </div>
+    <div class="bk-acts">
+      <button class="btn primary" id="btnBackup" type="button">Download Backup</button>
+      <label class="btn" id="btnRestoreL">Restore from Backup<input id="restoreFile" type="file" accept=".json,application/json" class="sr"></label>
+    </div>
+  </section>
 
   <p class="foot">Sab data sirf isi device ke browser mein save hota hai. Kuch bhi bahar nahi bheja jata.</p>
 </main>
-<script src="home.js"></script>
+
+<div class="dlg-bg" id="dlg"><div class="dlg" role="alertdialog" aria-labelledby="dlgT" aria-describedby="dlgP"><h4 id="dlgT">Restore backup?</h4><p id="dlgP"></p><div class="acts"><button class="btn" id="dlgNo" type="button">Cancel</button><button class="btn danger-fill" id="dlgYes" type="button">Replace my data</button></div></div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="shared/storage-service.js"></script>
+<script src="shared/data-service.js"></script>
+<script src="script.js"></script>
 </body>
 </html>

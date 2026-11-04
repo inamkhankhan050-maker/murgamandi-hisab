@@ -24,9 +24,10 @@
   <section class="card head-card" aria-label="Customer">
     <div class="head-grid">
       <label class="fld"><span>Firm / Dukaan Name</span><input id="kFirm" autocomplete="off" maxlength="80"></label>
-      <label class="fld"><span>Customer Name</span><input id="kName" autocomplete="off" maxlength="80"></label>
+      <label class="fld"><span>Customer Name</span><input id="kName" autocomplete="off" maxlength="80" list="custList"></label>
       <label class="fld"><span>Date</span><input id="kDate" type="date"></label>
     </div>
+    <datalist id="custList"></datalist>
   </section>
 
   <div class="k-main">
@@ -50,15 +51,24 @@
         <label class="fld"><span>Rec Cash</span><input id="kCash" class="n" inputmode="decimal" autocomplete="off"></label>
         <label class="fld"><span>Rec Online</span><input id="kOnline" class="n" inputmode="decimal" autocomplete="off"></label>
       </div>
+      <p class="hint-bal" id="kHint" hidden><span id="kHintT"></span> <button class="link-btn" id="kHintUse" type="button">Use as Pichla Balance</button></p>
       <div id="kLedger"></div>
       <p class="s-err" id="kErr" role="alert"></p>
+      <p class="rec-state" id="kSaved"></p>
       <div class="acts">
         <button class="btn danger" id="kClear" type="button">Clear</button>
         <button class="btn" id="kPrint" type="button">Print / Save PDF</button>
         <button class="btn wa" id="kShare" type="button"><img src="../../assets/icons/whatsapp.svg" alt="" width="16" height="16">WhatsApp PDF</button>
+        <button class="btn primary" id="kSave" type="button">Save Bill</button>
       </div>
     </aside>
   </div>
+
+  <section class="card recent" aria-labelledby="recH">
+    <div class="recent-hd"><h3 id="recH">Saved Katai single bills</h3><a class="link-btn" href="../statements/index.html">All statements ›</a></div>
+    <div class="t-scroll"><table class="rtable"><thead><tr><th>Date</th><th>Customer</th><th>Firm</th><th class="ra">Items</th><th class="ra">Bill</th><th class="ra">Cash</th><th class="ra">Online</th><th class="ra">Balance</th><th class="ra"><span class="sr">Actions</span></th></tr></thead><tbody id="kRecent"></tbody></table></div>
+    <p class="empty" id="kRecentEmpty">No saved bills yet. Fill the bill and press "Save Bill".</p>
+  </section>
 </main>
 
 <div class="dlg-bg" id="shareDlg"><div class="dlg" role="dialog" aria-labelledby="shT"><h4 id="shT">WhatsApp par kaise bhejna hai?</h4><p>PDF ya Photo chuniye</p><div class="sh-btns"><button class="btn sh-b" id="shPdf" type="button"><span class="sh-i">📄</span>PDF bhejo</button><button class="btn sh-b" id="shImg" type="button"><span class="sh-i">🖼️</span>Photo bhejo</button></div><div class="acts"><button class="btn" id="shNo" type="button">Cancel</button></div></div></div>
@@ -66,8 +76,10 @@
 <div class="toast" id="toast" role="status"></div>
 <div class="rcpt" id="kReceipt" aria-hidden="true"></div>
 
-<script src="calc.js"></script>
-<script src="share.js"></script>
+<script src="../../shared/storage-service.js"></script>
+<script src="../../shared/data-service.js"></script>
+<script src="../../engines/katai/calc.js"></script>
+<script src="../../engines/katai/share.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

@@ -13,9 +13,11 @@
 
   var $ = function (id) { return document.getElementById(id); };
   var uid = function () { return 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); };
-  var newRow = function (o) { o = o || {}; return { id: uid(), name: o.name || '', pieces: o.pieces != null ? String(o.pieces) : '', kg: o.kg != null ? String(o.kg) : '', rate: o.rate != null ? String(o.rate) : '', customRate: !!o.customRate, jaal: o.jaal != null ? String(o.jaal) : '', customJaal: !!o.customJaal, oldBal: o.oldBal != null ? String(o.oldBal) : '', cash: o.cash != null ? String(o.cash) : '', online: o.online != null ? String(o.online) : '' }; };
+  var newRow = function (o) { o = o || {}; return { id: typeof o.id === 'string' && /^[\w-]{1,40}$/.test(o.id) ? o.id : uid(), name: o.name || '', pieces: o.pieces != null ? String(o.pieces) : '', kg: o.kg != null ? String(o.kg) : '', rate: o.rate != null ? String(o.rate) : '', customRate: !!o.customRate, jaal: o.jaal != null ? String(o.jaal) : '', customJaal: !!o.customJaal, oldBal: o.oldBal != null ? String(o.oldBal) : '', cash: o.cash != null ? String(o.cash) : '', online: o.online != null ? String(o.online) : '' }; };
 
-  var state = { rows: [], defaultRate: '', defaultJaal: '', sheetNo: 1, selectedId: null };
+  var state = { rows: [], defaultRate: '', defaultJaal: '', sheetNo: 1, selectedId: null, date: '' };
+  var D = window.MMHData || null, U = D && D.util;   // shared records (Statements & Reports read these)
+  var SRC = 'zinda-daily', recIndex = {};
 
   // ---------- Persistence (local only, never sent anywhere) ----------
   var storage = (function () {
@@ -33,7 +35,7 @@
     $('saveText').textContent = 'Saving…';
     saveTimer = setTimeout(function () {
       try {
-        storage.setItem(STORE_KEY, JSON.stringify({ rows: state.rows, defaultRate: state.defaultRate, defaultJaal: state.defaultJaal, sheetNo: state.sheetNo, savedAt: new Date().toISOString() }));
+        storage.setItem(STORE_KEY, JSON.stringify({ rows: state.rows, defaultRate: state.defaultRate, defaultJaal: state.defaultJaal, sheetNo: state.sheetNo, date: state.date, savedAt: new Date().toISOString() }));
         $('saveText').textContent = 'Saved on this device';
       } catch (e) { $('saveText').textContent = 'Not saved (storage full)'; $('saveState').classList.add('off'); }
     }, 250);
@@ -168,6 +170,7 @@
     var extra = [];
     if (t.incomplete) extra.push(t.incomplete + ' incomplete');
     if (t.invalid) extra.push(t.invalid + ' need checking');
+    updateRecMeta();
     $('metaCount').textContent = t.customers + ' customer' + (t.customers === 1 ? '' : 's') + ' calculated · ' + state.rows.length + ' rows' + (extra.length ? ' · ' + extra.join(', ') + ' (not included in totals)' : '');
     return t;
   }
@@ -228,9 +231,16 @@
     if (focus && first) { first.querySelector('[data-f="name"]').focus(); if (first.scrollIntoView) first.scrollIntoView({ block: 'nearest' }); }
     if (n > 1) toast(n + ' rows added');
   }
-  function deleteRow(id) {
+  function deleteRow(id, confirmed) {
     var i = state.rows.findIndex(function (r) { return r.id === id; });
     if (i < 0) return;
+    if (!confirmed && recIndex[srcKey(id)]) {
+      var nm = state.rows[i].name.trim() || 'row ' + (i + 1);
+      ask('Delete ' + nm + '?', 'This row is saved in records. Deleting it also removes its saved record from Statements & Reports.', 'Delete', function () {
+        if (D) D.deleteBySourceKey(srcKey(id)); refreshIndex(); deleteRow(id, true);
+      });
+      return;
+    }
     var removed = state.rows.splice(i, 1)[0];
     var el = rowEl(id); if (el) el.remove();
     if (state.selectedId === id) state.selectedId = null;
@@ -238,7 +248,7 @@
     toast('Deleted ' + (removed.name.trim() || 'row ' + (i + 1)));
   }
   function clearAll() {
-    state.rows = []; state.selectedId = null; state.sheetNo += 1;
+    state.rows = []; state.selectedId = null; state.sheetNo += 1; state.date = todayISO(); $('dDate').value = state.date;
     $('sheetNo').textContent = '#' + state.sheetNo;
     $('search').value = '';
     renderAll(); addRows(10, false); save();
@@ -265,7 +275,7 @@
     var total = ['', 'TOTAL', t.pieces, C.formatKg(t.grams).replace(/,/g, ''), C.formatKg(t.jaal).replace(/,/g, ''), C.formatKg(t.net).replace(/,/g, ''), C.averageKg(t.net, t.pieces) || '', '', P(t.basic), P(t.samiti), '', '', P(t.labour), P(t.grand), P(lo), P(lc), P(ln), P(ld)];
     return { head: head, rows: rows, total: total, count: n };
   }
-  function fileStamp() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function fileStamp() { if (/^\d{4}-\d{2}-\d{2}$/.test(state.date)) return state.date; var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   function download(name, mime, content) {
     try {
@@ -296,12 +306,12 @@
     var tot = '<Row>' + d.total.map(function (v, i) { return cell(v, money.indexOf(i) >= 0 ? 'totm' : 'tot', i > 1 && v !== ''); }).join('') + '</Row>';
     var xml = '<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?>' +
       '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">' +
-      '<Styles><Style ss:ID="h"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#166534" ss:Pattern="Solid"/></Style>' +
+      '<Styles><Style ss:ID="h"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1D4ED8" ss:Pattern="Solid"/></Style>' +
       '<Style ss:ID="money"><NumberFormat ss:Format="&quot;₹&quot;#,##,##0.00"/></Style>' +
       '<Style ss:ID="kg"><NumberFormat ss:Format="0.###"/></Style>' +
-      '<Style ss:ID="fin"><Font ss:Bold="1" ss:Color="#166534"/><Interior ss:Color="#F0FDF4" ss:Pattern="Solid"/><NumberFormat ss:Format="&quot;₹&quot;#,##,##0.00"/></Style>' +
-      '<Style ss:ID="tot"><Font ss:Bold="1"/><Interior ss:Color="#F1F4F7" ss:Pattern="Solid"/></Style>' +
-      '<Style ss:ID="totm"><Font ss:Bold="1"/><Interior ss:Color="#F1F4F7" ss:Pattern="Solid"/><NumberFormat ss:Format="&quot;₹&quot;#,##,##0.00"/></Style></Styles>' +
+      '<Style ss:ID="fin"><Font ss:Bold="1" ss:Color="#1D4ED8"/><Interior ss:Color="#EFF6FF" ss:Pattern="Solid"/><NumberFormat ss:Format="&quot;₹&quot;#,##,##0.00"/></Style>' +
+      '<Style ss:ID="tot"><Font ss:Bold="1"/><Interior ss:Color="#EEF4FB" ss:Pattern="Solid"/></Style>' +
+      '<Style ss:ID="totm"><Font ss:Bold="1"/><Interior ss:Color="#EEF4FB" ss:Pattern="Solid"/><NumberFormat ss:Format="&quot;₹&quot;#,##,##0.00"/></Style></Styles>' +
       '<Worksheet ss:Name="Bill ' + fileStamp() + '"><Table>' +
       '<Column ss:Width="40"/><Column ss:Width="190"/>' + '<Column ss:Width="80"/>'.repeat(9) +
       '<Row>' + d.head.map(function (h) { return cell(h, 'h'); }).join('') + '</Row>' + body + tot +
@@ -309,7 +319,7 @@
     download('chicken-bill-' + fileStamp() + '.xls', 'application/vnd.ms-excel', xml);
   }
   function doPrint() {
-    $('printDate').textContent = 'Bill Sheet #' + state.sheetNo + ' · ' + new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    $('printDate').textContent = 'Bill Sheet #' + state.sheetNo + ' · ' + sheetDate().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
     $('printFirm').textContent = firmName();
     closeSummary();
     try { window.print(); } catch (e) { toast('Printing is blocked in this window.'); }
@@ -324,6 +334,84 @@
     $('dlgNo').onclick = close;
     $('dlgYes').onclick = function () { close(); onYes(); };
   }
+  function ask(title, text, yes, onYes) { $('dlgT').textContent = title; $('dlgP').textContent = text; $('dlgYes').textContent = yes; confirmDlg(onYes); }
+
+  // ---------- Saved records (one record per sheet row, keyed by the row id) ----------
+  function todayISO() { var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+  function srcKey(rowId) { return SRC + ':' + rowId; }
+  function refreshIndex() {
+    recIndex = {}; if (!D) return;
+    D.transactions({ source: SRC }).forEach(function (r) { if (r.sourceKey) recIndex[r.sourceKey] = r; });
+  }
+  /** What this row would save, using only the original engine's figures. null when the row has nothing to record. */
+  function rowRecord(row) {
+    var name = String(row.name || '').trim(); if (!name) return null;
+    var c = C.computeRow(row), base = { section: 'zinda', source: SRC, sourceKey: srcKey(row.id), date: state.date || todayISO(), customerName: name, firm: firmName() };
+    if (c.status === 'valid') {
+      if (c.result.final == null) return { bad: true };
+      var L = C.ledger(row, c.result.final); if (!L.ok) return { bad: true };
+      base.amount = c.result.final; base.cash = L.cash; base.online = L.online; base.prevBalance = L.oldBal; base.balance = L.due;
+      base.details = { pieces: c.pieces, grams: c.grams, jaalGrams: c.jaalGrams, netGrams: c.netGrams, ratePaise: c.ratePaise, basic: c.result.basic, samiti: c.result.samiti, labour: c.result.labourAdjusted, labourOriginal: c.result.labourOriginal, adjustment: c.result.adjustment };
+      base.inputs = {}; FIELDS.forEach(function (f) { base.inputs[f] = String(row[f] || ''); });
+      return { kind: 'bill', input: base };
+    }
+    var billBlank = !String(row.pieces).trim() && !String(row.kg).trim();
+    if (billBlank) {
+      var P = C.ledger(row, 0); if (!P.ok) return { bad: true };
+      if (P.cash + P.online <= 0) return null;
+      base.cash = P.cash; base.online = P.online; base.prevBalance = P.oldBal; base.balance = P.due;
+      return { kind: 'payment', input: base };
+    }
+    return c.status === 'empty' ? null : { bad: true };
+  }
+  function rowRecState(row) {
+    var rr = rowRecord(row), rec = recIndex[srcKey(row.id)];
+    if (!rr) return rec ? 'changed' : 'none';
+    if (rr.bad) return rec ? 'changed' : 'bad';
+    if (!rec) return 'unsaved';
+    var i = rr.input;
+    var same = rec.kind === rr.kind && rec.date === i.date && rec.customerName === i.customerName && (rec.firm || '') === i.firm && rec.cash === i.cash && rec.online === i.online && rec.prevBalance === i.prevBalance && (rr.kind === 'payment' || rec.amount === i.amount);
+    return same ? 'saved' : 'changed';
+  }
+  function recordStats() {
+    var st = { saved: 0, changed: 0, unsaved: 0, bad: 0 };
+    state.rows.forEach(function (r) {
+      var s = rowRecState(r); if (st[s] !== undefined) st[s]++;
+      var el = rowEl(r.id); if (el) { el.classList.toggle('rec-ok', s === 'saved'); el.classList.toggle('rec-chg', s === 'changed'); }
+    });
+    return st;
+  }
+  function updateRecMeta() {
+    var m = $('recMeta'); if (!m) return;
+    if (!D) { m.textContent = 'Records not available in this window'; return; }
+    var st = recordStats(), parts = [];
+    parts.push(st.saved + ' saved to records');
+    if (st.changed) parts.push(st.changed + ' changed since saving');
+    if (st.unsaved) parts.push(st.unsaved + ' not saved');
+    m.textContent = 'Records (' + (U ? U.dateText(state.date) : state.date) + '): ' + parts.join(' · ');
+    m.classList.toggle('warn-t', !!(st.changed || st.unsaved));
+  }
+  function saveToRecords(allowDuplicate) {
+    if (!D) { toast('Records are not available in this window'); return; }
+    refreshIndex();
+    var items = [], bad = 0, dupNames = [];
+    state.rows.forEach(function (row) {
+      var rr = rowRecord(row); if (!rr) return; if (rr.bad) { bad++; return; }
+      items.push(rr);
+      if (!allowDuplicate && !recIndex[rr.input.sourceKey] && D.findDuplicates(rr.kind, rr.input).length) dupNames.push(rr.input.customerName);
+    });
+    if (!items.length) { toast(bad ? 'Rows have errors. Fix the highlighted values first.' : 'Nothing to save yet. Fill complete customer rows first.'); return; }
+    if (dupNames.length) {
+      ask('Possible duplicate entries', 'Already saved for ' + U.dateText(state.date) + ' with the same amount: ' + dupNames.slice(0, 6).join(', ') + (dupNames.length > 6 ? ' and ' + (dupNames.length - 6) + ' more' : '') + '. Save them again?', 'Save anyway', function () { saveToRecords(true); });
+      return;
+    }
+    var res = D.saveBatch(items, { allowDuplicate: true });
+    refreshIndex(); updateRecMeta();
+    if (!res.ok) { toast(res.error || 'Could not save records'); return; }
+    var msg = (res.created ? res.created + ' new' : '') + (res.created && res.updated ? ', ' : '') + (res.updated ? res.updated + ' updated' : '');
+    toast('Saved to records: ' + (msg || 'no changes') + (bad ? ' · ' + bad + ' row(s) with errors skipped' : '') + (res.errors.length ? ' · ' + res.errors.length + ' not saved' : ''));
+  }
+
   function applySearch() {
     var q = $('search').value.trim().toLowerCase();
     state.rows.forEach(function (r) { var el = rowEl(r.id); if (el) el.classList.toggle('hidden', !!q && r.name.toLowerCase().indexOf(q) < 0); });
@@ -365,7 +453,13 @@
     });
     $('btnAdd').onclick = function () { addRows(1, true); };
     $('btnAdd10').onclick = function () { addRows(10, false); };
-    $('btnClear').onclick = function () { $('dlgT').textContent = 'Clear all customers?'; $('dlgP').textContent = "This removes every entry from this bill. It can't be undone."; confirmDlg(clearAll); };
+    $('btnClear').onclick = function () {
+      var st = recordStats(), warn = st.unsaved + st.changed;
+      ask('Clear all customers?', 'This removes every entry from this sheet and starts a new one for today. Records already saved stay in Statements & Reports.' + (warn ? ' ' + warn + ' row(s) are not saved to records yet and will be lost.' : ''), 'Clear All', clearAll);
+    };
+    $('btnSaveRec').onclick = $('mSave').onclick = function () { saveToRecords(false); };
+    $('dDate').addEventListener('change', function () { state.date = /^\d{4}-\d{2}-\d{2}$/.test($('dDate').value) ? $('dDate').value : todayISO(); $('dDate').value = state.date; save(); updateRecMeta(); });
+    $('dFirm').addEventListener('input', updateRecMeta);
     $('btnCsv').onclick = exportCSV;
     $('btnExcel').onclick = $('mExcel').onclick = exportExcel;
     $('btnPrint').onclick = $('mPrint').onclick = doPrint;
@@ -406,13 +500,14 @@
       save();
     });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { $('dlg').classList.remove('show'); closeSummary(); } });
-    window.addEventListener('beforeprint', function () { $('printFirm').textContent = firmName(); $('printDate').textContent = 'Bill Sheet #' + state.sheetNo + ' · ' + new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); });
+    window.addEventListener('beforeprint', function () { $('printFirm').textContent = firmName(); $('printDate').textContent = 'Bill Sheet #' + state.sheetNo + ' · ' + todayText(); });
   }
 
   // ---------- Firm name (this section only) ----------
   var FIRM_KEY = 'mmh.zindaDaily.firm';
   function firmName() { return ($('dFirm') && $('dFirm').value.trim()) || ''; }
-  function todayText() { return new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); }
+  function sheetDate() { var p = String(state.date || '').split('-'), d = p.length === 3 ? new Date(+p[0], +p[1] - 1, +p[2]) : new Date(); return isNaN(d.getTime()) ? new Date() : d; }
+  function todayText() { return sheetDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); }
 
   // ---------- WhatsApp PDF: one customer's bill ----------
   function receiptModel(row) {
@@ -456,11 +551,11 @@
     var T = d.total, rec = String((parseFloat(T[15] || 0) + parseFloat(T[16] || 0)).toFixed(2));
     return { title: 'Wholesale Bill · ' + d.count + ' customers', sub: firmName(), date: todayText(),
       cols: [{ h: '#', w: 44 }, { h: 'Customer', w: 230, b: 1 }, { h: 'Pcs', w: 70, r: 1 }, { h: 'Total KG', w: 105, r: 1 }, { h: 'Jaal', w: 75, r: 1 }, { h: 'Net KG', w: 105, r: 1 }, { h: 'Rate', w: 70, r: 1 },
-        { h: 'Basic', w: 125, r: 1 }, { h: 'Samiti', w: 95, r: 1 }, { h: 'Labour', w: 100, r: 1 }, { h: 'Aaj ka Bill', w: 135, r: 1, b: 1, color: '#166534' },
-        { h: 'Pichla Bal', w: 125, r: 1 }, { h: 'Rec Cash', w: 115, r: 1 }, { h: 'Rec Online', w: 115, r: 1 }, { h: 'Balance', w: 140, r: 1, b: 1, color: '#9A3412' }],
+        { h: 'Basic', w: 125, r: 1 }, { h: 'Samiti', w: 95, r: 1 }, { h: 'Labour', w: 100, r: 1 }, { h: 'Aaj ka Bill', w: 135, r: 1, b: 1, color: '#1D4ED8' },
+        { h: 'Pichla Bal', w: 125, r: 1 }, { h: 'Rec Cash', w: 115, r: 1 }, { h: 'Rec Online', w: 115, r: 1 }, { h: 'Balance', w: 140, r: 1, b: 1, color: '#B45309' }],
       rows: rows, bold: [rows.length - 1],
-      sum: [['Basic Amount', M(T[8])], ['Samiti Charge (1%)', M(T[9])], ['Labour Charge', M(T[12])], ['Grand Total (Aaj ka Bill)', M(T[13]), '#166534', 1],
-        ['Pichla Balance', M(T[14])], ['Received (Cash ' + M(T[15]) + ' + Online ' + M(T[16]) + ')', M(rec)], ['Balance Baaki', B(T[17]), '#9A3412', 1]] };
+      sum: [['Basic Amount', M(T[8])], ['Samiti Charge (1%)', M(T[9])], ['Labour Charge', M(T[12])], ['Grand Total (Aaj ka Bill)', M(T[13]), '#1D4ED8', 1],
+        ['Pichla Balance', M(T[14])], ['Received (Cash ' + M(T[15]) + ' + Online ' + M(T[16]) + ')', M(rec)], ['Balance Baaki', B(T[17]), '#B45309', 1]] };
   }
   function shareMulti() {
     var sp = multiSpec(); if (!sp) { toast('Pehle kam se kam ek customer ka bill bhariye'); return; }
@@ -498,7 +593,11 @@
       state.defaultRate = typeof saved.defaultRate === 'string' ? saved.defaultRate : '';
       state.defaultJaal = typeof saved.defaultJaal === 'string' ? saved.defaultJaal : '';
       state.sheetNo = +saved.sheetNo > 0 ? Math.floor(+saved.sheetNo) : 1;
+      state.date = /^\d{4}-\d{2}-\d{2}$/.test(saved.date) ? saved.date : '';
     } else for (var bi = 0; bi < 5; bi++) state.rows.push(newRow({ rate: '' }));
+    if (!state.date) state.date = todayISO();
+    $('dDate').value = state.date;
+    refreshIndex();
     var got = takeInbox();
     if (!storage) { $('storageNotice').classList.add('show'); $('saveState').classList.add('off'); $('saveText').textContent = 'Not saved'; }
     $('defaultRate').value = state.defaultRate;
@@ -510,12 +609,14 @@
     window.ZindaShare.init(toast);
     $('shareDlg').addEventListener('keydown', function (e) { if (e.key === 'Escape') $('shareDlg').classList.remove('show'); });
     bind(); renderAll(); window.ZindaKeypad.init();
+    window.addEventListener('storage', function (e) { if (e.key === 'mmh.db.v2') { refreshIndex(); updateRecMeta(); } });
+    if (D && D.status().corrupt) { $('storageNotice').textContent = D.status().message; $('storageNotice').classList.add('show'); }
     if (got) { $('inbox').textContent = got + ' bill' + (got === 1 ? '' : 's') + ' added from Zinda Single Customer Bill.'; $('inbox').classList.add('show'); save(); }
     else if (!saved && storage) save();
-    window.addEventListener('beforeunload', function () { if (saveTimer && storage) { clearTimeout(saveTimer); try { storage.setItem(STORE_KEY, JSON.stringify({ rows: state.rows, defaultRate: state.defaultRate, defaultJaal: state.defaultJaal, sheetNo: state.sheetNo, savedAt: new Date().toISOString() })); } catch (e) {} } });
+    window.addEventListener('beforeunload', function () { if (saveTimer && storage) { clearTimeout(saveTimer); try { storage.setItem(STORE_KEY, JSON.stringify({ rows: state.rows, defaultRate: state.defaultRate, defaultJaal: state.defaultJaal, sheetNo: state.sheetNo, date: state.date, savedAt: new Date().toISOString() })); } catch (e) {} } });
   }
   try { init(); } catch (e) { toast('Something went wrong: ' + e.message); if (window.console) console.error(e); }
 
   // Exposed for automated tests only
-  window.__zindaDaily = { state: state, addRows: addRows, deleteRow: deleteRow, clearAll: clearAll, exportRows: exportRows, multiSpec: multiSpec };
+  window.__zindaDaily = { state: state, addRows: addRows, deleteRow: deleteRow, clearAll: clearAll, exportRows: exportRows, multiSpec: multiSpec, saveToRecords: saveToRecords, recordStats: recordStats };
 })();
