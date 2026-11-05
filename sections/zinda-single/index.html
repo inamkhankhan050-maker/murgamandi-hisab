@@ -36,7 +36,7 @@
         <label class="fld"><span>Total KG</span><input id="sKgIn" class="n" inputmode="decimal" autocomplete="off"></label>
         <label class="fld"><span>Jaal KG <em>(minus)</em></span><input id="sJaal" class="n" inputmode="decimal" autocomplete="off"></label>
         <label class="fld"><span>Rate / KG (₹)</span><input id="sRate" class="n" inputmode="decimal" autocomplete="off"></label>
-        <label class="fld"><span>Labour ₹ <em>(edit, khali = auto)</em></span><input id="sLabour" class="n" inputmode="decimal" autocomplete="off"></label>
+        <label class="fld"><span>Labour ₹ <em>(auto, edit nahi hota)</em></span><input id="sLabour" class="n lab-lock" readonly tabindex="-1" aria-readonly="true" title="Labour charge apne aap calculate hota hai"></label>
       </div>
       <h3 class="sub-h">Hisab / Ledger</h3>
       <div class="fld3 led">
@@ -70,7 +70,7 @@
       <li>Net KG = Total KG − Jaal KG. Basic Amount = Net KG × Rate / KG.</li>
       <li>Samiti = 1% of Basic Amount, rounded down to the whole rupee.</li>
       <li>Labour by average bird size (Net KG ÷ Pieces): below 2.50 kg → Pieces ÷ 9 × ₹5 · 2.50–2.99 kg → ÷ 8 × ₹5 · 3.00 kg and above → ÷ 7 × ₹5.</li>
-      <li>Labour is adjusted upward (max ₹9.99) so the bill lands on a multiple of ₹10. A labour amount you type replaces the auto labour.</li>
+      <li>Labour is adjusted upward (max ₹9.99) so the bill lands on a multiple of ₹10. Labour charge is automatic and cannot be edited.</li>
       <li>Balance Baaki = Pichla Balance + Aaj ka Bill − Rec Cash − Rec Online.</li>
       <li>Number boxes accept sums like 50+60.5+94.</li>
     </ul>

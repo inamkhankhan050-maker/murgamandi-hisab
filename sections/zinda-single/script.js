@@ -54,8 +54,9 @@
 
   // ---------- Calculation (engine from the original repo) ----------
   function singleRow() { return { name: $('sName').value || 'x', pieces: $('sPieces').value, kg: $('sKgIn').value, jaal: $('sJaal').value, rate: $('sRate').value, oldBal: $('sOld').value, cash: $('sCash').value, online: $('sOnline').value }; }
-  // Manual labour (original rule, Nov 2 2026): a typed value replaces auto labour as the final labour charge, no round-off.
-  function manualLabour() { if (!labourManual) return null; var s = ($('sLabour').value || '').trim(); if (s === '') return null; var v = C.parseScaled(s, 2); return v === null || isNaN(v) ? NaN : v; }
+  // Labour is locked to the automatic engine value (user, Nov 5 2026: "labour charge uneditable rakho").
+  function manualLabour() { return null; }
+  function manualLabourOld() { if (!labourManual) return null; var s = ($('sLabour').value || '').trim(); if (s === '') return null; var v = C.parseScaled(s, 2); return v === null || isNaN(v) ? NaN : v; }
   function calcSingle(v) {
     var r = C.calculate(v.pieces, v.netGrams, v.ratePaise), m = manualLabour();
     if (m === null || isNaN(m)) return r;
@@ -251,7 +252,7 @@
     var r = D.getBill(id); if (!r) { toast('This bill no longer exists'); renderRecent(); return; }
     var i = r.inputs || {};
     $('sName').value = i.name || r.customerName; $('sPieces').value = i.pieces || ''; $('sKgIn').value = i.kg || ''; $('sJaal').value = i.jaal || ''; $('sRate').value = i.rate || '';
-    $('sOld').value = i.oldBal || ''; $('sCash').value = i.cash || ''; $('sOnline').value = i.online || ''; $('sLabour').value = i.labour || ''; labourManual = !!i.labour;
+    $('sOld').value = i.oldBal || ''; $('sCash').value = i.cash || ''; $('sOnline').value = i.online || ''; $('sLabour').value = i.labour || ''; labourManual = false;
     $('sFirm').value = r.firm || ''; billDate = r.date; $('sDate').value = r.date; savedId = r.id;
     render(); save(); renderSaved(); renderRecent(); balanceHint(); toast('Bill loaded. Change it and press "Update Saved Bill".');
   }
@@ -281,13 +282,12 @@
     $('todayChip').textContent = new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
     if (!storage) { $('storageNotice').hidden = false; $('saveState').classList.add('off'); $('saveText').textContent = 'Not saved'; }
     var s = load();
-    if (s) { Object.keys(sF).forEach(function (f) { $(sF[f]).value = str(s[f]); }); $('sLabour').value = str(s.labour); labourManual = !!str(s.labour); savedId = typeof s.savedId === 'string' ? s.savedId : null; billDate = /^\d{4}-\d{2}-\d{2}$/.test(s.date) ? s.date : ''; }
+    if (s) { Object.keys(sF).forEach(function (f) { $(sF[f]).value = str(s[f]); }); $('sLabour').value = str(s.labour); labourManual = false; savedId = typeof s.savedId === 'string' ? s.savedId : null; billDate = /^\d{4}-\d{2}-\d{2}$/.test(s.date) ? s.date : ''; }
     if (!billDate) billDate = todayISO();
     $('sDate').value = billDate;
     $('sDate').addEventListener('change', function () { billDate = /^\d{4}-\d{2}-\d{2}$/.test($('sDate').value) ? $('sDate').value : todayISO(); $('sDate').value = billDate; save(); renderSaved(); balanceHint(); });
     try { $('sFirm').value = (storage && storage.getItem(FIRM_KEY)) || ''; } catch (e) {}
     $('sFirm').addEventListener('input', function () { if (storage) try { storage.setItem(FIRM_KEY, $('sFirm').value); } catch (e) {} renderSaved(); });
-    $('sLabour').addEventListener('input', function () { labourManual = $('sLabour').value.trim() !== ''; render(); save(); });
     $('sLabour').addEventListener('blur', function () { if (!labourManual) render(); });
     Object.keys(sF).forEach(function (f) { $(sF[f]).addEventListener('input', function () { render(); save(); renderSaved(); }); });
     $('sName').addEventListener('change', balanceHint); $('sName').addEventListener('blur', balanceHint);

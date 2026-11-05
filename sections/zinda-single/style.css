@@ -182,3 +182,6 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
 .t-scroll,.t-wrap{position:relative}
 @media (max-width:440px){#saveText{display:none}#saveState{padding:6px}}
 @media (max-width:640px){.appbar .brand p{display:none}.appbar .brand h1{font-size:16px;line-height:1.2}.appbar-in{gap:10px}}
+
+/* Labour charge is automatic and locked */
+#sLabour.lab-lock{background:#EEF2F7;color:#334155;cursor:not-allowed;font-weight:700}

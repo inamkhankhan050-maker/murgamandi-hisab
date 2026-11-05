@@ -49,7 +49,7 @@ Each section is its own page and loads only its own CSS and JavaScript plus the 
 - Labour by average (Net KG ÷ Pieces): below 2.50 → Pieces ÷ 9 × ₹5; 2.50–2.99 → ÷ 8 × ₹5; 3.00 and above → ÷ 7 × ₹5.
 - Labour is adjusted upward so the final bill is a multiple of ₹10 (never more than ₹9.99). Basic and Samiti never change.
 - Balance = Pichla Balance + Aaj ka Bill − Cash − Online (negative shows as "Adv").
-- Single bill only: a typed labour amount replaces auto labour, with no round-off.
+- Labour charge is automatic everywhere and cannot be edited (user, 5 Nov 2026). Old bills saved with a typed labour amount keep their saved amount until they are re-saved.
 
 ## Katai rules (independent, no Zinda logic)
 
@@ -102,6 +102,6 @@ User text is escaped or set with `textContent`; no `eval`; inputs are validated 
 
 ## Testing
 
-- `node test.js` (jsdom): 342 checks: Zinda engine identical to the original and loaded once, labour slab boundaries, samiti, ₹10 round-up, manual labour, Katai independence, duplicate guard, repeat saves, backup → clear → restore, corrupt storage, a broken shared service, expense add / edit / delete, daily / monthly / yearly totals, customer statements, company grouping, P&L, cash / online separation, CSV guard, escaping. Test fixtures are not shipped.
+- `node test.js` (jsdom): 343 checks: Zinda engine identical to the original and loaded once, labour slab boundaries, samiti, ₹10 round-up, labour locked to auto, Katai independence, duplicate guard, repeat saves, backup → clear → restore, corrupt storage, a broken shared service, expense add / edit / delete, daily / monthly / yearly totals, customer statements, company grouping, P&L, cash / online separation, CSV guard, escaping. Test fixtures are not shipped.
 - Real Chromium at 1366×900, 820×1180 and 390×844: all 7 pages, every button clicked, save flows, all 33 Download Center files checked with openpyxl and pypdf (columns re-totalled).
 - Not tested: real phones, real print dialogs, restore through a real file picker.
