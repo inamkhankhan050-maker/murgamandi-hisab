@@ -266,7 +266,10 @@
     var sr = el('input', 'bb-q'); sr.type = 'search'; sr.placeholder = 'Customer search…'; pn.appendChild(sr);
     var tot = el('div', 'bb-tot'); pn.appendChild(tot);
     var wrap = el('div', 'bb-list'); pn.appendChild(wrap);
-    doc.body.appendChild(fab); doc.body.appendChild(ov);
+    var bar = doc.querySelector('.appbar-in');
+    if (bar) { fab.className = 'bb-fab bb-top'; var dot = bar.querySelector('#saveState'); if (dot) bar.insertBefore(fab, dot); else bar.appendChild(fab); }
+    else doc.body.appendChild(fab);
+    doc.body.appendChild(ov);
 
     function render() {
       var q = key(sr.value), all = list(sec), due = 0, adv = 0;

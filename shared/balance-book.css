@@ -32,6 +32,9 @@ body.bb-lock{overflow:hidden}
 .bb-a.adv{color:#047857}
 .bb-d{color:#64748b;font-size:12px;white-space:nowrap}
 .bb-n .bb-d{display:block;font-weight:400;font-size:11px}
+.bb-fab.bb-top{position:static;flex:0 0 auto;margin-left:auto;padding:7px 12px 7px 7px;font-size:13px;box-shadow:none;background:#fff;color:#0B4F8A;border:1px solid rgba(255,255,255,.6)}
+.bb-fab.bb-top .bb-r{width:22px;height:22px}
+@media(max-width:480px){.bb-fab.bb-top{padding:3px;gap:0;border-width:2px}.bb-fab.bb-top>span:last-child{display:none}.bb-fab.bb-top .bb-r{width:30px;height:30px;font-size:16px}}
 .bb-fab.up{bottom:calc(92px + env(safe-area-inset-bottom,0px))}
 .bb-act{text-align:right;white-space:nowrap}
 .bb-sm{padding:5px 9px;font-size:12px;margin-left:4px}
