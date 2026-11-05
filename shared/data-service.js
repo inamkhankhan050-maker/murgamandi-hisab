@@ -255,6 +255,12 @@
       [db.bills, db.payments].forEach(function (arr) { for (var i = arr.length - 1; i >= 0; i--) if (arr[i].sourceKey === key) { arr.splice(i, 1); n++; } });
       if (n) commit(db); return n;
     }
+    /** Removes every saved bill and payment of one section (zinda or katai). */
+    function deleteSection(section) {
+      if (section !== 'zinda' && section !== 'katai') return 0; var db = load(), n = 0;
+      [db.bills, db.payments].forEach(function (arr) { for (var i = arr.length - 1; i >= 0; i--) if (arr[i].section === section) { arr.splice(i, 1); n++; } });
+      if (n && !commit(db)) return -1; return n;
+    }
     function recordBySourceKey(key) {
       var db = load(); return findIn(db.bills, function (r) { return r.sourceKey === key; }) || findIn(db.payments, function (r) { return r.sourceKey === key; });
     }
@@ -402,7 +408,7 @@
     return {
       SECTIONS: SECTIONS, SOURCES: SOURCES, MODES: MODES, DEFAULT_CATEGORIES: DEFAULT_CATEGORIES,
       status: function () { S.loadDb(); return S.status(); }, available: function () { return S.available(); }, lastError: function () { return lastError; },
-      load: load, counts: counts,
+      load: load, counts: counts, deleteSection: deleteSection,
       listCustomers: listCustomers, findCustomerByName: findCustomerByName,
       saveBill: saveBill, savePayment: savePayment, saveBatch: saveBatch, findDuplicates: findDuplicates,
       updateBill: function (id, p) { return updateRecord('bill', id, p); }, updatePayment: function (id, p) { return updateRecord('payment', id, p); },

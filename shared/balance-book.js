@@ -295,9 +295,14 @@
     var totRow = el('div', 'bb-totrow'), tot = el('div', 'bb-tot'), bAll = el('button', 'btn bb-sm danger', 'Sab hatao'); bAll.type = 'button';
     totRow.appendChild(tot); totRow.appendChild(bAll); pn.appendChild(totRow);
     bAll.onclick = function () {
-      var n = list(sec).filter(function (r) { return r.opening; }).length;
-      if (!n) { toast('Hatane ke liye koi opening balance nahi'); return; }
-      ask('Sabhi ' + n + ' opening balance hatayein?', NAMES[sec] + ' ke saare opening balance ek saath hat jayenge. Saved bills nahi hatenge. Ye wapas nahi aayega.', 'Sab hatao', function () { if (!clearOpenings(sec)) { toast('Hata nahi paye'); return; } sr.value = ''; render(); changed(); toast(n + ' opening balance hata diye'); });
+      var all = list(sec), n = all.filter(function (r) { return r.opening; }).length, d = D(), nRec = d ? d.transactions({ section: sec }).length : 0;
+      if (!all.length) { toast('Hatane ke liye koi customer nahi'); return; }
+      var msg = NAMES[sec] + ' ke saare ' + all.length + ' customer list se hat jayenge' + (n ? ' (' + n + ' opening balance' : ' (') + (n && nRec ? ' + ' : '') + (nRec ? nRec + ' saved bill/payment' : '') + '). Zinda/Katai ka doosra hisab aur Kharcha nahi hatega. Ye wapas nahi aayega, pehle Backup le lijiye.';
+      ask('Sab customer hatayein?', msg, 'Sab hatao', function () {
+        if (n && !clearOpenings(sec)) { toast('Hata nahi paye'); return; }
+        if (nRec && d.deleteSection && d.deleteSection(sec) < 0) { toast('Saved records hata nahi paye'); return; }
+        sr.value = ''; render(); changed(); toast(all.length + ' customer hata diye');
+      });
     };
     var wrap = el('div', 'bb-list'); pn.appendChild(wrap);
     var bar = doc.querySelector('.appbar-in');
@@ -308,7 +313,7 @@
     function render() {
       var q = key(sr.value), all = list(sec), due = 0, adv = 0;
       all.forEach(function (r) { if (r.balance > 0) due += r.balance; else adv -= r.balance; });
-      bAll.hidden = !all.some(function (r) { return r.opening; });
+      bAll.hidden = !all.length;
       tot.textContent = all.length + ' customer · Baaki ' + money(due) + ' · Advance ' + money(adv);
       wrap.textContent = '';
       var rows = all.filter(function (r) { return !q || key(r.name).indexOf(q) >= 0; });
