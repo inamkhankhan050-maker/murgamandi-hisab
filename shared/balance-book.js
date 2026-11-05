@@ -13,7 +13,8 @@
    ============================================================ */
 (function (root) {
   'use strict';
-  var KEY = 'mmh.openBal.v1', PDFJS = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/';
+  var KEY = 'mmh.openBal.v1', CDN = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/';
+  var PDFJS = (function () { try { var s = root.document && root.document.currentScript; if (s && s.src) return s.src.replace(/shared\/balance-book\.js.*$/, 'assets/vendor/pdfjs/'); } catch (e) {} return CDN; })();
   var NAMES = { zinda: 'Zinda', katai: 'Katai' };
   function D() { return root.MMHData || null; }
   function U() { return D() && D().util; }
@@ -102,23 +103,25 @@
   function rowsFromMatrix(m) {
     m = (m || []).map(function (r) { return (r || []).map(function (c) { return norm(c); }); }).filter(function (r) { return r.some(function (c) { return c; }); });
     var nameCol = -1, balCol = -1, typeCol = -1, start = 0;
-    for (var h = 0; h < Math.min(m.length, 8) && nameCol < 0; h++) {
+    for (var h = 0; h < Math.min(m.length, 12) && nameCol < 0; h++) {
+      var hn = -1, hb = -1, ht = -1;
+      if (m[h].some(isNum)) continue;
       m[h].forEach(function (c, i) {
         var t = c.toLowerCase();
-        if (nameCol < 0 && /(name|naam|customer|party|grahak)/.test(t)) nameCol = i;
-        else if (/(closing|balance|baaki|baki|bal\b|due|amount|rakam)/.test(t)) balCol = i;
-        else if (/(type|dr\/cr|cr\/dr|status)/.test(t)) typeCol = i;
+        if (hn < 0 && /(name|naam|customer|party|grahak|particulars)/.test(t)) hn = i;
+        else if (/(closing|balance|baaki|baki|bal\b|due|amount|rakam)/.test(t)) hb = i;
+        else if (/(type|dr\/cr|cr\/dr|status)/.test(t)) ht = i;
       });
-      if (nameCol >= 0) start = h + 1;
+      if (hn >= 0) { nameCol = hn; balCol = hb; typeCol = ht; start = h + 1; }
     }
     var out = [], skipped = 0;
     for (var i = start; i < m.length; i++) {
       var r = m[i], nm = '', amt = NaN, ni = nameCol, bi = balCol;
       if (ni < 0) { for (var j = 0; j < r.length; j++) if (r[j] && !isNum(r[j]) && !/^\d+[.)]?$/.test(r[j])) { ni = j; break; } }
       if (bi < 0) { for (var k = r.length - 1; k >= 0; k--) if (k !== ni && r[k] && isNum(r[k])) { bi = k; break; } }
-      nm = ni >= 0 ? (r[ni] || '') : ''; amt = bi >= 0 ? parseAmount(r[bi], typeCol >= 0 ? r[typeCol] : '') : NaN;
+      nm = ni >= 0 ? (r[ni] || '') : ''; var tk = nm.split(' '); if (tk.length > 3 && tk.filter(function (w) { return w.length === 1; }).length >= tk.length * 0.8) nm = tk.join(''); amt = bi >= 0 ? parseAmount(r[bi], typeCol >= 0 ? r[typeCol] : '') : NaN;
       if (bi >= 0 && r[bi + 1] && /^(adv|advance|cr)$/i.test(r[bi + 1]) && amt > 0) amt = -amt;
-      if (!nm || isNaN(amt) || /^(total|grand total|kul)\b/i.test(nm)) { skipped++; continue; }
+      if (!nm || isNaN(amt) || /^(total|grand\s*total|sub\s*total|kul|page|carried\s*over|brought\s*forward|opening\s*balance|closing\s*balance)/i.test(nm)) { skipped++; continue; }
       out.push({ name: nm.slice(0, 80), paise: amt });
     }
     return { rows: out, skipped: skipped };
@@ -192,12 +195,15 @@
   }
   function loadPdfJs() {
     if (root.pdfjsLib) return Promise.resolve(root.pdfjsLib);
-    return new Promise(function (res, rej) {
-      var s = root.document.createElement('script'); s.src = PDFJS + 'pdf.min.js';
-      s.onload = function () { if (!root.pdfjsLib) return rej(new Error('PDF reader load nahi hua.')); root.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS + 'pdf.worker.min.js'; res(root.pdfjsLib); };
-      s.onerror = function () { rej(new Error('PDF padhne ke liye internet chahiye.')); };
-      root.document.head.appendChild(s);
-    });
+    var tryLoad = function (base) {
+      return new Promise(function (res, rej) {
+        var s = root.document.createElement('script'); s.src = base + 'pdf.min.js';
+        s.onload = function () { if (!root.pdfjsLib) return rej(new Error('PDF reader load nahi hua.')); root.pdfjsLib.GlobalWorkerOptions.workerSrc = base + 'pdf.worker.min.js'; res(root.pdfjsLib); };
+        s.onerror = function () { rej(new Error('PDF reader load nahi hua. Internet check kariye.')); };
+        root.document.head.appendChild(s);
+      });
+    };
+    return tryLoad(PDFJS).catch(function (e) { return PDFJS === CDN ? Promise.reject(e) : tryLoad(CDN); });
   }
   function pdfToMatrix(buf) {
     return loadPdfJs().then(function (lib) { return lib.getDocument({ data: new Uint8Array(buf) }).promise; }).then(function (pdf) {
@@ -206,11 +212,27 @@
     }).then(function (contents) {
       var out = [];
       contents.forEach(function (tc) {
-        var lines = {};
-        tc.items.forEach(function (it) { var s = norm(it.str); if (!s) return; var y = Math.round(it.transform[5] / 3); (lines[y] = lines[y] || []).push({ x: it.transform[4], s: s }); });
+        var lines = {}, dx = null, cx = null;
+        tc.items.forEach(function (it) {
+          var s = norm(it.str); if (!s) return; var x = it.transform[4], mid = x + (it.width || 0) / 2, y = Math.round(it.transform[5] / 3);
+          if (/^(debit|dr\.?)$/i.test(s)) dx = mid; else if (/^(credit|cr\.?)$/i.test(s)) cx = mid;
+          (lines[y] = lines[y] || []).push({ x: x, end: x + (it.width || 0), mid: mid, s: s, raw: it.str });
+        });
         Object.keys(lines).sort(function (a, b) { return b - a; }).forEach(function (y) {
-          var cells = lines[y].sort(function (a, b) { return a.x - b.x; }).map(function (c) { return c.s; });
-          out.push(cells);
+          var cells = lines[y].sort(function (a, b) { return a.x - b.x; });
+          // merge neighbouring text pieces of one name; numbers stay separate cells
+          var row = [];
+          cells.forEach(function (c) {
+            var num = isNum(c.s), last = row[row.length - 1];
+            if (last && !last.num && !num) { last.s += (c.x - last.end > 1.5 || /\s$/.test(last.raw) ? ' ' : '') + c.s; last.end = c.end; last.raw = c.raw; }
+            else if (last && last.num && num && c.x - last.end < 1.5) { last.s += c.s; last.end = c.end; last.mid = (last.mid + c.mid) / 2; }
+            else row.push({ s: c.s, mid: c.mid, end: c.end, raw: c.raw, num: num });
+          });
+          out.push(row.map(function (c) {
+            // Tally style "Debit | Credit" columns: an amount under Credit is an advance (owner ke upar)
+            if (c.num && dx !== null && cx !== null && Math.abs(c.mid - cx) < Math.abs(c.mid - dx) && !/^[-−]/.test(c.s)) return '-' + c.s;
+            return c.s;
+          }));
         });
       });
       if (!out.length) throw new Error('Is PDF mein text nahi hai (photo/scan). Excel ya CSV bhejiye.');
