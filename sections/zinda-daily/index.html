@@ -7,8 +7,8 @@
 <title>Zinda Daily Entry · MurgaMandi Hisab</title>
 <link rel="icon" href="../../assets/icons/logo-64.png" type="image/png">
 <link rel="apple-touch-icon" href="../../assets/icons/logo-192.png">
-<link rel="stylesheet" href="style.css?v=20261106g">
-<link rel="stylesheet" href="../../shared/balance-book.css?v=20261106g">
+<link rel="stylesheet" href="style.css?v=20261106h">
+<link rel="stylesheet" href="../../shared/balance-book.css?v=20261106h">
 </head>
 <body>
 <header class="appbar">
@@ -43,10 +43,6 @@
     <button class="btn primary" id="btnAdd"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Add Customer</button>
     <button class="btn" id="btnAdd10"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18"/></svg>Add 10 Rows</button>
     <button class="btn danger" id="btnClear"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>Clear All</button>
-    <button class="btn" id="btnExcel"><svg class="xl" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m8 8 8 8M16 8l-8 8"/></svg>Export to Excel</button>
-    <button class="btn" id="btnCsv"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 21h16"/></svg>CSV</button>
-    <button class="btn" id="btnPrint"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M7 14h10v7H7z"/></svg>Print / Save PDF</button>
-    <button class="btn wa" id="btnWa"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.1.1.6-.1 1.1z"/></svg>WhatsApp PDF</button>
   </section>
 
   <div class="main">
@@ -109,6 +105,15 @@
     <div class="card grand"><div class="l">Grand Total Payable <span class="tag">Payable</span></div><div class="n" id="tGrand">₹0</div><div class="w" id="tWords">Zero Rupees Only</div></div>
   </section>
   </div>
+  <section class="card exportbar" aria-label="Print and share">
+    <h3>Print / Share</h3>
+    <div class="ex-btns">
+      <button class="btn" id="btnExcel"><svg class="xl" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m8 8 8 8M16 8l-8 8"/></svg>Export to Excel</button>
+      <button class="btn" id="btnCsv"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 21h16"/></svg>CSV</button>
+      <button class="btn" id="btnPrint"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M7 14h10v7H7z"/></svg>Print / Save PDF</button>
+      <button class="btn wa" id="btnWa"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.1.1.6-.1 1.1z"/></svg>WhatsApp PDF</button>
+    </div>
+  </section>
 </main>
 
 <!-- Mobile: sticky grand total bar -->
@@ -136,13 +141,13 @@
 <div class="dlg-bg" id="dlg"><div class="dlg" role="alertdialog" aria-labelledby="dlgT"><h4 id="dlgT">Clear all customers?</h4><p id="dlgP">This removes every entry from this bill. It can't be undone.</p><div class="acts"><button class="btn" id="dlgNo">Cancel</button><button class="btn danger-fill" id="dlgYes">Clear All</button></div></div></div>
 <div class="toast" id="toast" role="status"></div>
 
-<script src="../../shared/storage-service.js?v=20261106g"></script>
-<script src="../../shared/data-service.js?v=20261106g"></script>
-<script src="../../engines/zinda/calc.js?v=20261106g"></script>
-<script src="../../engines/zinda/share.js?v=20261106g"></script>
-<script src="../../engines/zinda/keypad.js?v=20261106g"></script>
-<script src="../../shared/bill-print.js?v=20261106g"></script>
-  <script src="../../shared/balance-book.js?v=20261106g"></script>
-<script src="script.js?v=20261106g"></script>
+<script src="../../shared/storage-service.js?v=20261106h"></script>
+<script src="../../shared/data-service.js?v=20261106h"></script>
+<script src="../../engines/zinda/calc.js?v=20261106h"></script>
+<script src="../../engines/zinda/share.js?v=20261106h"></script>
+<script src="../../engines/zinda/keypad.js?v=20261106h"></script>
+<script src="../../shared/bill-print.js?v=20261106h"></script>
+  <script src="../../shared/balance-book.js?v=20261106h"></script>
+<script src="script.js?v=20261106h"></script>
 </body>
 </html>
