@@ -44,6 +44,7 @@
     return write(o);
   }
   function removeOpening(section, name) { var o = read(); delete o[section][key(name)]; return write(o); }
+  function clearOpenings(section) { var o = read(); if (!NAMES[section]) return false; o[section] = {}; return write(o); }
   function getOpening(section, name) { return read()[section][key(name)] || null; }
 
   // ---------- balance ----------
@@ -286,7 +287,13 @@
     var prev = el('div', 'bb-prev'); prev.hidden = true; pn.appendChild(prev);
     // list
     var sr = el('input', 'bb-q'); sr.type = 'search'; sr.placeholder = 'Customer search…'; pn.appendChild(sr);
-    var tot = el('div', 'bb-tot'); pn.appendChild(tot);
+    var totRow = el('div', 'bb-totrow'), tot = el('div', 'bb-tot'), bAll = el('button', 'btn bb-sm danger', 'Sab hatao'); bAll.type = 'button';
+    totRow.appendChild(tot); totRow.appendChild(bAll); pn.appendChild(totRow);
+    bAll.onclick = function () {
+      var n = list(sec).filter(function (r) { return r.opening; }).length;
+      if (!n) { toast('Hatane ke liye koi opening balance nahi'); return; }
+      ask('Sabhi ' + n + ' opening balance hatayein?', NAMES[sec] + ' ke saare opening balance ek saath hat jayenge. Saved bills nahi hatenge. Ye wapas nahi aayega.', 'Sab hatao', function () { if (!clearOpenings(sec)) { toast('Hata nahi paye'); return; } sr.value = ''; render(); changed(); toast(n + ' opening balance hata diye'); });
+    };
     var wrap = el('div', 'bb-list'); pn.appendChild(wrap);
     var bar = doc.querySelector('.appbar-in');
     if (bar) { fab.className = 'bb-fab bb-top'; var dot = bar.querySelector('#saveState'); if (dot) bar.insertBefore(fab, dot); else bar.appendChild(fab); }
@@ -296,6 +303,7 @@
     function render() {
       var q = key(sr.value), all = list(sec), due = 0, adv = 0;
       all.forEach(function (r) { if (r.balance > 0) due += r.balance; else adv -= r.balance; });
+      bAll.hidden = !all.some(function (r) { return r.opening; });
       tot.textContent = all.length + ' customer · Baaki ' + money(due) + ' · Advance ' + money(adv);
       wrap.textContent = '';
       var rows = all.filter(function (r) { return !q || key(r.name).indexOf(q) >= 0; });
@@ -395,6 +403,6 @@
     root0.addEventListener('focusout', function (e) { if (match(e.target)) setTimeout(function () { if (doc.activeElement !== pk._in) pk.hidden = true; }, 150); });
     root0.addEventListener('keydown', function (e) { if (match(e.target) && (e.key === 'Escape' || e.key === 'Enter')) pk.hidden = true; });
   }
-  root.MMHBal = { KEY: KEY, current: current, list: list, setOpening: setOpening, removeOpening: removeOpening, getOpening: getOpening,
+  root.MMHBal = { KEY: KEY, current: current, list: list, setOpening: setOpening, removeOpening: removeOpening, clearOpenings: clearOpenings, getOpening: getOpening,
     ledger: ledger, fieldText: fieldText, parseAmount: parseAmount, rowsFromMatrix: rowsFromMatrix, csvToMatrix: csvToMatrix, readFile: readFile, mount: mount, picker: picker };
 })(typeof window !== 'undefined' ? window : this);
