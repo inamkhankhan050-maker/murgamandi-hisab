@@ -211,7 +211,7 @@
   function shareReceipt() {
     var m = receiptModel();
     if (!m) { toast('Pehle pieces, KG aur rate sahi bhariye'); return; }
-    var send = function (cv) { window.ZindaShare.share(cv || window.ZindaShare.receiptCanvas(m), 'Bill ' + m.name + ' ' + m.date, 'Bill · ' + m.date); };
+    var send = function (cv) { window.ZindaShare.share(cv || window.ZindaShare.receiptCanvas(m), (m.name || 'Customer') + ' ' + m.date, (m.name || 'Customer') + ' · ' + m.date); };
     if (!B) return send(null);
     B.render(billModel().model, send);
   }

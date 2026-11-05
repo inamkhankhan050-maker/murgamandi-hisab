@@ -390,7 +390,7 @@
     var name = c.name.trim() || 'Customer';
     var cv = window.KataiShare.billCanvas({ heading: heading(), title: 'Katai Bill', customer: name, date: dateText(),
       cols: [{ h: '#', w: 50 }, { h: 'Product', w: 260, b: 1 }, { h: 'Qty', w: 170, r: 1 }, { h: 'Rate', w: 150, r: 1 }, { h: 'Amount', w: 190, r: 1, b: 1 }], rows: rows, sum: sum });
-    window.KataiShare.share(cv, 'Katai Bill ' + name + ' ' + dateText(), 'Katai Bill · ' + name + ' · ' + dateText());
+    window.KataiShare.share(cv, name + ' ' + dateText(), name + ' · ' + dateText());
   }
   function shareSheet() {
     var d = exportData(); if (!d.count) { toast('Pehle kam se kam ek customer ka bill bhariye'); return; }

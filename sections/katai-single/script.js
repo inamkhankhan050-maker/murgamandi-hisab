@@ -201,7 +201,7 @@
     var name = state.name.trim() || 'Customer';
     var cv = window.KataiShare.billCanvas({ heading: heading(), title: 'Katai Bill', customer: name, date: dateText(),
       cols: [{ h: '#', w: 50 }, { h: 'Product', w: 260, b: 1 }, { h: 'Qty', w: 170, r: 1 }, { h: 'Rate', w: 150, r: 1 }, { h: 'Amount', w: 190, r: 1, b: 1 }], rows: rows, sum: sum });
-    var send = function (c2) { window.KataiShare.share(c2 || cv, 'Katai Bill ' + name + ' ' + dateText(), 'Katai Bill · ' + name + ' · ' + dateText()); };
+    var send = function (c2) { window.KataiShare.share(c2 || cv, name + ' ' + dateText(), name + ' · ' + dateText()); };
     if (!B) return send(null);
     B.render(billModel().model, send);
   }

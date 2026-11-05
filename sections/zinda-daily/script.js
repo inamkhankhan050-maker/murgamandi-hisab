@@ -552,7 +552,7 @@
     var row = null; state.rows.forEach(function (r) { if (r.id === id) row = r; });
     var m = row && receiptModel(row);
     if (!m) { toast('Is row mein pieces, KG aur rate sahi bhariye'); return; }
-    window.ZindaShare.share(window.ZindaShare.receiptCanvas(m), 'Bill ' + m.name + ' ' + m.date, 'Bill · ' + m.name + ' · ' + m.date);
+    window.ZindaShare.share(window.ZindaShare.receiptCanvas(m), m.name + ' ' + m.date, m.name + ' · ' + m.date);
   }
 
   // ---------- WhatsApp PDF: the whole sheet ----------
