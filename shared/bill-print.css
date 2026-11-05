@@ -38,6 +38,6 @@
 @media print{
   @page{margin:8mm}
   body.print-rcpt .rcpt.bill-mode{max-width:190mm !important;padding:0 !important}
-  body.print-rcpt .rcpt img.bill-img{display:block;width:100%;height:auto;margin:0 auto}
+  body.print-rcpt .rcpt img.bill-img{display:block;width:auto;height:auto;max-width:100%;max-height:276mm;margin:0 auto}
   .bp-wrap,.bp-top{display:none !important}
 }

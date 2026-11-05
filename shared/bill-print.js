@@ -119,102 +119,99 @@
   function draw(model, imgs) {
     var doc = root.document, cv = doc.createElement('canvas'), g = cv.getContext && cv.getContext('2d');
     if (!g) return null;
-    var T = model.theme || getTheme(), firm = model.firm || {}, W = 1000, SC = 2, RH = 54;
-    var rows = model.rows || [], minRows = model.minRows || 4, extras = model.extras || [];
-    var nRows = Math.max(rows.length, minRows);
-    var headH = 272, nameY = headH + 2, thY = nameY + 56, bodyY = thY + RH;
-    var totY = bodyY + nRows * RH, exY = totY + RH, grandY = exY + extras.length * RH, footY = grandY + RH, H = footY + 120;
-    cv.width = W * SC; cv.height = H * SC; g.scale(SC, SC);
-    var COL = [0, 115, 250, 560, 735, 1000];
+    // Page geometry copied from the reference bill (900 × 1462, 41px blank border, blank space under the table).
+    var T = model.theme || getTheme(), firm = model.firm || {}, PW = 900, SC = 2, M = 41, RH = 56;
+    var X0 = M, X1 = PW - M, CW = X1 - X0;
+    var rows = model.rows || [], extras = model.extras || [];
+    var nRows = Math.max(rows.length, (model.minRows || 6) + Math.max(0, 6 - extras.length));
+    var headY = M, headH = 267, nameY = headY + headH + 3, nameH = 55, thY = nameY + nameH, bodyY = thY + 55;
+    var totY = bodyY + nRows * RH, exY = totY + RH, grandY = exY + extras.length * RH, endY = grandY + RH;
+    var PH = Math.max(1462, endY + 257);
+    cv.width = PW * SC; cv.height = PH * SC; g.scale(SC, SC);
+    var COL = [X0, 140, 259, 527, 683, X1];
     var rect = function (x, y, w, h, c) { g.fillStyle = c; g.fillRect(x, y, w, h); };
     var font = function (size, weight, italic) { g.font = (italic ? 'italic ' : '') + (weight || 400) + ' ' + size + 'px ' + F; };
     var text = function (t, x, y, size, color, weight, align, maxW, italic) {
       t = String(t == null ? '' : t); if (!t) return;
       var s = size; font(s, weight, italic);
-      if (maxW) { while (s > 11 && g.measureText(t).width > maxW) { s -= 1; font(s, weight, italic); } if (g.measureText(t).width > maxW) { while (t.length > 1 && g.measureText(t + '…').width > maxW) t = t.slice(0, -1); t += '…'; } }
+      if (maxW) { while (s > 10 && g.measureText(t).width > maxW) { s -= 1; font(s, weight, italic); } if (g.measureText(t).width > maxW) { while (t.length > 1 && g.measureText(t + '…').width > maxW) t = t.slice(0, -1); t += '…'; } }
       g.fillStyle = color; g.textAlign = align || 'left'; g.textBaseline = 'middle'; g.fillText(t, x, y);
     };
-    var hline = function (y, x0, x1) { rect(x0 == null ? 0 : x0, y, (x1 == null ? W : x1) - (x0 == null ? 0 : x0), 1.5, T.grid); };
-    var vline = function (x, y0, y1) { rect(x, y0, 1.5, y1 - y0, T.grid); };
+    var hline = function (y, x0, x1) { rect(x0 == null ? X0 : x0, y - 0.6, (x1 == null ? X1 : x1) - (x0 == null ? X0 : x0), 1.2, T.grid); };
+    var vline = function (x, y0, y1) { rect(x - 0.6, y0, 1.2, y1 - y0, T.grid); };
+    var mid = function (i) { return (COL[i] + COL[i + 1]) / 2; };
 
-    // paper
-    rect(0, 0, W, H, T.paper);
+    // page: plain paper all round (blank border and blank space below)
+    rect(0, 0, PW, PH, mix(T.paper, '#FFF7D6', 0.35));
+    rect(X0, headY, CW, endY - headY, T.paper);
     // header
-    rect(0, 0, W, headH, T.main);
+    rect(X0, headY, CW, headH, T.main);
     var name = firm.name || model.fallbackTitle || 'MurgaMandi Hisab';
     var hasLogo = imgs && imgs.logo;
-    if (firm.phone) text(firm.phone, W / 2, 34, 26, T.hi, 700, 'center', 900);
-    var nx = hasLogo ? 580 : W / 2, nw = hasLogo ? 760 : 940;
-    text(name, nx, 108, 84, '#FFFFFF', 800, 'center', nw);
+    if (firm.phone) text(firm.phone, PW / 2, headY + 28, 22, T.hi, 700, 'center', CW - 40);
+    text(name, hasLogo ? 450 : PW / 2, headY + 95, 70, '#FFFFFF', 800, 'center', hasLogo ? 560 : CW - 40);
     if (hasLogo) {
-      var L = imgs.logo, cx = 92, cy = 112, r = 62;
-      g.save(); g.beginPath(); g.arc(cx, cy, r + 4, 0, Math.PI * 2); g.fillStyle = '#FFFFFF'; g.fill();
+      var L = imgs.logo, cx = 108, cy = headY + 106, r = 48;
+      g.save(); g.beginPath(); g.arc(cx, cy, r + 3, 0, Math.PI * 2); g.fillStyle = '#FFFFFF'; g.fill();
+      g.lineWidth = 2.5; g.strokeStyle = T.head; g.stroke();
       g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.clip();
-      var sc = Math.max((2 * r) / L.width, (2 * r) / L.height) , dw = L.width * sc, dh = L.height * sc;
+      var sc = Math.max((2 * r) / L.width, (2 * r) / L.height), dw = L.width * sc, dh = L.height * sc;
       if (L.width / L.height > 1.6 || L.height / L.width > 1.6) { sc = Math.min((2 * r) / L.width, (2 * r) / L.height); dw = L.width * sc; dh = L.height * sc; }
       g.drawImage(L, cx - dw / 2, cy - dh / 2, dw, dh); g.restore();
     }
     // shop line + date
-    var dy = 168, dh2 = 52;
-    text(firm.shop || '', 290, dy + dh2 / 2, 26, T.hi, 700, 'center', 540);
-    rect(COL[3] + 20, dy, 180, dh2, T.light); text('Date', COL[3] + 110, dy + dh2 / 2, 28, '#3B1F0E', 700, 'center');
-    rect(COL[4] + 22, dy, W - COL[4] - 22, dh2, T.paper); text(shortDate(model.date), (COL[4] + 22 + W) / 2, dy + dh2 / 2, 28, '#2B1B0E', 700, 'center', 240);
+    var dy = headY + 159, dh2 = 55;
+    text(firm.shop || '', (X0 + COL[3]) / 2 + 10, dy + dh2 / 2, 24, T.hi, 700, 'center', COL[3] - X0 - 40);
+    rect(COL[3], dy, COL[4] - COL[3], dh2, T.light); text('Date', mid(3), dy + dh2 / 2, 22, '#3B1F0E', 700, 'center');
+    rect(COL[4], dy, X1 - COL[4], dh2, T.paper); text(shortDate(model.date), mid(4), dy + dh2 / 2, 21, '#2B1B0E', 600, 'center', X1 - COL[4] - 16);
     // address band
-    rect(0, dy + dh2 + 2, W, headH - dy - dh2 - 2, T.main); hline(dy + dh2 + 1);
-    text(firm.address || '', W / 2, (dy + dh2 + headH) / 2 + 1, 27, T.hi, 700, 'center', 940);
+    text(firm.address || '', PW / 2, dy + dh2 + (headY + headH - dy - dh2) / 2, 26, T.hi, 700, 'center', CW - 40);
     // name row
-    rect(0, nameY, COL[1], 54, T.light); text('Name', COL[1] / 2, nameY + 27, 26, '#3B1F0E', 700, 'center');
-    rect(COL[1] + 2, nameY, W - COL[1] - 2, 54, '#E5E7EB'); text(model.name || 'Customer', (COL[1] + W) / 2, nameY + 27, 32, '#2B1B0E', 700, 'center', 820);
+    rect(X0, nameY, COL[1] - X0, nameH, T.light); text('Name', mid(0), nameY + nameH / 2, 22, '#3B1F0E', 700, 'center');
+    rect(COL[1], nameY, X1 - COL[1], nameH, '#E8E8E8'); text(model.name || 'Customer', (COL[1] + X1) / 2, nameY + nameH / 2, 30, '#3B1F0E', 700, 'center', X1 - COL[1] - 30);
     // table head
-    rect(0, thY, W, RH, T.head);
-    ['Qty', 'Weight', 'Particulars', 'Rate', 'Amount'].forEach(function (h, i) { text(h, (COL[i] + COL[i + 1]) / 2, thY + RH / 2, 26, '#FFFFFF', 700, 'center'); });
+    rect(X0, thY, CW, 55, T.head);
+    ['Qty', 'Weight', 'Particulars', 'Rate', 'Amount'].forEach(function (h, i) { text(h, mid(i), thY + 27.5, 21, '#FFFFFF', 700, 'center'); });
     // body rows
     for (var i = 0; i < nRows; i++) {
       var y = bodyY + i * RH, r0 = rows[i];
       if (r0) {
-        text(r0.qty, COL[1] / 2, y + RH / 2, 25, '#2B1B0E', 700, 'center', 105);
-        text(r0.weight, (COL[1] + COL[2]) / 2, y + RH / 2, 25, '#2B1B0E', 700, 'center', 125);
-        text(r0.part, COL[2] + 12, y + (r0.partNote ? RH / 2 - 7 : RH / 2), 25, '#2B1B0E', 600, 'left', 296);
-        if (r0.partNote) text(r0.partNote, COL[2] + 12, y + RH - 11, 13, '#6B4F3A', 400, 'left', 296);
-        text(r0.rate, (COL[3] + COL[4]) / 2, y + RH / 2, 25, '#2B1B0E', 700, 'center', 165);
-        text(r0.amount, W - 12, y + (r0.note ? RH / 2 - 6 : RH / 2), 25, '#2B1B0E', 700, 'right', 250);
-        if (r0.note) text(r0.note, W - 12, y + RH - 10, 12, '#6B4F3A', 400, 'right', 250);
+        text(r0.qty, mid(0), y + RH / 2, 24, '#3B1F0E', 700, 'center', COL[1] - X0 - 12);
+        text(r0.weight, mid(1), y + RH / 2, 24, '#3B1F0E', 700, 'center', COL[2] - COL[1] - 12);
+        text(r0.part, COL[2] + 10, y + RH / 2, 22, '#3B1F0E', 600, 'left', COL[3] - COL[2] - 20);
+        text(r0.rate, mid(3), y + RH / 2, 24, '#3B1F0E', 700, 'center', COL[4] - COL[3] - 12);
+        text(r0.amount, X1 - 10, y + RH / 2, 24, '#3B1F0E', 700, 'right', X1 - COL[4] - 16);
       }
       hline(y + RH);
     }
     // total row
     var t0 = model.total || {};
-    rect(0, totY, W, RH, T.light);
-    rect(COL[3], totY, COL[4] - COL[3], RH, T.paper);
-    text(t0.qty, 10, totY + RH / 2, 25, '#2B1B0E', 700, 'left', 100);
-    text(t0.weight, COL[1] + 10, totY + RH / 2, 25, '#2B1B0E', 700, 'left', 125);
-    text('Total', COL[2] + 12, totY + RH / 2, 26, '#2B1B0E', 700, 'left');
-    text(t0.amount, W - 12, totY + RH / 2, 26, '#2B1B0E', 700, 'right', 250);
+    rect(X0, totY, COL[3] - X0, RH, T.light); rect(COL[4], totY, X1 - COL[4], RH, T.light);
+    text(t0.qty, mid(0), totY + RH / 2, 24, '#3B1F0E', 700, 'center', COL[1] - X0 - 12);
+    text(t0.weight, mid(1), totY + RH / 2, 24, '#3B1F0E', 700, 'center', COL[2] - COL[1] - 12);
+    text('Total', COL[2] + 10, totY + RH / 2, 24, '#3B1F0E', 700, 'left');
+    text(t0.amount, X1 - 10, totY + RH / 2, 24, '#3B1F0E', 700, 'right', X1 - COL[4] - 16);
     hline(totY + RH);
     // extras
     extras.forEach(function (e, k) {
-      var y = exY + k * RH;
-      if (e.hl) { rect(COL[2], y, COL[3] - COL[2], RH, T.light); rect(COL[4], y, W - COL[4], RH, T.light); }
-      text(e.label, COL[2] + 12, y + RH / 2, 25, '#2B1B0E', 700, 'left', 296);
-      if (e.mid) text(e.mid, (COL[3] + COL[4]) / 2, y + RH / 2, 13, '#4B3A2E', 400, 'center', 165);
-      if (e.left != null && e.left !== '') text(e.left, 10, y + RH / 2, 25, '#2B1B0E', 700, 'left', COL[2] - 20);
-      text(e.value, W - 12, y + RH / 2, 25, '#2B1B0E', 700, 'right', 250);
-      hline(y + RH, e.left != null && e.left !== '' ? 0 : COL[2]);
+      var y = exY + k * RH, hasLeft = e.left != null && e.left !== '';
+      if (e.hl) { rect(COL[2], y, COL[3] - COL[2], RH, T.light); rect(COL[4], y, X1 - COL[4], RH, T.light); }
+      text(e.label, COL[2] + 10, y + RH / 2, 24, '#3B1F0E', 700, 'left', COL[3] - COL[2] - 20);
+      if (hasLeft) text(e.left, mid(0), y + RH / 2, 24, '#3B1F0E', 700, 'center', COL[1] - X0 - 8);
+      text(e.value, X1 - 10, y + RH / 2, 24, '#3B1F0E', 700, 'right', X1 - COL[4] - 16);
+      hline(y + RH, hasLeft ? X0 : COL[2]);
     });
     // grand total
     var gr = model.grand || { label: 'G. TOTAL', value: '' };
-    rect(COL[2], grandY, COL[3] - COL[2], RH, T.main); rect(COL[4], grandY, W - COL[4], RH, T.main);
-    text(gr.label, COL[2] + 12, grandY + RH / 2, 26, '#FFFFFF', 800, 'left', 296);
-    text(gr.value, W - 12, grandY + RH / 2, 27, T.hi, 800, 'right', 250);
-    // grid verticals
-    vline(COL[1], nameY, totY + RH); vline(COL[2], thY, footY); vline(COL[3], thY, footY); vline(COL[4], thY, footY);
-    hline(footY);
-    // footer: words + stamp
-    rect(0, footY + 1.5, W, H - footY - 1.5, mix(T.paper, '#FFFFFF', 0.4));
-    text(model.words || '', 14, footY + 26, 17, '#3B2A1E', 400, 'left', 700, true);
-    if (imgs && imgs.stamp) { var st = imgs.stamp, sh = 104, sw = st.width * sh / st.height; if (sw > 200) { sw = 200; sh = st.height * sw / st.width; } g.globalAlpha = 0.92; g.drawImage(st, W - sw - 30, footY + 8, sw, sh); g.globalAlpha = 1; }
-    // outer border
-    g.strokeStyle = T.main; g.lineWidth = 4; g.strokeRect(2, 2, W - 4, H - 4);
+    rect(COL[2], grandY, COL[3] - COL[2], RH, T.main); rect(COL[4], grandY, X1 - COL[4], RH, T.main);
+    text(gr.label, COL[2] + 10, grandY + RH / 2, 24, '#FFFFFF', 700, 'left', COL[3] - COL[2] - 20);
+    text(gr.value, X1 - 10, grandY + RH / 2, 25, T.hi, 800, 'right', X1 - COL[4] - 16);
+    // grid lines
+    vline(COL[1], nameY, totY + RH); vline(COL[2], thY, endY); vline(COL[3], thY, endY); vline(COL[4], thY, endY);
+    g.strokeStyle = T.grid; g.lineWidth = 1.2; g.strokeRect(X0, headY, CW, endY - headY);
+    // amount in words under the table (right), stamp over it
+    text(model.words || '', X1, endY + 30, 17, '#3B2A1E', 400, 'right', CW);
+    if (imgs && imgs.stamp) { var st = imgs.stamp, sh = 165, sw = st.width * sh / st.height; if (sw > 220) { sw = 220; sh = st.height * sw / st.width; } g.globalAlpha = 0.9; g.drawImage(st, 755 - sw / 2, endY + 75 - sh / 2, sw, sh); g.globalAlpha = 1; }
     return cv;
   }
   /** draw after the firm's logo and stamp pictures have loaded. cb(canvas|null) */
