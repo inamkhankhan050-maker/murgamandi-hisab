@@ -117,11 +117,11 @@
     if (!v.ok) { m.name = $('sName').value.trim(); m.extras = [{ label: 'Average' }, { label: 'Samiti' }, { label: 'Labour' }, { label: 'Total Bill', hl: 1 }, { label: 'Last Balance' }, { label: 'Received' }]; return { model: m, ok: false }; }
     var r = calcSingle(v), L = C.ledger(row, r.final), avg = C.averageKg(v.netGrams, v.pieces);
     m.rows.push({ qty: C.formatInt(v.pieces), weight: C.formatKg(v.netGrams), part: 'Chicken', partNote: v.jaalGrams ? 'Total ' + C.formatKg(v.grams) + ' − Jaal ' + C.formatKg(v.jaalGrams) + ' kg' : '',
-      rate: n(v.ratePaise), amount: n(r.basic), note: 'avg ' + avg + ' · ÷' + r.labourDivisor });
+      rate: n(v.ratePaise), amount: n(r.basic) });
     m.total = { qty: C.formatInt(v.pieces), weight: C.formatKg(v.netGrams), amount: n(r.basic) };
-    m.extras.push({ label: 'Average', value: avg + ' kg' });
+    m.extras.push({ label: 'Average', left: avg + ' kg', value: '' });
     m.extras.push({ label: 'Samiti', value: n(r.samiti) });
-    m.extras.push({ label: 'Labour', mid: r.manual ? 'manual' : v.pieces + '÷' + r.labourDivisor + '×5 + round ₹' + (r.adjustment / 100).toFixed(2), value: n(r.labourAdjusted) });
+    m.extras.push({ label: 'Labour', value: n(r.labourAdjusted) });
     m.extras.push({ label: 'Total Bill', value: r.final == null ? '' : n(r.final), hl: 1 });
     var led = L.any && L.ok, rec = led ? L.received : 0;
     m.extras.push({ label: 'Last Balance', value: led && L.oldBal ? n(L.oldBal) : '—' });

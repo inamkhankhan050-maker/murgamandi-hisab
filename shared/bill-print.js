@@ -111,7 +111,7 @@
   var F = 'Roboto, "Noto Sans", "Segoe UI", Arial, sans-serif';
   /**
    * model: { firm, date (YYYY-MM-DD), name, rows:[{qty,weight,part,rate,amount,note}], minRows,
-   *          total:{qty,weight,amount}, extras:[{label,mid,value,hl}], grand:{label,value}, words, fallbackTitle }
+   *          total:{qty,weight,amount}, extras:[{label,mid,value,left,hl}] (left = value shown under Qty), grand:{label,value}, words, fallbackTitle }
    * Returns a canvas, or null where canvas is not available.
    */
   function draw(model, imgs) {
@@ -195,8 +195,9 @@
       if (e.hl) { rect(COL[2], y, COL[3] - COL[2], RH, T.light); rect(COL[4], y, W - COL[4], RH, T.light); }
       text(e.label, COL[2] + 12, y + RH / 2, 25, '#2B1B0E', 700, 'left', 296);
       if (e.mid) text(e.mid, (COL[3] + COL[4]) / 2, y + RH / 2, 13, '#4B3A2E', 400, 'center', 165);
+      if (e.left != null && e.left !== '') text(e.left, 10, y + RH / 2, 25, '#2B1B0E', 700, 'left', COL[2] - 20);
       text(e.value, W - 12, y + RH / 2, 25, '#2B1B0E', 700, 'right', 250);
-      hline(y + RH, COL[2]);
+      hline(y + RH, e.left != null && e.left !== '' ? 0 : COL[2]);
     });
     // grand total
     var gr = model.grand || { label: 'G. TOTAL', value: '' };
