@@ -327,3 +327,9 @@ th{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--mute
 .gtable .g-nmw{display:flex;align-items:center;gap:5px}
 .gtable .g-nmw .g-name{flex:1;min-width:0}
 .gtable .g-sn{flex:none;min-width:20px;height:20px;padding:0 4px;border-radius:6px;background:#EEF4FB;color:#0B4F8A;font-weight:700;font-size:11px;display:inline-flex;align-items:center;justify-content:center}
+/* rows scroll inside the grid like Zinda Daily (user 2026-11-06) */
+@media (min-width:768px){.g-scroll{max-height:calc(100vh - 200px);min-height:360px;overflow:auto}}
+.gtable thead{position:sticky;top:0;z-index:5}
+.gtable thead th{position:static}
+.gtable thead th.g-nm{position:sticky;left:0}
+@media print{.g-scroll{max-height:none!important;overflow:visible!important}.gtable thead{position:static}}
