@@ -60,7 +60,7 @@
   function cust(id) { for (var i = 0; i < state.customers.length; i++) if (state.customers[i].id === id) return state.customers[i]; return null; }
   function calc(c) { var bill = K.computeBill(c.lines); return { bill: bill, L: LG(c, bill.total) }; }
   var toastT;
-  var autoMap = {};
+  var autoMap = {}, prevNames = {};
   function LG(r, f) { return window.MMHBal ? window.MMHBal.ledger(K.ledger, r, f) : K.ledger(r, f); }
   function toast(msg) { var t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, 2600); }
   function confirmDlg(title, text, yes, onYes) {
@@ -441,9 +441,11 @@
     Object.keys(fmap).forEach(function (id) {
       $(id).addEventListener('input', function () { var c = cust(selectedId); if (!c) return; c[fmap[id]] = $(id).value.slice(0, fmap[id] === 'name' ? 80 : 40); renderEditor(); renderList(); save(); });
     });
+    $('eName').addEventListener('focus', function () { if (selectedId) prevNames[selectedId] = $('eName').value.trim(); });
     $('eName').addEventListener('change', function () {
       var BB = window.MMHBal, c = cust(selectedId); if (!BB || !c) return;
-      var cur = String(c.oldBal).trim(); if (!(cur === '' || autoMap[c.id] === cur)) return;
+      var cur = String(c.oldBal).trim(), pn = prevNames[c.id] || '', o0 = { onOrBefore: state.date || todayISO(), excludeSourceKey: srcKey(c.id) };
+      var mine = cur === '' || autoMap[c.id] === cur || (!!pn && pn !== c.name.trim() && BB.isBalanceOf('katai', pn, cur, o0)); prevNames[c.id] = c.name.trim(); if (!mine) return;
       var lb = c.name.trim() ? BB.current('katai', c.name, { onOrBefore: state.date || todayISO(), excludeSourceKey: srcKey(c.id) }) : null;
       if (!lb) { if (cur === '') return; c.oldBal = ''; delete autoMap[c.id]; $('eOld').value = ''; renderEditor(); renderList(); save(); return; }
       if (cur === BB.fieldText(lb.balance)) return;

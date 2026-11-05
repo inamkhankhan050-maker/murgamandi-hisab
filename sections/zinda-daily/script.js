@@ -328,10 +328,11 @@
   // ---------- UI helpers ----------
   var toastT;
   function LG(r, f) { return window.MMHBal ? window.MMHBal.ledger(C.ledger, r, f) : C.ledger(r, f); }
-  var autoMap = {}; // row id -> pichla balance jo app ne bhara
+  var autoMap = {}, prevNames = {}; // row id -> pichla balance jo app ne bhara; row id -> naam badalne se pehle
   function autoBal(row) {
     var BB = window.MMHBal; if (!BB || !row) return;
-    var cur = String(row.oldBal).trim(), mine = cur === '' || autoMap[row.id] === cur; if (!mine) return;
+    var cur = String(row.oldBal).trim(), pn = prevNames[row.id] || '', o0 = { onOrBefore: state.date || todayISO(), excludeSourceKey: srcKey(row.id) };
+    var mine = cur === '' || autoMap[row.id] === cur || (!!pn && pn !== row.name.trim() && BB.isBalanceOf('zinda', pn, cur, o0)); prevNames[row.id] = row.name.trim(); if (!mine) return;
     var lb = row.name.trim() ? BB.current('zinda', row.name, { onOrBefore: state.date || todayISO(), excludeSourceKey: srcKey(row.id) }) : null;
     if (!lb) { if (cur === '') return; row.oldBal = ''; delete autoMap[row.id]; var e0 = document.querySelector('.r[data-id="' + row.id + '"] [data-f="oldBal"]'); if (e0) e0.value = ''; updateRow(row); updateTotals(); renderPreview(); save(); return; }
     if (cur === BB.fieldText(lb.balance)) return;
@@ -450,6 +451,7 @@
       if (e.target.dataset.f !== 'name') return; var id = e.target.closest('.r').dataset.id;
       autoBal(state.rows.filter(function (r) { return r.id === id; })[0]);
     });
+    body.addEventListener('focusin', function (e) { if (e.target.dataset && e.target.dataset.f === 'name') { var rr = e.target.closest('.r'); if (rr) prevNames[rr.dataset.id] = e.target.value.trim(); } });
     body.addEventListener('focusin', function (e) {
       var r = e.target.closest('.r'); if (!r || state.selectedId === r.dataset.id) return;
       state.selectedId = r.dataset.id; renderPreview();

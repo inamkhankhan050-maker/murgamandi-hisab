@@ -45,6 +45,11 @@
   }
   function removeOpening(section, name) { var o = read(); delete o[section][key(name)]; return write(o); }
   function clearOpenings(section) { var o = read(); if (!NAMES[section]) return false; o[section] = {}; return write(o); }
+  /** true when `text` (Pichla field) is exactly the balance of customer `name` — i.e. app ne pichle customer ka balance bhara tha */
+  function isBalanceOf(section, name, text, opts) {
+    name = norm(name); text = String(text == null ? '' : text).trim(); if (!name || !text) return false;
+    var c = current(section, name, opts); return !!c && fieldText(c.balance) === text;
+  }
   function getOpening(section, name) { return read()[section][key(name)] || null; }
 
   // ---------- balance ----------
@@ -403,6 +408,6 @@
     root0.addEventListener('focusout', function (e) { if (match(e.target)) setTimeout(function () { if (doc.activeElement !== pk._in) pk.hidden = true; }, 150); });
     root0.addEventListener('keydown', function (e) { if (match(e.target) && (e.key === 'Escape' || e.key === 'Enter')) pk.hidden = true; });
   }
-  root.MMHBal = { KEY: KEY, current: current, list: list, setOpening: setOpening, removeOpening: removeOpening, clearOpenings: clearOpenings, getOpening: getOpening,
+  root.MMHBal = { KEY: KEY, current: current, list: list, setOpening: setOpening, removeOpening: removeOpening, clearOpenings: clearOpenings, isBalanceOf: isBalanceOf, getOpening: getOpening,
     ledger: ledger, fieldText: fieldText, parseAmount: parseAmount, rowsFromMatrix: rowsFromMatrix, csvToMatrix: csvToMatrix, readFile: readFile, mount: mount, picker: picker };
 })(typeof window !== 'undefined' ? window : this);

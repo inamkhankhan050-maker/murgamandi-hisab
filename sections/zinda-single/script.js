@@ -304,11 +304,12 @@
       D.deleteBill(id); if (savedId === id) { savedId = null; save(); } renderSaved(); renderRecent(); toast('Saved bill deleted');
     });
   }
-  var autoOld = null; // pichla balance jo app ne khud bhara (user ne nahi likha)
+  var autoOld = null, prevName = ''; // pichla balance jo app ne khud bhara (user ne nahi likha); naam badalne se pehle wala customer
   function balanceHint(auto) {
     var h = $('sHint'); if (!h || !D) return;
     var BB = window.MMHBal, name = $('sName').value.trim(), lb = name ? (BB ? BB.current('zinda', name, { onOrBefore: billDate || todayISO(), excludeId: savedId }) : D.lastBalance(name, 'zinda', { onOrBefore: billDate || todayISO(), excludeId: savedId })) : null;
-    var cur = $('sOld').value.trim(), mine = cur === '' || (autoOld !== null && cur === autoOld);
+    var cur = $('sOld').value.trim(), mine = cur === '' || (autoOld !== null && cur === autoOld) || (!!BB && !!prevName && prevName !== name && BB.isBalanceOf('zinda', prevName, cur, { onOrBefore: billDate || todayISO(), excludeId: savedId }));
+    if (auto) prevName = name;
     if (!lb) { h.hidden = true; if (BB && auto && !savedId && cur !== '' && mine) { $('sOld').value = ''; autoOld = null; render(); save(); renderSaved(); } return; }
     h.hidden = false; h.dataset.paise = String(lb.balance);
     $('sHintT').textContent = 'Zinda balance: ' + U.balanceText(lb.balance) + ' (' + U.dateText(lb.date) + ')';
@@ -335,7 +336,7 @@
     $('sFirm').addEventListener('input', renderSaved);
     $('sLabour').addEventListener('blur', function () { if (!labourManual) render(); });
     Object.keys(sF).forEach(function (f) { $(sF[f]).addEventListener('input', function () { render(); save(); renderSaved(); }); });
-    $('sName').addEventListener('change', function () { balanceHint(true); }); $('sName').addEventListener('blur', function () { balanceHint(true); });
+    $('sName').addEventListener('focus', function () { prevName = $('sName').value.trim(); }); $('sName').addEventListener('change', function () { balanceHint(true); }); $('sName').addEventListener('blur', function () { balanceHint(true); });
     $('sHintUse').onclick = function () { var p = +$('sHint').dataset.paise; if (isNaN(p)) return; $('sOld').value = autoOld = window.MMHBal ? window.MMHBal.fieldText(p) : String(p / 100); render(); save(); renderSaved(); };
     $('sSave').onclick = function () { saveRecord(false); };
     $('sRecent').addEventListener('click', onRecentClick);

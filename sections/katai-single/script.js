@@ -275,11 +275,12 @@
       D.deleteBill(id); if (state.savedId === id) { state.savedId = null; save(); } renderSaved(); renderRecent(); toast('Saved bill deleted');
     });
   }
-  var autoOld = null;
+  var autoOld = null, prevName = '';
   function balanceHint(auto) {
     var h = $('kHint'); if (!h || !D) return;
     var BB = window.MMHBal, name = state.name.trim(), o = { onOrBefore: state.date || todayISO(), excludeId: state.savedId }, lb = name ? (BB ? BB.current('katai', name, o) : D.lastBalance(name, 'katai', o)) : null;
-    var cur = String(state.oldBal).trim(), mine = cur === '' || (autoOld !== null && cur === autoOld);
+    var cur = String(state.oldBal).trim(), mine = cur === '' || (autoOld !== null && cur === autoOld) || (!!BB && !!prevName && prevName !== name && BB.isBalanceOf('katai', prevName, cur, o));
+    if (auto) prevName = name;
     if (!lb) { h.hidden = true; if (BB && auto && !state.savedId && cur !== '' && mine) { state.oldBal = ''; $('kOld').value = ''; autoOld = null; render(); save(); renderSaved(); } return; }
     h.hidden = false; h.dataset.paise = String(lb.balance);
     $('kHintT').textContent = 'Katai balance: ' + U.balanceText(lb.balance) + ' (' + U.dateText(lb.date) + ')';
@@ -311,7 +312,7 @@
     Object.keys(map).forEach(function (id) { $(id).addEventListener('input', function () { state[map[id]] = $(id).value.slice(0, 80); render(); save(); renderSaved(); }); });
     $('kDate').addEventListener('change', function () { state.date = /^\d{4}-\d{2}-\d{2}$/.test($('kDate').value) ? $('kDate').value : todayISO(); $('kDate').value = state.date; save(); renderSaved(); balanceHint(); schedulePreview(); });
     $('kFirm').addEventListener('input', renderSaved);
-    $('kName').addEventListener('change', function () { balanceHint(true); }); $('kName').addEventListener('blur', function () { balanceHint(true); });
+    $('kName').addEventListener('focus', function () { prevName = $('kName').value.trim(); }); $('kName').addEventListener('change', function () { balanceHint(true); }); $('kName').addEventListener('blur', function () { balanceHint(true); });
     $('kHintUse').onclick = function () { var p = +$('kHint').dataset.paise; if (isNaN(p)) return; state.oldBal = autoOld = window.MMHBal ? window.MMHBal.fieldText(p) : String(p / 100); $('kOld').value = state.oldBal; render(); save(); renderSaved(); };
     $('kSave').onclick = function () { saveRecord(false); };
     $('kToDaily').onclick = toDaily;
