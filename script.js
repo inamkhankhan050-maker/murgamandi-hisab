@@ -29,8 +29,29 @@
     $('gRec').textContent = U.money(cash + onl); $('gRecSplit').textContent = 'Cash ' + U.money(cash) + ' · Online ' + U.money(onl);
     $('gExp').textContent = U.money(ex); $('gExpN').textContent = exps.length + ' expense' + (exps.length === 1 ? '' : 's');
     $('gRecords').textContent = String(c.bills + c.payments + c.expenses); $('gCust').textContent = c.customers + ' customer' + (c.customers === 1 ? '' : 's');
+    var buys = D.getSetting('purchaseByDate') || {}, buy = typeof buys[today] === 'number' ? buys[today] : null;
+    var inp = $('gBuyIn'); if (inp && document.activeElement !== inp) inp.value = buy == null ? '' : U.plain(buy).replace(/\.00$/, '');
+    $('gBuyN').textContent = buy == null ? 'Zinda murga / maal ki kharid' : 'Saved: ' + U.money(buy);
+    var pl = amt - (buy || 0) - ex, card = $('gPlCard');
+    card.classList.remove('profit', 'loss');
+    if (buy == null) { $('gPl').textContent = '—'; $('gPlL').textContent = 'Aaj ka Profit / Loss'; $('gPlN').textContent = 'Purchase likhiye, profit dikh jayega'; }
+    else {
+      card.classList.add(pl >= 0 ? 'profit' : 'loss');
+      $('gPlL').textContent = pl >= 0 ? 'Aaj ka Profit' : 'Aaj ka Loss';
+      $('gPl').textContent = U.money(Math.abs(pl));
+      $('gPlN').textContent = 'Bills ' + U.money(amt) + ' − Purchase ' + U.money(buy) + ' − Kharcha ' + U.money(ex);
+    }
     var last = D.getSetting('lastBackupAt');
     $('bkLast').textContent = last ? 'Last backup downloaded: ' + new Date(last).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'No backup downloaded yet from this device.';
+  }
+  function saveBuy() {
+    if (!D) return;
+    var raw = $('gBuyIn').value.trim(), today = U.todayISO(), buys = D.getSetting('purchaseByDate') || {};
+    buys = JSON.parse(JSON.stringify(buys));
+    if (raw === '') { delete buys[today]; D.setSetting('purchaseByDate', buys); glance(); toast('Aaj ki purchase hata di'); return; }
+    var v = U.parseMoney(raw);
+    if (!(typeof v === 'number' && isFinite(v) && v >= 0)) { toast('Sahi amount likhiye (jaise 45000)'); $('gBuyIn').focus(); return; }
+    buys[today] = v; D.setSetting('purchaseByDate', buys); glance(); toast('Aaj ki purchase ' + U.money(v) + ' save ho gayi');
   }
   function showStatus() {
     var n = $('dbNotice');
@@ -131,6 +152,7 @@
     $('today').textContent = new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
     showStatus();
     if (!D) { $('glance').hidden = true; $('btnBackup').disabled = true; return; }
+    $('gBuySave').onclick = saveBuy; $('gBuyIn').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); saveBuy(); } });
     glance();
     $('btnBackup').onclick = backup;
     $('restoreFile').addEventListener('change', function (e) { var f = e.target.files && e.target.files[0]; restore(f); e.target.value = ''; });

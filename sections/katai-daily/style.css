@@ -214,3 +214,66 @@ th{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--mute
 .inbox{display:none;margin:0 0 12px;padding:10px 14px;border:1px solid #86EFAC;background:#F0FDF4;color:#166534;border-radius:12px;font-size:13px}
 .inbox.show{display:block}
 @media print{.inbox{display:none!important}}
+
+/* ---------- Spreadsheet grid (one row per customer) ---------- */
+.gridcard{padding:14px;margin-top:16px}
+.g-hd{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.g-hd h3{margin:0}
+.g-help{margin:6px 0 10px;font-size:13px;color:var(--muted)}
+.g-scroll{overflow:auto;max-height:78vh;border:1px solid var(--line);border-radius:10px}
+.gtable{border-collapse:separate;border-spacing:0;font-size:13px;min-width:100%}
+.gtable th,.gtable td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:5px;vertical-align:top;background:#fff}
+.gtable thead th{position:sticky;top:0;z-index:3;background:#0B4F8A;color:#fff;font-weight:700;text-align:center;white-space:nowrap}
+.gtable thead tr.g-rate th{top:44px;background:#E8F0FB;color:var(--ink)}
+.gtable thead th small{display:block;font-weight:500;font-size:11px;opacity:.8}
+.gtable .g-idx{width:34px;text-align:center;color:var(--faint)}
+.gtable .g-nm{position:sticky;left:0;z-index:2;min-width:170px;background:#fff;box-shadow:2px 0 0 var(--line)}
+.gtable thead .g-nm{z-index:4;background:#0B4F8A}
+.gtable thead tr.g-rate .g-nm{background:#E8F0FB}
+.g-rl{font-size:12px;text-align:right!important}
+.gtable .g-it{min-width:96px;width:96px}
+.gtable .g-x{min-width:130px}
+.gtable .g-act{min-width:92px;white-space:nowrap}
+.gtable input,.gtable select{width:100%;min-height:32px;padding:4px 6px;border:1px solid #CBD5E1;border-radius:7px;background:#fff;font-size:13px}
+.gtable .g-name{font-weight:700}
+.gtable .g-q{font-weight:700;margin-bottom:3px}
+.gtable .g-r{font-size:12px;color:var(--muted);background:#F8FAFC}
+.gtable .g-dr{text-align:right}
+.g-amt{display:block;text-align:right;font-size:12px;font-weight:700;color:#0B4F8A;min-height:16px;margin-top:2px}
+.g-amt.bad{color:var(--err)}
+.gtable td.g-it.on{background:#F3F8FF}
+.g-pay select{margin-bottom:3px}
+.g-sub{display:block;font-size:11px;color:var(--faint);margin-top:2px}
+.g-sub.bad{color:var(--err)}
+.g-fin b{display:block;font-size:16px;text-align:right}
+.g-fin b.dr{color:var(--due)}
+.g-fin b.cr{color:#047857}
+.g-fin .g-sub{text-align:right}
+.g-wa{min-height:32px;padding:4px 10px;font-size:13px}
+.gtable .ic{min-height:32px;width:32px;border:1px solid #F3C7C7;color:var(--err);background:#fff;border-radius:8px;cursor:pointer;margin-left:4px}
+.gtable .rec-chip{display:inline-block;margin-top:4px;font-size:11px;padding:1px 7px;border-radius:999px;background:#FEF3C7;color:#92400E}
+.gtable .rec-chip.ok{background:#DCFCE7;color:#166534}
+.gtable .rec-chip.chg{background:#FFE4E6;color:#9F1239}
+.gtable td.ra{text-align:right}
+.g-add{margin-top:10px}
+.yield{margin-top:16px}
+.y-hd{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.y-hd h3{margin:0}
+.y-live{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--muted)}
+.y-live input{min-height:42px;width:200px;padding:8px 10px;border:2px solid #0B4F8A;border-radius:10px;font-size:16px;font-weight:700}
+.ptable td.pc{font-weight:800;color:#0B4F8A}
+.ptable tr.live td{background:#ECFDF5;font-weight:700}
+@media (max-width:700px){.gtable .g-nm{min-width:120px}.gtable .g-it{min-width:84px;width:84px}.y-live input{width:100%}.y-live{width:100%}}
+@media print{.gtable input,.gtable select{border:0;padding:0;background:none}.g-act,.g-add,.g-help,.gtable thead tr.g-rate{display:none}.g-scroll{max-height:none;overflow:visible}.gtable thead th,.gtable tfoot td,.gtable .g-nm{position:static}}
+.gtable tfoot td{background:#FFF7E6;font-weight:700;white-space:nowrap;vertical-align:middle}
+.gtable tfoot .g-ft0 td{border-top:2px solid #0B4F8A}
+.gtable tfoot .g-ft2 td{background:#FDE7C3}
+.gtable tfoot td.g-nm{background:#FFF7E6}
+.gtable tfoot .g-ft2 td.g-nm{background:#FDE7C3}
+.gtable tfoot .g-sub{display:inline;margin:0}
+.gtable thead tr:first-child th{height:44px}
+.gtable tfoot td.g-x{white-space:normal;font-size:12px;max-width:170px}
+.gtable td.g-x,.gtable th.g-x{width:150px;max-width:170px}
+.gtable td input,.gtable td select{display:block}
+.gtable .g-nm .rec-chip{display:inline-block}
+.gtable tfoot td.g-note{font-weight:600;color:var(--muted);font-size:11px}

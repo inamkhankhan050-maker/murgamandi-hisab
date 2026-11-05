@@ -16,7 +16,7 @@
     { id: 'thigh', name: 'Thigh' }, { id: 'breast', name: 'Breast' }, { id: 'tangri', name: 'Tangri' },
     { id: 'wings', name: 'Wings' }, { id: 'fullleg', name: 'Full Leg' }, { id: 'haddi', name: 'Haddi' },
     { id: 'pota', name: 'Pota' }, { id: 'panja', name: 'Panja' }, { id: 'tandoori', name: 'Tandoori' },
-    { id: 'dress', name: 'Dress' }
+    { id: 'dress', name: 'Dress Tandoori' }
   ];
   var UNITS = { kg: { label: 'KG', places: 3 }, pcs: { label: 'Pcs', places: 0 } };
   var MAX_QTY = 1e9, MAX_MONEY = 1e13; // keeps every product inside safe integers

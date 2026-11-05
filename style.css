@@ -47,7 +47,7 @@ button,input{font:inherit;color:inherit}
 .sec-h.big{text-align:center;font-size:34px;margin:34px 0 18px;color:#14284B;letter-spacing:-.01em}
 .no-match{text-align:center;color:var(--muted)}
 .notice{background:#FFF7E6;border:1px solid #F5D9A8;color:#7A4B00;padding:10px 12px;border-radius:10px;margin:0 0 12px;position:relative}
-.glance{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.glance{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .g-card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:14px 16px;display:flex;flex-direction:column;gap:2px;min-width:0}
 .g-l{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--faint)}
 .g-n{font-size:22px;color:var(--brand);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -126,3 +126,10 @@ button,input{font:inherit;color:inherit}
 /* picture logos for single-bill tiles */
 .art img.art-png{width:96px;height:96px}
 @media (max-width:640px){.art img.art-png{width:76px;height:76px}}
+
+.g-buy{border-color:#93C5FD}
+.g-buy-row{display:flex;gap:6px;margin:4px 0 2px}
+.g-buy-row input{flex:1;min-width:0;min-height:40px;padding:6px 10px;border:2px solid #1D4ED8;border-radius:10px;font-size:18px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.g-buy-btn{min-height:40px;padding:6px 14px;border:0;border-radius:10px;background:#1D4ED8;color:#fff;font-weight:700;cursor:pointer}
+.g-pl.profit{background:#ECFDF5;border-color:#6EE7B7}.g-pl.profit .g-n{color:#047857}
+.g-pl.loss{background:#FEF2F2;border-color:#FCA5A5}.g-pl.loss .g-n{color:#B91C1C}

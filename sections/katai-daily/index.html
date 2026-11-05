@@ -7,8 +7,8 @@
 <title>Katai Daily Customer Entry · MurgaMandi Hisab</title>
 <link rel="icon" href="../../assets/icons/logo-64.png" type="image/png">
 <link rel="apple-touch-icon" href="../../assets/icons/logo-192.png">
-<link rel="stylesheet" href="style.css?v=20261105x">
-<link rel="stylesheet" href="../../shared/balance-book.css?v=20261105x">
+<link rel="stylesheet" href="style.css?v=20261106a">
+<link rel="stylesheet" href="../../shared/balance-book.css?v=20261106a">
 </head>
 <body>
 <header class="appbar">
@@ -47,46 +47,24 @@
     <div class="rate-acts"><button class="btn" id="btnFillRates" type="button">Fill empty rates of all customers</button></div>
   </section>
 
-  <div class="d-main">
-    <section class="card list" aria-label="Customers">
-      <h3>Customers</h3>
-      <p class="rec-meta" id="recMeta"></p>
-      <div class="t-scroll">
-        <table class="ctable">
-          <thead><tr><th class="c-idx">#</th><th>Customer</th><th class="ra">Items</th><th class="ra">Aaj ka Bill</th><th class="ra">Pichla</th><th class="ra">Received</th><th class="ra">Balance</th><th class="c-act"><span class="sr">Actions</span></th></tr></thead>
-          <tbody id="cBody"></tbody>
-          <tfoot><tr><td></td><td>TOTAL</td><td class="ra" id="fItems">0</td><td class="ra" id="fBill">₹0</td><td class="ra" id="fOld">₹0</td><td class="ra" id="fRec">₹0</td><td class="ra" id="fBal">₹0</td><td class="c-act"></td></tr></tfoot>
-        </table>
-      </div>
-      <p class="empty-state" id="cEmpty">Abhi koi customer nahi. "+ Add Customer" dabaiye.</p>
-    </section>
-
-    <section class="card editor" id="editor" aria-label="Customer entry" aria-live="polite">
-      <div class="ed-hd"><h3 id="edTitle">Customer Entry</h3><button class="btn icon" id="edClose" type="button" aria-label="Close editor">✕</button></div>
-      <div id="edBody">
-        <label class="fld"><span>Customer Name</span><input id="eName" autocomplete="off" maxlength="80"></label>
-        <div class="p-table" role="table" aria-label="Katai products">
-          <div class="p-row p-head" role="row"><div>Product</div><div>Unit</div><div class="ra">Qty</div><div class="ra">Rate ₹</div><div class="ra">Amount</div></div>
-          <div id="pBody" role="rowgroup"></div>
-        </div>
-        <div class="led-grid">
-          <label class="fld"><span>Pichla Balance</span><input id="eOld" class="n" inputmode="decimal" autocomplete="off"></label>
-          <label class="fld"><span>Rec Cash</span><input id="eCash" class="n" inputmode="decimal" autocomplete="off"></label>
-          <label class="fld"><span>Rec Online</span><input id="eOnline" class="n" inputmode="decimal" autocomplete="off"></label>
-        </div>
-        <div id="edSum"></div>
-        <p class="s-err" id="eErr" role="alert"></p>
-        <div class="acts"><button class="btn danger" id="edDel" type="button">Delete customer</button><button class="btn wa" id="edWa" type="button"><img src="../../assets/icons/whatsapp.svg" alt="" width="16" height="16">WhatsApp bill</button><button class="btn primary" id="edNext" type="button">Save &amp; next customer</button></div>
-      </div>
-      <p class="empty" id="edEmpty">Kisi customer par click karke uska maal bhariye.</p>
-    </section>
-  </div>
-
-  <section class="card ptotals" aria-label="Product totals">
-    <h3>Aaj ka Product-wise Total</h3>
-    <div class="t-scroll"><table class="ptable"><thead><tr><th>Product</th><th class="ra">KG</th><th class="ra">Pcs</th><th class="ra">Amount</th></tr></thead><tbody id="ptBody"></tbody></table></div>
+  <section class="card gridcard" aria-label="Customers">
+    <div class="g-hd"><h3>Customers</h3><p class="rec-meta" id="recMeta"></p></div>
+    <p class="g-help">Har item mein upar <b>kg</b>, neeche <b>rate</b>. Pichla balance naam chunte hi apne aap aa jata hai.</p>
+    <div class="g-scroll">
+      <table class="gtable" id="gTable">
+        <thead id="gHead"></thead>
+        <tbody id="cBody"></tbody>
+        <tfoot id="gFoot"></tfoot>
+      </table>
+    </div>
+    <p class="empty-state" id="cEmpty">Abhi koi customer nahi. "+ Add Customer" dabaiye.</p>
+    <div class="g-add"><button class="btn primary" id="btnAdd2" type="button">+ Add Customer</button></div>
   </section>
-
+  <section class="card yield" aria-label="Item yield">
+    <div class="y-hd"><h3>Item ka % (Zinda murga se)</h3>
+      <label class="y-live"><span>Zinda murga (live bird) kitne kg kata?</span><input id="liveKg" class="n" inputmode="decimal" autocomplete="off" placeholder="jaise 500"></label></div>
+    <div class="t-scroll"><table class="ptable"><thead><tr><th>Item</th><th class="ra">Total KG</th><th class="ra">Total ₹</th><th class="ra">Avg Rate</th><th class="ra">KG ÷ Zinda KG</th><th class="ra">% nikla</th></tr></thead><tbody id="ptBody"></tbody></table></div>
+  </section>
   <section class="kpis" aria-label="Grand totals">
     <div class="card kpi"><div class="l">Customers</div><div class="n" id="tCust">0</div></div>
     <div class="card kpi"><div class="l">Received</div><div class="n" id="tRec">₹0</div><div class="w2" id="tRecSplit"></div></div>
@@ -99,12 +77,12 @@
 <div class="dlg-bg" id="dlg"><div class="dlg" role="alertdialog" aria-labelledby="dlgT"><h4 id="dlgT">Are you sure?</h4><p id="dlgP"></p><div class="acts"><button class="btn" id="dlgNo" type="button">Cancel</button><button class="btn danger-fill" id="dlgYes" type="button">Yes</button></div></div></div>
 <div class="toast" id="toast" role="status"></div>
 
-<script src="../../shared/storage-service.js?v=20261105x"></script>
-<script src="../../shared/data-service.js?v=20261105x"></script>
-<script src="../../engines/katai/calc.js?v=20261105x"></script>
-<script src="../../engines/katai/share.js?v=20261105x"></script>
-<script src="../../shared/bill-print.js?v=20261105x"></script>
-  <script src="../../shared/balance-book.js?v=20261105x"></script>
-<script src="script.js?v=20261105x"></script>
+<script src="../../shared/storage-service.js?v=20261106a"></script>
+<script src="../../shared/data-service.js?v=20261106a"></script>
+<script src="../../engines/katai/calc.js?v=20261106a"></script>
+<script src="../../engines/katai/share.js?v=20261106a"></script>
+<script src="../../shared/bill-print.js?v=20261106a"></script>
+  <script src="../../shared/balance-book.js?v=20261106a"></script>
+<script src="script.js?v=20261106a"></script>
 </body>
 </html>
