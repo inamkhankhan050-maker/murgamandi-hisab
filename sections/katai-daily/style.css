@@ -370,3 +370,40 @@ th{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--mute
   .gtable tfoot td.g-fx{text-align:left}
 }
 @media (max-width:900px){.kpis{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.kpis .card{min-width:0;overflow-wrap:anywhere}}
+/* Compact phone card (user 2026-11-06: Zinda jaisa chhota, modern) */
+@media (max-width:767px){
+  .gtable tbody tr{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 6px;padding:10px;border-radius:12px;margin-bottom:10px}
+  .gtable tbody td.g-nm{grid-column:1/4;order:-2;align-self:center}
+  .gtable tbody td.g-nm .rec-chip:empty{display:none}
+  .gtable tbody td.g-act{grid-column:4/5;order:-1;margin:0;gap:4px;align-items:center}
+  .gtable tbody td.g-act>*{width:36px;min-width:36px;min-height:36px;height:36px}
+  .gtable .g-nmw{display:flex;align-items:center;gap:6px}
+  .gtable .g-name{min-height:38px;font-size:15px}
+  .gtable .g-sn{min-width:26px;height:26px;font-size:12.5px;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center}
+  .gtable tbody td.g-it{grid-column:span 2;gap:4px;padding:5px 6px 6px!important;border-radius:9px;grid-template-columns:1fr 1fr}
+  .gtable tbody td.g-it::before{font-size:11.5px;margin-bottom:0;color:#334155}
+  .gtable tbody td.g-it .g-amt{font-size:11.5px;line-height:1.1;color:#047857}
+  .gtable tbody td.g-it .g-amt:empty{display:none}
+  .gtable input,.gtable select{min-height:36px;height:36px;font-size:15px;padding:4px 7px}
+  .gtable td[data-l]::before{font-size:11.5px;margin-bottom:2px}
+  .gtable tbody td.g-x:not(.g-pay):not(.g-fin){grid-column:span 1}
+  .gtable tbody td.g-pay{grid-column:span 2;display:grid;grid-template-columns:1fr 1fr;gap:4px}
+  .gtable tbody td.g-pay::before{grid-column:1/-1}
+  .gtable .g-pay select{margin:0;padding-right:2px}
+  .gtable .g-sub:empty{display:none}
+  .gtable .g-sub{font-size:11px;grid-column:1/-1}
+  .gtable tbody td.g-fin{grid-column:span 1;padding:4px 6px!important;font-size:12px;line-height:1.2;border-radius:9px}
+  .gtable tbody td.g-fin::before{font-size:10.5px;margin-bottom:1px;content:'Final'}
+  .gtable tbody td.g-fin *{font-size:inherit}
+  .gtable tbody td.g-fin b,.gtable tbody td.g-fin strong{font-size:14px}
+}
+@media (max-width:767px){
+  .gtable tbody td.g-it{align-content:start}
+  .gtable tbody td.g-x:not(.g-pay):not(.g-fin)::before{content:'Pichla'}
+  .gtable tbody td.g-pay::before{content:'Payment'}
+  .gtable tbody td.g-fin{overflow-wrap:anywhere;font-size:11px}
+  .gtable tbody td.g-fin b,.gtable tbody td.g-fin strong{font-size:13px}
+  .gtable tbody td.g-nm .rec-chip{margin-top:2px;display:inline-block}
+}
+@media (max-width:767px){.gtable tbody td.g-fin,.gtable tbody td.g-fin *{white-space:normal!important;max-width:100%}}
+@media (max-width:767px){.gtable tbody td.g-pay{align-content:start}}
