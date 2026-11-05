@@ -130,13 +130,13 @@
   function rowLedger(row, c) {
     c = c || C.computeRow(row);
     var billBlank = !String(row.pieces).trim() && !String(row.kg).trim();
-    if (c.status === 'valid') return C.ledger(row, c.result.final);
-    if (billBlank && row.name.trim()) { var l = C.ledger(row, 0); return l.any ? l : null; }
+    if (c.status === 'valid') return LG(row, c.result.final);
+    if (billBlank && row.name.trim()) { var l = LG(row, 0); return l.any ? l : null; }
     return null;
   }
   function dueText(p) { return p < 0 ? 'Adv ' + C.formatINR(-p, { decimals: p % 100 ? 2 : 0 }) : C.formatINR(p, { decimals: p % 100 ? 2 : 0 }); }
   function updateLedgerCell(row, el, c) {
-    var l = C.ledger(row, 0);
+    var l = LG(row, 0);
     ['oldBal', 'cash', 'online'].forEach(function (f) { var i = el.querySelector('[data-f="' + f + '"]'); i.classList.toggle('err', !!l.errors[f]); i.title = l.errors[f] || ''; });
     var L = rowLedger(row, c), o = el.querySelector('[data-o="due"]');
     if (L && L.ok) { setV(o, dueText(L.due)); o.classList.toggle('adv', L.due < 0); }
@@ -201,7 +201,7 @@
       rc('Adjusted Labour', C.formatINR(r.labourAdjusted, { decimals: 2 })) +
       '<div class="rc big"><span class="k">Final Amount</span><span class="val">' + (r.final == null ? '—' : C.formatINR(r.final)) + '</span></div>' +
       (r.warning ? '<div class="warn">' + esc(r.warning) + '</div>' : '') +
-      ledgerHTML(C.ledger(row, r.final)) +
+      ledgerHTML(LG(row, r.final)) +
       '<p class="footnote">Labour is adjusted upward only, so the final bill lands on a multiple of ₹10. Basic and Samiti never change.</p>';
     p.innerHTML = h;
   }
@@ -327,6 +327,14 @@
 
   // ---------- UI helpers ----------
   var toastT;
+  function LG(r, f) { return window.MMHBal ? window.MMHBal.ledger(C.ledger, r, f) : C.ledger(r, f); }
+  function autoBal(row) {
+    var BB = window.MMHBal; if (!BB || !row || !row.name.trim() || String(row.oldBal).trim() !== '') return;
+    var lb = BB.current('zinda', row.name, { onOrBefore: state.date || todayISO(), excludeSourceKey: srcKey(row.id) }); if (!lb) return;
+    row.oldBal = BB.fieldText(lb.balance);
+    var el = document.querySelector('.r[data-id="' + row.id + '"] [data-f="oldBal"]'); if (el) el.value = row.oldBal;
+    updateRow(row); updateTotals(); renderPreview(); save(); toast(row.name.trim() + ': pichla balance ' + (U ? U.balanceText(lb.balance) : row.oldBal) + ' bhar diya');
+  }
   function toast(msg) { var t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, 2600); }
   function confirmDlg(onYes) {
     var d = $('dlg'); d.classList.add('show'); $('dlgNo').focus();
@@ -349,7 +357,7 @@
     var c = C.computeRow(row), base = { section: 'zinda', source: SRC, sourceKey: srcKey(row.id), date: state.date || todayISO(), customerName: name, firm: firmName() };
     if (c.status === 'valid') {
       if (c.result.final == null) return { bad: true };
-      var L = C.ledger(row, c.result.final); if (!L.ok) return { bad: true };
+      var L = LG(row, c.result.final); if (!L.ok) return { bad: true };
       base.amount = c.result.final; base.cash = L.cash; base.online = L.online; base.prevBalance = L.oldBal; base.balance = L.due;
       base.details = { pieces: c.pieces, grams: c.grams, jaalGrams: c.jaalGrams, netGrams: c.netGrams, ratePaise: c.ratePaise, basic: c.result.basic, samiti: c.result.samiti, labour: c.result.labourAdjusted, labourOriginal: c.result.labourOriginal, adjustment: c.result.adjustment };
       base.inputs = {}; FIELDS.forEach(function (f) { base.inputs[f] = String(row[f] || ''); });
@@ -357,7 +365,7 @@
     }
     var billBlank = !String(row.pieces).trim() && !String(row.kg).trim();
     if (billBlank) {
-      var P = C.ledger(row, 0); if (!P.ok) return { bad: true };
+      var P = LG(row, 0); if (!P.ok) return { bad: true };
       if (P.cash + P.online <= 0) return null;
       base.cash = P.cash; base.online = P.online; base.prevBalance = P.oldBal; base.balance = P.due;
       return { kind: 'payment', input: base };
@@ -433,6 +441,10 @@
       if (state.selectedId === id || !state.selectedId) { state.selectedId = id; renderPreview(); }
       if (f === 'name') applySearch();
       save();
+    });
+    body.addEventListener('change', function (e) {
+      if (e.target.dataset.f !== 'name') return; var id = e.target.closest('.r').dataset.id;
+      autoBal(state.rows.filter(function (r) { return r.id === id; })[0]);
     });
     body.addEventListener('focusin', function (e) {
       var r = e.target.closest('.r'); if (!r || state.selectedId === r.dataset.id) return;
@@ -513,7 +525,7 @@
   function receiptModel(row) {
     var v = C.validateRow(row);
     if (!v.ok) return null;
-    var r = C.calculate(v.pieces, v.netGrams, v.ratePaise), L = C.ledger(row, r.final);
+    var r = C.calculate(v.pieces, v.netGrams, v.ratePaise), L = LG(row, r.final);
     var m2 = function (p) { return C.formatINR(p, { decimals: p % 100 ? 2 : 0 }); };
     var m = { firm: firmName(), name: String(row.name || '').trim() || 'Customer', date: todayText(), boxes: [], rows: [], led: [] };
     m.boxes.push(['PIECES', C.formatInt(v.pieces)], ['TOTAL KG', C.formatKg(v.grams)]);
@@ -609,6 +621,7 @@
     window.ZindaShare.init(toast);
     $('shareDlg').addEventListener('keydown', function (e) { if (e.key === 'Escape') $('shareDlg').classList.remove('show'); });
     bind(); renderAll(); window.ZindaKeypad.init();
+    if (window.MMHBal) window.MMHBal.mount({ section: 'zinda', raise: true, toast: toast, confirm: function (t, b, ok, fn) { fn(); } });
     window.addEventListener('storage', function (e) { if (e.key === 'mmh.db.v2') { refreshIndex(); updateRecMeta(); } });
     if (D && D.status().corrupt) { $('storageNotice').textContent = D.status().message; $('storageNotice').classList.add('show'); }
     if (got) { $('inbox').textContent = got + ' bill' + (got === 1 ? '' : 's') + ' added from Zinda Single Customer Bill.'; $('inbox').classList.add('show'); save(); }

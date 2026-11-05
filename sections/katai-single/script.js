@@ -55,6 +55,7 @@
   }
   function heading() { return $('kFirm').value.trim() || 'MurgaMandi Hisab'; }
   var toastT;
+  function LG(r, f) { return window.MMHBal ? window.MMHBal.ledger(K.ledger, r, f) : K.ledger(r, f); }
   function toast(msg) { var t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, 2600); }
   function confirmDlg(title, text, yes, onYes) {
     if (typeof title === 'function') { onYes = title; title = 'Clear this bill?'; text = 'All products and amounts of this bill will be emptied.'; yes = 'Clear'; }
@@ -103,7 +104,7 @@
       row.querySelector('[data-o="amt"]').textContent = c.status === 'valid' ? K.money(c.amount) : (c.status === 'incomplete' ? 'Fill qty & rate' : c.status === 'invalid' ? 'Check' : '—');
       Object.keys(c.errors).forEach(function (k) { errs.push(p.name + ': ' + c.errors[k]); });
     });
-    var L = K.ledger(state, bill.total);
+    var L = LG(state, bill.total);
     ['oldBal', 'cash', 'online'].forEach(function (f) { $({ oldBal: 'kOld', cash: 'kCash', online: 'kOnline' }[f]).classList.toggle('err', !!L.errors[f]); if (L.errors[f]) errs.push(L.errors[f]); });
 
     var s = $('kSummary'); s.textContent = '';
@@ -140,7 +141,7 @@
     });
     var ok = !!bill.items && !bill.invalid && !bill.incomplete;
     if (!ok) { m.name = state.name.trim(); m.rows = []; m.extras = [{ label: 'Last Balance' }, { label: 'Received' }]; return { model: m, ok: false }; }
-    var L = K.ledger({ oldBal: state.oldBal, cash: state.cash, online: state.online }, bill.total), led = L.any && L.ok;
+    var L = LG({ oldBal: state.oldBal, cash: state.cash, online: state.online }, bill.total), led = L.any && L.ok;
     m.total = { qty: anyPcs ? K.plainQty(pcs) : '', weight: anyKg ? K.plainQty(kg) : '', amount: n(bill.total) };
     m.extras.push({ label: 'Last Balance', value: led && L.oldBal ? n(L.oldBal) : '—' });
     m.extras.push({ label: 'Received', value: led && L.received ? n(L.received) : '—' });
@@ -209,7 +210,7 @@
     if (bill.invalid || bill.incomplete) return { error: 'Products mein galti hai: quantity aur rate dono sahi bhariye' };
     if (!bill.items) return { error: 'Pehle kam se kam ek product ki quantity aur rate bhariye' };
     if (!name) return { error: 'Bill save karne ke liye customer name bhariye' };
-    var L = K.ledger(state, bill.total); if (!L.ok) return { error: 'Pichla balance, cash aur online sahi bhariye' };
+    var L = LG(state, bill.total); if (!L.ok) return { error: 'Pichla balance, cash aur online sahi bhariye' };
     var lines = [];
     K.PRODUCTS.forEach(function (p) { var c = bill.lines[p.id]; if (c.status === 'valid') lines.push({ product: p.id, name: p.name, unit: c.unit, qty: K.plainQty(c.qty), ratePaise: c.ratePaise, amount: c.amount }); });
     var inputs = { name: name, oldBal: state.oldBal, cash: state.cash, online: state.online, lines: JSON.parse(JSON.stringify(state.lines)) };
@@ -274,13 +275,14 @@
       D.deleteBill(id); if (state.savedId === id) { state.savedId = null; save(); } renderSaved(); renderRecent(); toast('Saved bill deleted');
     });
   }
-  function balanceHint() {
+  function balanceHint(auto) {
     var h = $('kHint'); if (!h || !D) return;
-    var name = state.name.trim(), lb = name ? D.lastBalance(name, 'katai', { onOrBefore: state.date || todayISO(), excludeId: state.savedId }) : null;
+    var BB = window.MMHBal, name = state.name.trim(), o = { onOrBefore: state.date || todayISO(), excludeId: state.savedId }, lb = name ? (BB ? BB.current('katai', name, o) : D.lastBalance(name, 'katai', o)) : null;
     if (!lb) { h.hidden = true; return; }
     h.hidden = false; h.dataset.paise = String(lb.balance);
-    $('kHintT').textContent = 'Last recorded Katai balance: ' + U.balanceText(lb.balance) + ' (' + U.dateText(lb.date) + ')';
-    $('kHintUse').hidden = lb.balance < 0;
+    $('kHintT').textContent = 'Katai balance: ' + U.balanceText(lb.balance) + ' (' + U.dateText(lb.date) + ')';
+    $('kHintUse').hidden = false;
+    if (BB && auto && !state.savedId && String(state.oldBal).trim() === '') { state.oldBal = BB.fieldText(lb.balance); $('kOld').value = state.oldBal; render(); save(); renderSaved(); toast('Pichla balance ' + U.balanceText(lb.balance) + ' khud bhar diya'); }
   }
   function customerList() {
     var dl = $('custList'); if (!dl || !D) return; dl.textContent = '';
@@ -307,11 +309,12 @@
     Object.keys(map).forEach(function (id) { $(id).addEventListener('input', function () { state[map[id]] = $(id).value.slice(0, 80); render(); save(); renderSaved(); }); });
     $('kDate').addEventListener('change', function () { state.date = /^\d{4}-\d{2}-\d{2}$/.test($('kDate').value) ? $('kDate').value : todayISO(); $('kDate').value = state.date; save(); renderSaved(); balanceHint(); schedulePreview(); });
     $('kFirm').addEventListener('input', renderSaved);
-    $('kName').addEventListener('change', balanceHint); $('kName').addEventListener('blur', balanceHint);
-    $('kHintUse').onclick = function () { var p = +$('kHint').dataset.paise; if (!(p >= 0)) return; state.oldBal = String(p / 100); $('kOld').value = state.oldBal; render(); save(); renderSaved(); };
+    $('kName').addEventListener('change', function () { balanceHint(true); }); $('kName').addEventListener('blur', function () { balanceHint(true); });
+    $('kHintUse').onclick = function () { var p = +$('kHint').dataset.paise; if (isNaN(p)) return; state.oldBal = window.MMHBal ? window.MMHBal.fieldText(p) : String(p / 100); $('kOld').value = state.oldBal; render(); save(); renderSaved(); };
     $('kSave').onclick = function () { saveRecord(false); };
     $('kToDaily').onclick = toDaily;
     $('kRecent').addEventListener('click', onRecentClick);
+    if (window.MMHBal) window.MMHBal.mount({ section: 'katai', toast: toast, confirm: confirmDlg, onChange: function () { balanceHint(false); } });
     $('kClear').onclick = function () {
       confirmDlg(function () {
         state = { name: '', date: state.date || todayISO(), lines: {}, oldBal: '', cash: '', online: '', savedId: null };

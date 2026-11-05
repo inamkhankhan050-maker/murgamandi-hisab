@@ -58,8 +58,9 @@
   function dateText() { var p = (state.date || todayISO()).split('-'), d = new Date(+p[0], +p[1] - 1, +p[2]); return isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); }
   function heading() { return $('dFirm').value.trim() || 'MurgaMandi Hisab'; }
   function cust(id) { for (var i = 0; i < state.customers.length; i++) if (state.customers[i].id === id) return state.customers[i]; return null; }
-  function calc(c) { var bill = K.computeBill(c.lines); return { bill: bill, L: K.ledger(c, bill.total) }; }
+  function calc(c) { var bill = K.computeBill(c.lines); return { bill: bill, L: LG(c, bill.total) }; }
   var toastT;
+  function LG(r, f) { return window.MMHBal ? window.MMHBal.ledger(K.ledger, r, f) : K.ledger(r, f); }
   function toast(msg) { var t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, 2600); }
   function confirmDlg(title, text, yes, onYes) {
     $('dlgT').textContent = title; $('dlgP').textContent = text; $('dlgYes').textContent = yes;
@@ -439,6 +440,12 @@
     Object.keys(fmap).forEach(function (id) {
       $(id).addEventListener('input', function () { var c = cust(selectedId); if (!c) return; c[fmap[id]] = $(id).value.slice(0, fmap[id] === 'name' ? 80 : 40); renderEditor(); renderList(); save(); });
     });
+    $('eName').addEventListener('change', function () {
+      var BB = window.MMHBal, c = cust(selectedId); if (!BB || !c || !c.name.trim() || String(c.oldBal).trim() !== '') return;
+      var lb = BB.current('katai', c.name, { onOrBefore: state.date || todayISO(), excludeSourceKey: srcKey(c.id) }); if (!lb) return;
+      c.oldBal = BB.fieldText(lb.balance); $('eOld').value = c.oldBal; renderEditor(); renderList(); save();
+      toast(c.name.trim() + ': pichla balance ' + (U ? U.balanceText(lb.balance) : c.oldBal) + ' bhar diya');
+    });
     $('edClose').onclick = function () { selectedId = null; renderList(); buildEditor(); };
     $('edDel').onclick = function () { if (selectedId) deleteCustomer(selectedId); };
     $('edWa').onclick = function () { if (selectedId) shareCustomer(selectedId); };
@@ -480,6 +487,7 @@
     $('dDate').value = state.date;
     buildRates(); bind();
     window.KataiShare.init(toast);
+    if (window.MMHBal) window.MMHBal.mount({ section: 'katai', raise: true, toast: toast, confirm: confirmDlg });
     var got = takeInbox();
     selectedId = state.customers[0] ? state.customers[0].id : null;
     refreshIndex();

@@ -1,0 +1,40 @@
+/* MurgaMandi Hisab · Customer Balance book (shared/balance-book.js) */
+.bb-fab{position:fixed;right:14px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:60;display:flex;align-items:center;gap:6px;padding:10px 14px 10px 10px;border:0;border-radius:999px;background:#0B4F8A;color:#fff;font:600 14px/1 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-shadow:0 6px 18px rgba(11,79,138,.35);cursor:pointer}
+.bb-fab .bb-r{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#F59E0B;color:#111;font-weight:800}
+.bb-fab:active{transform:scale(.97)}
+.bb-ov{position:fixed;inset:0;z-index:80;display:none;align-items:flex-end;justify-content:center;background:rgba(15,23,42,.45)}
+.bb-ov.show{display:flex}
+body.bb-lock{overflow:hidden}
+.bb-pn{width:100%;max-width:640px;max-height:92vh;overflow:auto;background:#fff;color:#0f172a;border-radius:16px 16px 0 0;padding:14px 14px calc(18px + env(safe-area-inset-bottom,0px));box-sizing:border-box;font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+@media(min-width:700px){.bb-ov{align-items:center}.bb-pn{border-radius:16px}}
+.bb-hd{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.bb-hd h2{margin:0;font-size:18px}
+.bb-x{border:0;background:#f1f5f9;width:34px;height:34px;border-radius:50%;font-size:22px;line-height:1;cursor:pointer;color:#334155}
+.bb-sub{margin:6px 0 12px;color:#475569;font-size:13px}
+.bb-form{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bb-form input,.bb-form select,.bb-q{width:100%;box-sizing:border-box;padding:10px;border:1px solid #cbd5e1;border-radius:10px;font:inherit;background:#fff;color:inherit;min-width:0}
+.bb-form input:first-child{grid-column:1/-1}
+.bb-form .btn{grid-column:1/-1}
+@media(min-width:560px){.bb-form{grid-template-columns:2fr 1fr 1.4fr auto}.bb-form input:first-child,.bb-form .btn{grid-column:auto}}
+.bb-imp{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0;padding:10px;border:1px dashed #94a3b8;border-radius:10px;background:#f8fafc}
+.bb-imp small{flex:1 1 200px;color:#64748b;font-size:12px}
+.bb-prev{margin:0 0 12px;padding:10px;border:1px solid #fcd34d;border-radius:10px;background:#fffbeb}
+.bb-prev table{margin:8px 0}
+.bb-row{display:flex;gap:8px}
+.bb-q{margin:4px 0 8px}
+.bb-tot{font-size:13px;color:#334155;margin-bottom:6px;font-weight:600}
+.bb-list{overflow-x:auto}
+.bb-pn table{width:100%;border-collapse:collapse;font-size:13px}
+.bb-pn th{text-align:left;font-size:12px;color:#64748b;font-weight:600;border-bottom:1px solid #e2e8f0;padding:6px 4px}
+.bb-pn td{border-bottom:1px solid #f1f5f9;padding:7px 4px;vertical-align:middle}
+.bb-n{font-weight:600;word-break:break-word}
+.bb-a{text-align:right;white-space:nowrap;font-weight:700;color:#B45309}
+.bb-a.adv{color:#047857}
+.bb-d{color:#64748b;font-size:12px;white-space:nowrap}
+.bb-n .bb-d{display:block;font-weight:400;font-size:11px}
+.bb-fab.up{bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+.bb-act{text-align:right;white-space:nowrap}
+.bb-sm{padding:5px 9px;font-size:12px;margin-left:4px}
+.bb-empty{color:#64748b;text-align:center;padding:16px 0}
+.bb-auto{display:block;font-size:11px;color:#047857;margin-top:2px}
+@media print{.bb-fab,.bb-ov{display:none!important}}

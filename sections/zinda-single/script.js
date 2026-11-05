@@ -43,6 +43,7 @@
   function dueText(p) { return p < 0 ? 'Adv ' + C.formatINR(-p, { decimals: p % 100 ? 2 : 0 }) : C.formatINR(p, { decimals: p % 100 ? 2 : 0 }); }
   function todayText() { var p = String(billDate || '').split('-'), d = p.length === 3 ? new Date(+p[0], +p[1] - 1, +p[2]) : new Date(); if (isNaN(d.getTime())) d = new Date(); return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); }
   var toastT;
+  function LG(r, f) { return window.MMHBal ? window.MMHBal.ledger(C.ledger, r, f) : C.ledger(r, f); }
   function toast(msg) { var t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, 2600); }
   function confirmDlg(title, text, yesLabel, onYes) {
     $('dlgT').textContent = title; $('dlgP').textContent = text; $('dlgYes').textContent = yesLabel;
@@ -77,7 +78,7 @@
     schedulePreview();
     var row = singleRow(), v = C.validateRow(row), out = $('sOut');
     ['pieces', 'kg', 'jaal', 'rate'].forEach(function (f) { $(sF[f]).classList.toggle('err', !!v.errors[f]); });
-    var sl = C.ledger(row, 0);
+    var sl = LG(row, 0);
     ['oldBal', 'cash', 'online'].forEach(function (f) { $(sF[f]).classList.toggle('err', !!sl.errors[f]); });
     var errs = Object.values(v.errors).concat(Object.values(sl.errors));
     var nm = $('sName').value.trim();
@@ -96,7 +97,7 @@
     var q = function (k, val) { return '<div><span>' + k + '</span><b>' + val + '</b></div>'; };
     h += '<div class="sq">' + q('Pieces', C.formatInt(v.pieces)) + q('Total KG', gkg) + (v.jaalGrams ? q('Jaal', '− ' + C.formatKg(v.jaalGrams)) + q('Net KG', kg) : '') +
       q('Average', (C.averageKg(v.netGrams, v.pieces) || '—') + ' kg') + q('Rate', rate) + '</div>';
-    var L = C.ledger(row, r.final), led = ledgerHTML(L);
+    var L = LG(row, r.final), led = ledgerHTML(L);
     h += '<div class="s2' + (led ? '' : ' one') + '"><div class="s2a">' +
       rc('Basic Amount<small>' + kg + ' kg × ' + rate + '</small>', C.formatINR(r.basic)) +
       rc('Samiti Charge<small>1%, rounded down</small>', C.formatINR(r.samiti)) +
@@ -115,7 +116,7 @@
     var row = singleRow(), v = C.validateRow(row), n = B.num;
     var m = { firm: firmNow(), date: billDate || todayISO(), name: $('sName').value.trim() || 'Customer', rows: [], minRows: 6, total: {}, extras: [], grand: { label: 'G. TOTAL', value: '' }, words: '', fallbackTitle: 'MurgaMandi Hisab' };
     if (!v.ok) { m.name = $('sName').value.trim(); m.extras = [{ label: 'Average' }, { label: 'Samiti' }, { label: 'Labour' }, { label: 'Total Bill', hl: 1 }, { label: 'Last Balance' }, { label: 'Received' }]; return { model: m, ok: false }; }
-    var r = calcSingle(v), L = C.ledger(row, r.final), avg = C.averageKg(v.netGrams, v.pieces);
+    var r = calcSingle(v), L = LG(row, r.final), avg = C.averageKg(v.netGrams, v.pieces);
     m.rows.push({ qty: C.formatInt(v.pieces), weight: C.formatKg(v.netGrams), part: 'Chicken', rate: n(v.ratePaise), amount: n(r.basic) });
     m.total = { qty: C.formatInt(v.pieces), weight: C.formatKg(v.netGrams), amount: n(r.basic) };
     m.extras.push({ label: 'Average', left: avg + ' kg', value: '' });
@@ -141,7 +142,7 @@
   function buildReceipt() {
     var row = singleRow(), v = C.validateRow(row);
     if (!v.ok) return false;
-    var r = calcSingle(v), L = C.ledger(row, r.final);
+    var r = calcSingle(v), L = LG(row, r.final);
     var nm = $('sName').value.trim(), firm = $('sFirm').value.trim();
     var t = function (k, val, cls) { return '<tr' + (cls ? ' class="' + cls + '"' : '') + '><td>' + k + '</td><td>' + val + '</td></tr>'; };
     var h = '<div class="rh"><div><b>Ghazipur Murga Mandi</b>' + (firm ? '<i>' + esc(firm) + '</i>' : '') + '<span>Wholesale Bill</span></div><div class="rd">' + esc(todayText()) + '</div></div>' +
@@ -187,7 +188,7 @@
   function receiptModel() {
     var row = singleRow(), v = C.validateRow(row);
     if (!v.ok) return null;
-    var r = calcSingle(v), L = C.ledger(row, r.final);
+    var r = calcSingle(v), L = LG(row, r.final);
     var m = { firm: $('sFirm').value.trim(), name: $('sName').value.trim() || 'Customer', date: todayText(), boxes: [], rows: [], led: [] };
     m.boxes.push(['PIECES', C.formatInt(v.pieces)], ['TOTAL KG', C.formatKg(v.grams)]);
     if (v.jaalGrams) m.boxes.push(['JAAL KG', '− ' + C.formatKg(v.jaalGrams)], ['NET KG', C.formatKg(v.netGrams)]);
@@ -240,7 +241,7 @@
     if (!name) return { error: 'Bill save karne ke liye customer name bhariye' };
     var m = manualLabour(); if (isNaN(m)) return { error: 'Labour sahi bhariye (0 or more, max 2 decimals)' };
     var r = calcSingle(v); if (r.final == null) return { error: r.warning || 'Final amount not calculated' };
-    var L = C.ledger(row, r.final); if (!L.ok) return { error: 'Pichla balance, cash aur online sahi bhariye' };
+    var L = LG(row, r.final); if (!L.ok) return { error: 'Pichla balance, cash aur online sahi bhariye' };
     return { input: { id: savedId || undefined, section: 'zinda', source: 'zinda-single', date: billDate || todayISO(), customerName: name, firm: $('sFirm').value.trim(),
       amount: r.final, cash: L.cash, online: L.online, prevBalance: L.oldBal, balance: L.due,
       details: { pieces: v.pieces, grams: v.grams, jaalGrams: v.jaalGrams, netGrams: v.netGrams, ratePaise: v.ratePaise, basic: r.basic, samiti: r.samiti, labour: r.labourAdjusted, labourOriginal: r.labourOriginal, adjustment: r.adjustment, labourManual: !!r.manual },
@@ -303,13 +304,14 @@
       D.deleteBill(id); if (savedId === id) { savedId = null; save(); } renderSaved(); renderRecent(); toast('Saved bill deleted');
     });
   }
-  function balanceHint() {
+  function balanceHint(auto) {
     var h = $('sHint'); if (!h || !D) return;
-    var name = $('sName').value.trim(), lb = name ? D.lastBalance(name, 'zinda', { onOrBefore: billDate || todayISO(), excludeId: savedId }) : null;
+    var BB = window.MMHBal, name = $('sName').value.trim(), lb = name ? (BB ? BB.current('zinda', name, { onOrBefore: billDate || todayISO(), excludeId: savedId }) : D.lastBalance(name, 'zinda', { onOrBefore: billDate || todayISO(), excludeId: savedId })) : null;
     if (!lb) { h.hidden = true; return; }
     h.hidden = false; h.dataset.paise = String(lb.balance);
-    $('sHintT').textContent = 'Last recorded Zinda balance: ' + U.balanceText(lb.balance) + ' (' + U.dateText(lb.date) + ')';
-    $('sHintUse').hidden = lb.balance < 0;
+    $('sHintT').textContent = 'Zinda balance: ' + U.balanceText(lb.balance) + ' (' + U.dateText(lb.date) + ')';
+    $('sHintUse').hidden = false;
+    if (BB && auto && !savedId && $('sOld').value.trim() === '') { $('sOld').value = BB.fieldText(lb.balance); render(); save(); renderSaved(); toast('Pichla balance ' + U.balanceText(lb.balance) + ' khud bhar diya'); }
   }
   function customerList() {
     var dl = $('custList'); if (!dl || !D) return; dl.textContent = '';
@@ -331,11 +333,12 @@
     $('sFirm').addEventListener('input', renderSaved);
     $('sLabour').addEventListener('blur', function () { if (!labourManual) render(); });
     Object.keys(sF).forEach(function (f) { $(sF[f]).addEventListener('input', function () { render(); save(); renderSaved(); }); });
-    $('sName').addEventListener('change', balanceHint); $('sName').addEventListener('blur', balanceHint);
-    $('sHintUse').onclick = function () { var p = +$('sHint').dataset.paise; if (!(p >= 0)) return; $('sOld').value = String(p / 100); render(); save(); renderSaved(); };
+    $('sName').addEventListener('change', function () { balanceHint(true); }); $('sName').addEventListener('blur', function () { balanceHint(true); });
+    $('sHintUse').onclick = function () { var p = +$('sHint').dataset.paise; if (isNaN(p)) return; $('sOld').value = window.MMHBal ? window.MMHBal.fieldText(p) : String(p / 100); render(); save(); renderSaved(); };
     $('sSave').onclick = function () { saveRecord(false); };
     $('sRecent').addEventListener('click', onRecentClick);
     $('sLabour').addEventListener('input', renderSaved);
+    if (window.MMHBal) window.MMHBal.mount({ section: 'zinda', toast: toast, confirm: confirmDlg, onChange: function () { balanceHint(false); } });
     $('sClear').onclick = function () { confirmDlg('Clear this bill?', 'All fields of this bill will be emptied.', 'Clear', clearBill); };
     $('sPrint').onclick = doPrint;
     $('sShare').onclick = shareReceipt;
