@@ -183,17 +183,17 @@
     nm.appendChild(el('span', 'rec-chip')); tr.appendChild(nm);
     K.PRODUCTS.forEach(function (p) {
       var l = c.lines[p.id] || (c.lines[p.id] = { unit: unitOf(p.id), qty: '', rate: '' });
-      var td = el('td', 'g-it'), q = inp('n g-q', 'qty', l.qty, p.name + ' ' + (l.unit === 'pcs' ? 'pcs' : 'kg'), p.id), r = inp('n g-r', 'rate', l.rate, p.name + ' rate', p.id);
+      var td = el('td', 'g-it'); td.dataset.l = p.name; var q = inp('n g-q', 'qty', l.qty, p.name + ' ' + (l.unit === 'pcs' ? 'pcs' : 'kg'), p.id), r = inp('n g-r', 'rate', l.rate, p.name + ' rate', p.id);
       q.placeholder = l.unit === 'pcs' ? 'pcs' : 'kg'; r.placeholder = 'rate';
       td.appendChild(q); td.appendChild(r); var a = el('span', 'g-amt'); a.dataset.o = p.id; td.appendChild(a); tr.appendChild(td);
     });
-    var ob = el('td', 'g-x'), oi = inp('n g-old', 'oldBal', c.oldBal, 'Pichla balance'); oi.placeholder = '0'; ob.appendChild(oi); ob.appendChild(el('span', 'g-sub g-oldt')); tr.appendChild(ob);
-    var pt = el('td', 'g-x g-pay'), sel = el('select'); sel.dataset.f = 'payMode'; sel.setAttribute('aria-label', 'Cash ya Online');
+    var ob = el('td', 'g-x'); ob.dataset.l = 'Pichla Balance'; var oi = inp('n g-old', 'oldBal', c.oldBal, 'Pichla balance'); oi.placeholder = '0'; ob.appendChild(oi); ob.appendChild(el('span', 'g-sub g-oldt')); tr.appendChild(ob);
+    var pt = el('td', 'g-x g-pay'); pt.dataset.l = 'Aaj ka Payment'; var sel = el('select'); sel.dataset.f = 'payMode'; sel.setAttribute('aria-label', 'Cash ya Online');
     [['cash', 'Cash'], ['online', 'Online']].forEach(function (o) { var op = el('option', null, o[1]); op.value = o[0]; sel.appendChild(op); });
     sel.value = c.payMode === 'online' ? 'online' : 'cash';
     var pa = inp('n g-pa', 'payAmt', sel.value === 'online' ? c.online : c.cash, 'Payment amount'); pa.placeholder = '₹ 0';
     pt.appendChild(sel); pt.appendChild(pa); pt.appendChild(el('span', 'g-sub g-other')); tr.appendChild(pt);
-    var fin = el('td', 'g-x g-fin'); fin.dataset.o = 'fin'; tr.appendChild(fin);
+    var fin = el('td', 'g-x g-fin'); fin.dataset.o = 'fin'; fin.dataset.l = 'Final Debit / Credit'; tr.appendChild(fin);
     var act = el('td', 'g-act');
     var wa = el('button', 'btn wa g-wa'); wa.type = 'button'; wa.dataset.act = 'wa'; wa.title = 'WhatsApp bill';
     var img = el('img'); img.src = '../../assets/icons/whatsapp.svg'; img.alt = ''; img.width = 16; img.height = 16; wa.appendChild(img); wa.setAttribute('aria-label', 'WhatsApp bill');
@@ -255,7 +255,7 @@
     var rows = [['Total KG', function (x) { return x.qty ? K.qtyText(x.qty, x.unit) : '—'; }], ['Total ₹', function (x) { return x.amt ? K.money(x.amt) : '—'; }], ['Avg Rate', function (x) { var a = avgRate(x); return a ? K.money(a) : '—'; }]];
     rows.forEach(function (rw, ri) {
       var tr = el('tr', 'g-ft g-ft' + ri); tr.appendChild(el('td', 'g-nm', rw[0]));
-      K.PRODUCTS.forEach(function (p) { tr.appendChild(el('td', 'g-it ra', rw[1](pt[p.id]))); });
+      K.PRODUCTS.forEach(function (p) { var fc = el('td', 'g-it ra', rw[1](pt[p.id])); fc.dataset.l = p.name; tr.appendChild(fc); });
       var cellL = function (lab, val, cls) { var td = el('td', 'g-x ra g-fx ' + (cls || '')); td.appendChild(el('small', null, lab)); td.appendChild(el('b', null, val)); tr.appendChild(td); };
       if (ri === 0) { cellL('Debit', K.money(dc.oDr), 'dr'); cellL('Cash', K.money(tot.cash)); cellL('Debit (lena)', K.money(dc.bDr), 'dr'); }
       else if (ri === 1) { cellL('Credit', K.money(dc.oCr), 'cr'); cellL('Online', K.money(tot.online)); cellL('Credit (dena)', K.money(dc.bCr), 'cr'); }
@@ -264,7 +264,7 @@
     });
     var live = liveKg(), kgSum = 0, pr = el('tr', 'g-ft g-ft3');
     pr.appendChild(el('td', 'g-nm', 'Percentage'));
-    K.PRODUCTS.forEach(function (p) { var x = pt[p.id]; kgSum += x.kg; pr.appendChild(el('td', 'g-it ra g-pc', x.kg && live ? pct(x.kg, live) : '—')); });
+    K.PRODUCTS.forEach(function (p) { var x = pt[p.id]; kgSum += x.kg; var pc = el('td', 'g-it ra g-pc', x.kg && live ? pct(x.kg, live) : '—'); pc.dataset.l = p.name; pr.appendChild(pc); });
     var cellP = function (lab, val) { var td = el('td', 'g-x ra g-fx'); td.appendChild(el('small', null, lab)); td.appendChild(el('b', null, val)); pr.appendChild(td); };
     cellP('Zinda murga', live ? K.qtyText(live, 'kg') : 'kg likhiye ↑'); cellP('Kul katai', K.qtyText(kgSum, 'kg')); cellP('Kul percentage', kgSum && live ? pct(kgSum, live) : '—');
     pr.appendChild(el('td', 'g-act')); f.appendChild(pr);
