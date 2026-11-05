@@ -10,20 +10,51 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header class="hero">
-  <div class="hero-in">
-    <img class="logo" src="assets/icons/logo.svg" alt="" width="54" height="54">
-    <div class="hero-t">
-      <h1>MurgaMandi Hisab</h1>
-      <p>Zinda aur Katai billing, kharcha aur statements · ek jagah</p>
-    </div>
+<header class="top" id="top">
+  <div class="top-in">
+    <a class="brand" href="index.html" aria-label="MurgaMandi Hisab home">
+      <img class="logo" src="assets/icons/logo.svg" alt="" width="52" height="52">
+      <span class="brand-t">
+        <b>MURGA<span class="acc">MANDI</span> HISAB</b>
+        <small>Smart Hisab · Easy Business</small>
+      </span>
+    </a>
     <span class="today" id="today"></span>
   </div>
+  <nav class="menu" aria-label="Quick links">
+    <a href="index.html" aria-current="page">Home</a>
+    <a href="sections/zinda-single/index.html">Zinda Bill</a>
+    <a href="sections/zinda-daily/index.html">Zinda Daily</a>
+    <a href="sections/katai-single/index.html">Katai Bill</a>
+    <a href="sections/katai-daily/index.html">Katai Daily</a>
+    <a href="sections/expenses/index.html">Kharcha</a>
+    <a href="sections/statements/index.html">Reports</a>
+  </nav>
+  <div class="search">
+    <label class="sr" for="secSearch">Search section</label>
+    <input id="secSearch" type="search" placeholder="Search section (Zinda, Katai, Kharcha, Report...)" autocomplete="off" maxlength="40">
+    <span class="s-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M16.5 16.5 21 21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></span>
+  </div>
 </header>
+
+<section class="banner" id="banner" aria-roledescription="carousel" aria-label="MurgaMandi Hisab banners">
+  <div class="slides" id="slides">
+    <div class="slide is-on" role="group" aria-roledescription="slide" aria-label="1 of 2">
+      <img src="assets/images/banner-1600.jpg" srcset="assets/images/banner-900.jpg 900w, assets/images/banner-1600.jpg 1600w" sizes="(max-width: 1000px) 100vw, 1000px" width="1600" height="900" alt="MurgaMandi Hisab: Smart Hisab, Easy Business. Manage Zinda billing, Katai billing and daily customer entries in one place." fetchpriority="high">
+    </div>
+    <div class="slide" role="group" aria-roledescription="slide" aria-label="2 of 2" aria-hidden="true">
+      <img src="assets/images/banner2-1600.jpg" srcset="assets/images/banner2-900.jpg 900w, assets/images/banner2-1600.jpg 1600w" sizes="(max-width: 1000px) 100vw, 1000px" width="1600" height="900" alt="MurgaMandi Hisab, built for chicken business: fast and accurate calculations, print and download PDF, share on WhatsApp." loading="lazy">
+    </div>
+    <button class="b-nav prev" id="bPrev" type="button" aria-label="Previous banner">&#8249;</button>
+    <button class="b-nav next" id="bNext" type="button" aria-label="Next banner">&#8250;</button>
+    <div class="dots" id="bDots"><button type="button" class="on" aria-label="Show banner 1"></button><button type="button" aria-label="Show banner 2"></button></div>
+  </div>
+</section>
 
 <main class="wrap">
   <p class="notice" id="dbNotice" hidden></p>
 
+  <h2 class="sec-h small">Aaj ka Hisab</h2>
   <section class="glance" id="glance" aria-label="Today at a glance">
     <div class="g-card"><span class="g-l">Aaj ke Bills</span><b class="g-n" id="gBills">—</b><span class="g-s" id="gBillsN"></span></div>
     <div class="g-card"><span class="g-l">Aaj Received</span><b class="g-n" id="gRec">—</b><span class="g-s" id="gRecSplit"></span></div>
@@ -31,45 +62,46 @@
     <div class="g-card"><span class="g-l">Saved Records</span><b class="g-n" id="gRecords">—</b><span class="g-s" id="gCust"></span></div>
   </section>
 
-  <h2 class="sec-h">Sections</h2>
+<h2 class="sec-h big">Choose Section</h2>
+  <p class="no-match" id="noMatch" hidden>No section matches your search.</p>
   <nav class="grid" aria-label="Sections">
     <a class="tile" href="sections/zinda-single/index.html">
-      <span class="ic"><img src="assets/icons/zinda-single.svg" alt="" width="34" height="34"></span>
+      <span class="art art-z"><img src="assets/icons/zinda-single.svg" alt="" width="64" height="64"></span>
       <span class="tag">Zinda</span>
       <span class="t">Zinda Single Customer Bill</span>
       <span class="d">One customer: pieces, KG, jaal, rate, samiti, labour and balance. Save, print or WhatsApp.</span>
       <span class="go">Open ›</span>
     </a>
     <a class="tile" href="sections/zinda-daily/index.html">
-      <span class="ic"><img src="assets/icons/zinda-daily.svg" alt="" width="34" height="34"></span>
+      <span class="art art-z"><img src="assets/icons/zinda-daily.svg" alt="" width="64" height="64"></span>
       <span class="tag">Zinda</span>
       <span class="t">Zinda Daily Entry</span>
       <span class="d">All Zinda customers of the day in one sheet with grand totals. Save the day to records.</span>
       <span class="go">Open ›</span>
     </a>
     <a class="tile" href="sections/katai-single/index.html">
-      <span class="ic"><img src="assets/icons/katai-single.svg" alt="" width="34" height="34"></span>
+      <span class="art art-k"><img src="assets/icons/katai-single.svg" alt="" width="64" height="64"></span>
       <span class="tag k">Katai</span>
       <span class="t">Katai Single Customer Bill</span>
       <span class="d">Thigh, Breast, Tangri, Wings, Full Leg, Haddi, Pota, Panja, Tandoori and Dress in one bill.</span>
       <span class="go">Open ›</span>
     </a>
     <a class="tile" href="sections/katai-daily/index.html">
-      <span class="ic"><img src="assets/icons/katai-daily.svg" alt="" width="34" height="34"></span>
+      <span class="art art-k"><img src="assets/icons/katai-daily.svg" alt="" width="64" height="64"></span>
       <span class="tag k">Katai</span>
       <span class="t">Katai Daily Customer Entry</span>
       <span class="d">Many Katai customers per day, day rates and product-wise totals. Save the day to records.</span>
       <span class="go">Open ›</span>
     </a>
     <a class="tile" href="sections/expenses/index.html">
-      <span class="ic"><img src="assets/icons/expenses.svg" alt="" width="34" height="34"></span>
+      <span class="art art-e"><img src="assets/icons/expenses.svg" alt="" width="64" height="64"></span>
       <span class="tag b">Business</span>
       <span class="t">Expense Management</span>
       <span class="d">Truck, labour, nashta, loading, diesel and more. Daily, monthly and yearly totals with downloads.</span>
       <span class="go">Open ›</span>
     </a>
     <a class="tile" href="sections/statements/index.html">
-      <span class="ic"><img src="assets/icons/statements.svg" alt="" width="34" height="34"></span>
+      <span class="art art-r"><img src="assets/icons/statements.svg" alt="" width="64" height="64"></span>
       <span class="tag b">Business</span>
       <span class="t">Statements &amp; Reports</span>
       <span class="d">Customer and company statements, Profit &amp; Loss, cash &amp; online statement and a download center.</span>

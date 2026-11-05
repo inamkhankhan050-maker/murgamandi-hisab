@@ -78,7 +78,56 @@
     rd.readAsText(file);
   }
 
+  // section search: filters the six cards by their own text (no data involved)
+  function initSearch() {
+    var box = $('secSearch'); if (!box) return;
+    var tiles = Array.prototype.slice.call(document.querySelectorAll('.grid .tile'));
+    var alias = { kharcha: 'expense', report: 'statement', reports: 'statements', hisab: '' };
+    box.addEventListener('input', function () {
+      var q = box.value.trim().toLowerCase().slice(0, 40), shown = 0;
+      Object.keys(alias).forEach(function (k) { if (alias[k] && q.indexOf(k) === 0) q = alias[k]; });
+      tiles.forEach(function (t) { var hit = !q || t.textContent.toLowerCase().indexOf(q) >= 0; t.hidden = !hit; if (hit) shown++; });
+      $('noMatch').hidden = shown > 0;
+    });
+    box.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter') return;
+      var first = tiles.filter(function (t) { return !t.hidden; })[0];
+      if (first && box.value.trim()) window.location.href = first.getAttribute('href');
+    });
+  }
+
+  // banner carousel: changes slide every 4 seconds, pauses while hovered or when the tab is hidden
+  function initBanner() {
+    var box = $('slides'); if (!box) return;
+    var slides = box.querySelectorAll('.slide'), dots = $('bDots').querySelectorAll('button'), i = 0, timer = null, paused = false;
+    if (slides.length < 2) return;
+    function show(n) {
+      i = (n + slides.length) % slides.length;
+      for (var k = 0; k < slides.length; k++) {
+        var on = k === i;
+        slides[k].classList.toggle('is-on', on); slides[k].setAttribute('aria-hidden', on ? 'false' : 'true');
+        if (dots[k]) { dots[k].classList.toggle('on', on); dots[k].setAttribute('aria-current', on ? 'true' : 'false'); }
+      }
+    }
+    function start() { clearInterval(timer); timer = setInterval(function () { if (!paused && !document.hidden) show(i + 1); }, 4000); }
+    $('bPrev').onclick = function () { show(i - 1); start(); };
+    $('bNext').onclick = function () { show(i + 1); start(); };
+    Array.prototype.forEach.call(dots, function (d, k) { d.onclick = function () { show(k); start(); }; });
+    box.addEventListener('mouseenter', function () { paused = true; });
+    box.addEventListener('mouseleave', function () { paused = false; });
+    var x0 = null;
+    box.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+    box.addEventListener('touchend', function (e) {
+      if (x0 === null) return; var dx = e.changedTouches[0].clientX - x0; x0 = null;
+      if (Math.abs(dx) > 40) { show(i + (dx < 0 ? 1 : -1)); start(); }
+    }, { passive: true });
+    show(0); start();
+    window.__banner = { show: show, index: function () { return i; } };
+  }
+
   function init() {
+    try { initBanner(); } catch (e) { if (window.console) console.error(e); }
+    initSearch();
     $('today').textContent = new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
     showStatus();
     if (!D) { $('glance').hidden = true; $('btnBackup').disabled = true; return; }
