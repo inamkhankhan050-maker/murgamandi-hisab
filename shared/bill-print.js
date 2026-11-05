@@ -289,9 +289,9 @@
       form.appendChild(el('h3', null, 'Firm details add karein'));
       form.appendChild(el('p', 'bp-note', 'Dhyan se bhariye: save hone ke baad edit nahi hoga.'));
       var grid = el('div', 'bp-grid');
-      grid.appendChild(field('Firm / Dukaan ka naam *', 'name', 80, 'jaise SB FOOD'));
-      grid.appendChild(field('Upar wali line (phone)', 'phone', 90, 'jaise NUNTUN: 8178357317'));
-      grid.appendChild(field('Shop line', 'shop', 90, 'jaise Shop No. 48'));
+      grid.appendChild(field('Firm / Dukaan ka naam *', 'name', 80, 'jaise Indian Chicken Shop'));
+      grid.appendChild(field('Upar wali line (phone)', 'phone', 90, 'jaise Shekh Elias: 7678365870'));
+      grid.appendChild(field('Shop line', 'shop', 90, 'jaise Shop No. 25'));
       grid.appendChild(field('Address', 'address', 120, 'jaise Poultry Market Ghazipur Delhi 110096'));
       form.appendChild(grid);
       var pics = el('div', 'bp-pics'); pics.appendChild(picField('Logo (optional)', 'logo')); pics.appendChild(picField('Stamp / Mohar (optional)', 'stamp')); form.appendChild(pics);
