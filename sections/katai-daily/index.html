@@ -7,8 +7,8 @@
 <title>Katai Daily Customer Entry · MurgaMandi Hisab</title>
 <link rel="icon" href="../../assets/icons/logo-64.png" type="image/png">
 <link rel="apple-touch-icon" href="../../assets/icons/logo-192.png">
-<link rel="stylesheet" href="style.css?v=20261106c">
-<link rel="stylesheet" href="../../shared/balance-book.css?v=20261106c">
+<link rel="stylesheet" href="style.css?v=20261106d">
+<link rel="stylesheet" href="../../shared/balance-book.css?v=20261106d">
 </head>
 <body>
 <header class="appbar">
@@ -34,10 +34,6 @@
     <button class="btn primary save-rec" id="btnSaveRec" type="button">Save to Records</button>
     <button class="btn primary" id="btnAdd" type="button">+ Add Customer</button>
     <button class="btn" id="btnRates" type="button" aria-expanded="false" aria-controls="ratesCard">Aaj ke Rate</button>
-    <button class="btn" id="btnExcel" type="button">Export to Excel</button>
-    <button class="btn" id="btnCsv" type="button">CSV</button>
-    <button class="btn" id="btnPrint" type="button">Print / Save PDF</button>
-    <button class="btn wa" id="btnWa" type="button"><img src="../../assets/icons/whatsapp.svg" alt="" width="16" height="16">WhatsApp PDF</button>
     <button class="btn danger" id="btnClear" type="button">New Day / Clear All</button>
   </section>
 
@@ -66,18 +62,27 @@
     <div class="card kpi due-k"><div class="l">Total Balance</div><div class="n" id="tBal">₹0</div></div>
     <div class="card grand"><div class="l">Aaj ka Total Bill</div><div class="n" id="tBill">₹0</div><div class="w" id="tWords">Zero Rupees Only</div></div>
   </section>
+  <section class="card exportbar" aria-label="Print and share">
+    <h3>Print / Share</h3>
+    <div class="ex-btns">
+      <button class="btn" id="btnExcel" type="button">Export to Excel</button>
+      <button class="btn" id="btnCsv" type="button">CSV</button>
+      <button class="btn" id="btnPrint" type="button">Print / Save PDF</button>
+      <button class="btn wa" id="btnWa" type="button"><img src="../../assets/icons/whatsapp.svg" alt="" width="16" height="16">WhatsApp PDF</button>
+    </div>
+  </section>
 </main>
 
 <div class="dlg-bg" id="shareDlg"><div class="dlg" role="dialog" aria-labelledby="shT"><h4 id="shT">WhatsApp par kaise bhejna hai?</h4><p>PDF ya Photo chuniye</p><div class="sh-btns"><button class="btn sh-b" id="shPdf" type="button"><span class="sh-i">📄</span>PDF bhejo</button><button class="btn sh-b" id="shImg" type="button"><span class="sh-i">🖼️</span>Photo bhejo</button></div><div class="acts"><button class="btn" id="shNo" type="button">Cancel</button></div></div></div>
 <div class="dlg-bg" id="dlg"><div class="dlg" role="alertdialog" aria-labelledby="dlgT"><h4 id="dlgT">Are you sure?</h4><p id="dlgP"></p><div class="acts"><button class="btn" id="dlgNo" type="button">Cancel</button><button class="btn danger-fill" id="dlgYes" type="button">Yes</button></div></div></div>
 <div class="toast" id="toast" role="status"></div>
 
-<script src="../../shared/storage-service.js?v=20261106c"></script>
-<script src="../../shared/data-service.js?v=20261106c"></script>
-<script src="../../engines/katai/calc.js?v=20261106c"></script>
-<script src="../../engines/katai/share.js?v=20261106c"></script>
-<script src="../../shared/bill-print.js?v=20261106c"></script>
-  <script src="../../shared/balance-book.js?v=20261106c"></script>
-<script src="script.js?v=20261106c"></script>
+<script src="../../shared/storage-service.js?v=20261106d"></script>
+<script src="../../shared/data-service.js?v=20261106d"></script>
+<script src="../../engines/katai/calc.js?v=20261106d"></script>
+<script src="../../engines/katai/share.js?v=20261106d"></script>
+<script src="../../shared/bill-print.js?v=20261106d"></script>
+  <script src="../../shared/balance-book.js?v=20261106d"></script>
+<script src="script.js?v=20261106d"></script>
 </body>
 </html>
