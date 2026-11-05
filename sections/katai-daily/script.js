@@ -169,18 +169,16 @@
   function buildHead() {
     var h = $('gHead'); h.textContent = '';
     var r1 = el('tr'), r2 = el('tr', 'g-rate');
-    r1.appendChild(el('th', 'g-idx', '#')); r1.appendChild(el('th', 'g-nm', 'Customer Name'));
-    r2.appendChild(el('th', 'g-idx', '')); r2.appendChild(el('th', 'g-nm g-rl', 'Aaj ka Rate ₹ →'));
+    r1.appendChild(el('th', 'g-nm', 'Customer')); r2.appendChild(el('th', 'g-nm g-rl', 'Aaj ka Rate →'));
     K.PRODUCTS.forEach(function (p) {
-      var th = el('th', 'g-it'); th.appendChild(el('span', null, p.name)); th.appendChild(el('small', null, unitOf(p.id) === 'pcs' ? 'pcs × rate' : 'kg × rate')); r1.appendChild(th);
+      var th = el('th', 'g-it'); th.appendChild(el('span', null, p.name)); r1.appendChild(th);
       var t2 = el('th', 'g-it'), ri = inp('n g-dr', 'dayRate', (state.rates[p.id] || {}).rate || '', p.name + ' aaj ka rate'); ri.dataset.dr = p.id; ri.placeholder = 'rate'; t2.appendChild(ri); r2.appendChild(t2);
     });
-    ['Pichla Balance', 'Aaj ka Payment', 'Final (Lena / Dena)', ''].forEach(function (t, i) { r1.appendChild(el('th', i === 3 ? 'g-act' : 'g-x', t)); r2.appendChild(el('th', i === 3 ? 'g-act' : 'g-x', '')); });
+    ['Pichla Balance', 'Aaj ka Payment', 'Final Debit / Credit', ''].forEach(function (t, i) { r1.appendChild(el('th', i === 3 ? 'g-act' : 'g-x', t)); r2.appendChild(el('th', i === 3 ? 'g-act' : 'g-x', '')); });
     h.appendChild(r1); h.appendChild(r2);
   }
   function buildRow(c, i) {
     var tr = el('tr'); tr.dataset.id = c.id;
-    tr.appendChild(el('td', 'g-idx', String(i + 1)));
     var nm = el('td', 'g-nm'), ni = inp('g-name', 'name', c.name, 'Customer ' + (i + 1) + ' name'); ni.placeholder = 'Customer naam'; ni.maxLength = 80; nm.appendChild(ni);
     nm.appendChild(el('span', 'rec-chip')); tr.appendChild(nm);
     K.PRODUCTS.forEach(function (p) {
@@ -198,7 +196,7 @@
     var fin = el('td', 'g-x g-fin'); fin.dataset.o = 'fin'; tr.appendChild(fin);
     var act = el('td', 'g-act');
     var wa = el('button', 'btn wa g-wa'); wa.type = 'button'; wa.dataset.act = 'wa'; wa.title = 'WhatsApp bill';
-    var img = el('img'); img.src = '../../assets/icons/whatsapp.svg'; img.alt = ''; img.width = 16; img.height = 16; wa.appendChild(img); wa.appendChild(document.createTextNode('Bill'));
+    var img = el('img'); img.src = '../../assets/icons/whatsapp.svg'; img.alt = ''; img.width = 16; img.height = 16; wa.appendChild(img); wa.setAttribute('aria-label', 'WhatsApp bill');
     var del = el('button', 'ic del', '✕'); del.type = 'button'; del.dataset.act = 'del'; del.title = 'Delete'; del.setAttribute('aria-label', 'Delete customer');
     act.appendChild(wa); act.appendChild(del); tr.appendChild(act);
     return tr;
@@ -223,8 +221,8 @@
     var fin = tr.querySelector('[data-o="fin"]'); fin.textContent = '';
     if (r.L.ok) {
       var b = r.L.balance; fin.appendChild(el('b', b < 0 ? 'cr' : b > 0 ? 'dr' : '', K.money(Math.abs(b))));
-      fin.appendChild(el('span', 'g-sub', b > 0 ? 'Debit (lena hai)' : b < 0 ? 'Credit (dena hai)' : 'Hisab barabar'));
-      fin.appendChild(el('span', 'g-sub', 'Aaj ka bill ' + K.money(r.bill.total)));
+      fin.appendChild(el('span', 'g-tag ' + (b > 0 ? 'dr' : b < 0 ? 'cr' : ''), b > 0 ? 'DEBIT · lena' : b < 0 ? 'CREDIT · dena' : 'Barabar'));
+      fin.appendChild(el('span', 'g-sub', 'Bill ' + K.money(r.bill.total)));
     } else fin.appendChild(el('span', 'g-sub bad', 'Check'));
     var chip = tr.querySelector('.rec-chip'), rs = rowRecState(c);
     chip.className = 'rec-chip' + (rs === 'saved' ? ' ok' : rs === 'changed' ? ' chg' : '');
@@ -248,16 +246,20 @@
     });
     return tot;
   }
+  function shortBal(v) { return K.money(Math.abs(v)) + (v > 0 ? ' Debit' : v < 0 ? ' Credit' : ''); }
   function avgRate(x) { return x.qty ? Math.round(x.amt * 1000 / x.qty) : null; }
   function updateFoot() {
     var tot = totals(), pt = productTotals(), f = $('gFoot'); f.textContent = '';
-    var rows = [['Total KG', function (x) { return x.qty ? K.qtyText(x.qty, x.unit) : '—'; }], ['Total ₹', function (x) { return x.amt ? K.money(x.amt) : '—'; }], ['Avg Rate (₹ ÷ kg)', function (x) { var a = avgRate(x); return a ? K.money(a) : '—'; }]];
+    var dc = { oDr: 0, oCr: 0, bDr: 0, bCr: 0 };
+    state.customers.forEach(function (c) { var r = calc(c); if (!r.L.ok) return; if (r.L.oldBal > 0) dc.oDr += r.L.oldBal; else dc.oCr -= r.L.oldBal; if (r.L.balance > 0) dc.bDr += r.L.balance; else dc.bCr -= r.L.balance; });
+    var rows = [['Total KG', function (x) { return x.qty ? K.qtyText(x.qty, x.unit) : '—'; }], ['Total ₹', function (x) { return x.amt ? K.money(x.amt) : '—'; }], ['Avg Rate', function (x) { var a = avgRate(x); return a ? K.money(a) : '—'; }]];
     rows.forEach(function (rw, ri) {
-      var tr = el('tr', 'g-ft g-ft' + ri); tr.appendChild(el('td', 'g-idx', '')); tr.appendChild(el('td', 'g-nm', rw[0]));
+      var tr = el('tr', 'g-ft g-ft' + ri); tr.appendChild(el('td', 'g-nm', rw[0]));
       K.PRODUCTS.forEach(function (p) { tr.appendChild(el('td', 'g-it ra', rw[1](pt[p.id]))); });
-      if (ri === 0) { tr.appendChild(el('td', 'g-x ra', balT(tot.old))); tr.appendChild(el('td', 'g-x ra', K.money(tot.rec))); tr.appendChild(el('td', 'g-x ra', balT(tot.bal))); }
-      else if (ri === 1) { tr.appendChild(el('td', 'g-x ra g-note', 'Kul pichla')); tr.appendChild(el('td', 'g-x ra g-note', 'Cash ' + K.money(tot.cash) + ' · Online ' + K.money(tot.online))); tr.appendChild(el('td', 'g-x ra g-note', 'Aaj ka bill ' + K.money(tot.bill))); }
-      else { tr.appendChild(el('td', 'g-x')); tr.appendChild(el('td', 'g-x')); tr.appendChild(el('td', 'g-x')); }
+      var cellL = function (lab, val, cls) { var td = el('td', 'g-x ra g-fx ' + (cls || '')); td.appendChild(el('small', null, lab)); td.appendChild(el('b', null, val)); tr.appendChild(td); };
+      if (ri === 0) { cellL('Debit', K.money(dc.oDr), 'dr'); cellL('Cash', K.money(tot.cash)); cellL('Debit (lena)', K.money(dc.bDr), 'dr'); }
+      else if (ri === 1) { cellL('Credit', K.money(dc.oCr), 'cr'); cellL('Online', K.money(tot.online)); cellL('Credit (dena)', K.money(dc.bCr), 'cr'); }
+      else { cellL('Net', shortBal(tot.old)); cellL('Kul Jama', K.money(tot.rec)); cellL('Net · Bill ' + K.money(tot.bill), shortBal(tot.bal)); }
       tr.appendChild(el('td', 'g-act')); f.appendChild(tr);
     });
     $('tCust').textContent = String(tot.n); $('tRec').textContent = K.money(tot.rec); $('tRecSplit').textContent = 'Cash ' + K.money(tot.cash) + ' · Online ' + K.money(tot.online);

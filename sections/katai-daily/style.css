@@ -277,3 +277,37 @@ th{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--mute
 .gtable td input,.gtable td select{display:block}
 .gtable .g-nm .rec-chip{display:inline-block}
 .gtable tfoot td.g-note{font-weight:600;color:var(--muted);font-size:11px}
+
+/* ---------- Compact: whole grid fits a laptop screen (user 2026-11-06) ---------- */
+.gridcard{padding:10px}
+.g-scroll{max-height:none}
+.gtable{table-layout:fixed;width:100%;min-width:900px;font-size:12px}
+.gtable th,.gtable td{padding:3px}
+.gtable thead th{font-size:10.5px;line-height:1.15;white-space:normal;letter-spacing:0}
+.gtable thead tr:first-child th{height:34px}
+.gtable thead tr.g-rate th{top:34px}
+.gtable .g-nm{width:10%;min-width:0}
+.gtable .g-it{width:5.6%;min-width:0}
+.gtable td.g-x,.gtable th.g-x{width:7.4%;min-width:0;max-width:none}
+.gtable .g-act{width:3.6%;min-width:0;white-space:normal;text-align:center}
+.gtable input,.gtable select{min-height:26px;padding:2px 4px;font-size:12px;border-radius:5px}
+.gtable select{padding:2px 1px}
+.gtable .g-q{margin-bottom:2px}
+.g-amt{font-size:10.5px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g-sub{font-size:10px;margin-top:1px}
+.gtable .rec-chip{font-size:10px;padding:0 5px;margin-top:2px}
+.g-fin b{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g-tag{display:block;text-align:right;font-size:9.5px;font-weight:800;margin-top:1px;color:var(--faint)}
+.g-tag.dr{color:var(--due)}.g-tag.cr{color:#047857}
+.g-wa{min-height:26px;width:100%;padding:2px;justify-content:center}
+.g-wa img{width:15px;height:15px}
+.gtable .ic{min-height:24px;width:100%;margin:3px 0 0;font-size:11px}
+.gtable tfoot td{font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gtable tfoot td.g-x{max-width:none;font-size:11.5px}
+.gtable tfoot td.g-fx small{display:block;font-size:9.5px;font-weight:600;color:var(--muted)}
+.gtable tfoot td.g-fx b{display:block}
+.gtable tfoot td.g-fx.dr b{color:var(--due)}.gtable tfoot td.g-fx.cr b{color:#047857}
+@media (min-width:1300px){.gtable{font-size:13px}.gtable thead th{font-size:11.5px}.gtable input,.gtable select{font-size:13px;min-height:30px}.g-amt{font-size:11.5px}.g-fin b{font-size:15px}}
+.gtable thead th{overflow-wrap:anywhere}
+@media (max-width:1299px){.gtable tfoot td.g-it{font-size:10.5px;padding:3px 2px}.gtable thead th{font-size:9.5px}}
+.gtable tfoot td.g-x{white-space:normal;overflow:visible}
