@@ -1,5 +1,8 @@
 /* MurgaMandi Hisab · firm details, bill colour and bill preview (Zinda Single, Katai Single) */
-.bp-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:16px;margin-top:16px}
+.bp-top{margin-bottom:16px}
+.bp-top .bp-colors{margin-top:14px}
+.bp-wrap{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;margin-top:16px}
+.bp-wrap .bp-preview{max-width:760px;width:100%;margin:0 auto}
 .bp-panel h3{margin:0 0 10px;font-size:16px}
 .bp-panel .bp-colors{margin-top:18px;padding-top:14px;border-top:1px solid #E5E7EB}
 .bp-card{display:flex;gap:12px;align-items:center;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:12px}
@@ -36,5 +39,5 @@
   @page{margin:8mm}
   body.print-rcpt .rcpt.bill-mode{max-width:190mm !important;padding:0 !important}
   body.print-rcpt .rcpt img.bill-img{display:block;width:100%;height:auto;margin:0 auto}
-  .bp-wrap{display:none !important}
+  .bp-wrap,.bp-top{display:none !important}
 }
