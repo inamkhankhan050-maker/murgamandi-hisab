@@ -69,7 +69,9 @@
   function loadImg(src, cb) {
     if (!src) return cb(null);
     var c = imgCache[src]; if (c && c.complete && c.naturalWidth) return cb(c);
-    var im = new root.Image(); im.onload = function () { imgCache[src] = im; cb(im); }; im.onerror = function () { cb(null); }; im.src = src;
+    var done = false, fin = function (v) { if (done) return; done = true; cb(v); };
+    var im = new root.Image(); im.onload = function () { imgCache[src] = im; fin(im); }; im.onerror = function () { fin(null); };
+    root.setTimeout(function () { fin(null); }, 2500); im.src = src;
   }
   /** Read a picked file, shrink it to max 320px, return a data URL (PNG keeps transparency). */
   function fileToData(file, cb) {
@@ -216,9 +218,11 @@
     return cv;
   }
   /** draw after the firm's logo and stamp pictures have loaded. cb(canvas|null) */
+  var DEFAULT_LOGO = (function () { try { var s = root.document && root.document.currentScript; if (s && s.src) return s.src.replace(/shared\/bill-print\.js.*$/, 'assets/icons/logo-192.png'); } catch (e) {} return '../../assets/icons/logo-192.png'; })();
   function render(model, cb) {
     var f = model.firm || {};
-    loadImg(f.logo, function (logo) { loadImg(f.stamp, function (stamp) { var cv = null; try { cv = draw(model, { logo: logo, stamp: stamp }); } catch (e) { if (root.console) root.console.error(e); } cb(cv); }); });
+    var probe = root.document.createElement('canvas'); if (!(probe.getContext && probe.getContext('2d'))) return cb(null);
+    loadImg(f.logo || DEFAULT_LOGO, function (logo) { loadImg(f.stamp, function (stamp) { var cv = null; try { cv = draw(model, { logo: logo, stamp: stamp }); } catch (e) { if (root.console) root.console.error(e); } cb(cv); }); });
   }
 
   /** Print a canvas through the section's hidden receipt box. */

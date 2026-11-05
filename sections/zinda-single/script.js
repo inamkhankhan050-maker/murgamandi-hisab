@@ -113,11 +113,10 @@
   function firmNow() { var f = B && B.getFirm(FIRM_KEY); if (f) return f; var n = $('sFirm').value.trim(); return n ? { name: n } : null; }
   function billModel() {
     var row = singleRow(), v = C.validateRow(row), n = B.num;
-    var m = { firm: firmNow(), date: billDate || todayISO(), name: $('sName').value.trim() || 'Customer', rows: [], minRows: 4, total: {}, extras: [], grand: { label: 'G. TOTAL', value: '' }, words: '', fallbackTitle: 'MurgaMandi Hisab' };
+    var m = { firm: firmNow(), date: billDate || todayISO(), name: $('sName').value.trim() || 'Customer', rows: [], minRows: 6, total: {}, extras: [], grand: { label: 'G. TOTAL', value: '' }, words: '', fallbackTitle: 'MurgaMandi Hisab' };
     if (!v.ok) { m.name = $('sName').value.trim(); m.extras = [{ label: 'Average' }, { label: 'Samiti' }, { label: 'Labour' }, { label: 'Total Bill', hl: 1 }, { label: 'Last Balance' }, { label: 'Received' }]; return { model: m, ok: false }; }
     var r = calcSingle(v), L = C.ledger(row, r.final), avg = C.averageKg(v.netGrams, v.pieces);
-    m.rows.push({ qty: C.formatInt(v.pieces), weight: C.formatKg(v.netGrams), part: 'Chicken', partNote: v.jaalGrams ? 'Total ' + C.formatKg(v.grams) + ' − Jaal ' + C.formatKg(v.jaalGrams) + ' kg' : '',
-      rate: n(v.ratePaise), amount: n(r.basic) });
+    m.rows.push({ qty: C.formatInt(v.pieces), weight: C.formatKg(v.netGrams), part: 'Chicken', rate: n(v.ratePaise), amount: n(r.basic) });
     m.total = { qty: C.formatInt(v.pieces), weight: C.formatKg(v.netGrams), amount: n(r.basic) };
     m.extras.push({ label: 'Average', left: avg + ' kg', value: '' });
     m.extras.push({ label: 'Samiti', value: n(r.samiti) });
@@ -125,7 +124,7 @@
     m.extras.push({ label: 'Total Bill', value: r.final == null ? '' : n(r.final), hl: 1 });
     var led = L.any && L.ok, rec = led ? L.received : 0;
     m.extras.push({ label: 'Last Balance', value: led && L.oldBal ? n(L.oldBal) : '—' });
-    m.extras.push({ label: 'Received', mid: led && L.cash && L.online ? 'Cash ' + n(L.cash) + ' + Online ' + n(L.online) : (led && L.online ? 'Online' : (led && L.cash ? 'Cash' : '')), value: rec ? n(rec) : '—' });
+    m.extras.push({ label: 'Received', value: rec ? n(rec) : '—' });
     var g = led ? L.due : r.final;
     if (g != null) { m.grand.value = g < 0 ? 'Adv ' + n(-g) : n(g); m.words = C.amountInWords(Math.max(g, 0)); }
     return { model: m, ok: true };

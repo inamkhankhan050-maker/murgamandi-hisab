@@ -130,7 +130,7 @@
   function firmNow() { var f = B && B.getFirm(FIRM_KEY); if (f) return f; var n = $('kFirm').value.trim(); return n ? { name: n } : null; }
   function billModel() {
     var bill = K.computeBill(state.lines), n = B.num;
-    var m = { firm: firmNow(), date: state.date || todayISO(), name: state.name.trim() || 'Customer', rows: [], minRows: 4, total: {}, extras: [], grand: { label: 'G. TOTAL', value: '' }, words: '', fallbackTitle: 'MurgaMandi Hisab' };
+    var m = { firm: firmNow(), date: state.date || todayISO(), name: state.name.trim() || 'Customer', rows: [], minRows: 6, total: {}, extras: [], grand: { label: 'G. TOTAL', value: '' }, words: '', fallbackTitle: 'MurgaMandi Hisab' };
     var pcs = 0, kg = 0, anyPcs = false, anyKg = false;
     K.PRODUCTS.forEach(function (p) {
       var c = bill.lines[p.id]; if (!c || c.status !== 'valid') return;
@@ -143,7 +143,7 @@
     var L = K.ledger({ oldBal: state.oldBal, cash: state.cash, online: state.online }, bill.total), led = L.any && L.ok;
     m.total = { qty: anyPcs ? K.plainQty(pcs) : '', weight: anyKg ? K.plainQty(kg) : '', amount: n(bill.total) };
     m.extras.push({ label: 'Last Balance', value: led && L.oldBal ? n(L.oldBal) : '—' });
-    m.extras.push({ label: 'Received', mid: led && L.cash && L.online ? 'Cash ' + n(L.cash) + ' + Online ' + n(L.online) : (led && L.online ? 'Online' : (led && L.cash ? 'Cash' : '')), value: led && L.received ? n(L.received) : '—' });
+    m.extras.push({ label: 'Received', value: led && L.received ? n(L.received) : '—' });
     var g = led ? L.balance : bill.total;
     m.grand.value = g < 0 ? 'Adv ' + n(-g) : n(g); m.words = K.amountInWords(Math.max(g, 0));
     return { model: m, ok: true };
