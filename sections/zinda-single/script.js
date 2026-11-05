@@ -40,7 +40,8 @@
   function esc(s) { return String(s).replace(/[&<>"']/g, function (m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]; }); }
   function rc(k, v) { return '<div class="rc"><span class="k">' + k + '</span><span class="val">' + v + '</span></div>'; }
   function m2(p) { return C.formatINR(p, { decimals: p % 100 ? 2 : 0 }); }
-  function dueText(p) { return p < 0 ? 'Adv ' + C.formatINR(-p, { decimals: p % 100 ? 2 : 0 }) : C.formatINR(p, { decimals: p % 100 ? 2 : 0 }); }
+  function dueText(p) { var a = Math.abs(p), t = C.formatINR(a, { decimals: a % 100 ? 2 : 0 }); return p > 0 ? t + ' lena hai' : p < 0 ? t + ' advance' : t; }
+  function drcr(p, n) { return n(Math.abs(p)); }
   function todayText() { var p = String(billDate || '').split('-'), d = p.length === 3 ? new Date(+p[0], +p[1] - 1, +p[2]) : new Date(); if (isNaN(d.getTime())) d = new Date(); return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); }
   var toastT;
   function LG(r, f) { return window.MMHBal ? window.MMHBal.ledger(C.ledger, r, f) : C.ledger(r, f); }
@@ -70,7 +71,7 @@
     if (!L || !L.any || !L.ok) return '';
     return rc('Pichla Balance (B)', '+ ' + m2(L.oldBal)) + rc('Total Due<small>aaj ka bill + pichla</small>', m2(L.due + L.received)) +
       rc('Rec Cash', '− ' + m2(L.cash)) + rc('Rec Online', '− ' + m2(L.online)) +
-      '<div class="rc big due-r"><span class="k">Balance Baaki</span><span class="val">' + dueText(L.due) + '</span></div>';
+      '<div class="rc big due-r"><span class="k">Balance</span><span class="val">' + dueText(L.due) + '</span></div>';
   }
 
   // ---------- Render ----------
@@ -124,10 +125,13 @@
     m.extras.push({ label: 'Labour', value: n(r.labourAdjusted) });
     m.extras.push({ label: 'Total Bill', value: r.final == null ? '' : n(r.final), hl: 1 });
     var led = L.any && L.ok, rec = led ? L.received : 0;
-    m.extras.push({ label: 'Last Balance', value: led && L.oldBal ? n(L.oldBal) : '—' });
+    m.extras.push({ label: led && L.oldBal < 0 ? 'Pichla Advance' : 'Pichla Baaki', value: led && L.oldBal ? drcr(L.oldBal, n) : '—' });
     m.extras.push({ label: 'Received', value: rec ? n(rec) : '—' });
     var g = led ? L.due : r.final;
-    if (g != null) { m.grand.value = g < 0 ? 'Adv ' + n(-g) : n(g); m.words = C.amountInWords(Math.max(g, 0)); }
+    if (g != null) {
+      if (led) { m.grand.label = g < 0 ? 'AAPKA ADVANCE' : 'AAPKO DENA HAI'; m.grand.value = drcr(g, n); m.words = C.amountInWords(Math.abs(g)) + (g < 0 ? ' (aapka advance jama hai)' : ' (aapko dena hai)'); }
+      else { m.grand.value = n(g); m.words = C.amountInWords(Math.max(g, 0)); }
+    }
     return { model: m, ok: true };
   }
   function schedulePreview() {

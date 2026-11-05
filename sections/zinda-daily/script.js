@@ -134,7 +134,7 @@
     if (billBlank && row.name.trim()) { var l = LG(row, 0); return l.any ? l : null; }
     return null;
   }
-  function dueText(p) { return p < 0 ? 'Adv ' + C.formatINR(-p, { decimals: p % 100 ? 2 : 0 }) : C.formatINR(p, { decimals: p % 100 ? 2 : 0 }); }
+  function dueText(p) { var a = Math.abs(p), t = C.formatINR(a, { decimals: a % 100 ? 2 : 0 }); return p > 0 ? t + ' lena hai' : p < 0 ? t + ' advance' : t; }
   function updateLedgerCell(row, el, c) {
     var l = LG(row, 0);
     ['oldBal', 'cash', 'online'].forEach(function (f) { var i = el.querySelector('[data-f="' + f + '"]'); i.classList.toggle('err', !!l.errors[f]); i.title = l.errors[f] || ''; });
@@ -534,7 +534,7 @@
     var r = C.calculate(v.pieces, v.netGrams, v.ratePaise), L = LG(row, r.final);
     var m2 = function (p) { return C.formatINR(p, { decimals: p % 100 ? 2 : 0 }); };
     var m = { firm: firmName(), name: String(row.name || '').trim() || 'Customer', date: todayText(), boxes: [], rows: [], led: [] };
-    m.boxes.push(['PIECES', C.formatInt(v.pieces)], ['TOTAL KG', C.formatKg(v.grams)]);
+    m.boxes.push(['CHICKEN QTY', C.formatInt(v.pieces)], ['TOTAL KG', C.formatKg(v.grams)]);
     if (v.jaalGrams) m.boxes.push(['JAAL KG', '− ' + C.formatKg(v.jaalGrams)], ['NET KG', C.formatKg(v.netGrams)]);
     m.boxes.push(['AVERAGE', C.averageKg(v.netGrams, v.pieces) + ' kg'], ['RATE / KG', C.formatINR(v.ratePaise)]);
     m.rows.push(['Basic Amount', C.formatKg(v.netGrams) + ' kg × ' + C.formatINR(v.ratePaise), C.formatINR(r.basic)]);
@@ -542,10 +542,10 @@
     m.rows.push(['Labour', C.labourRuleText(v.pieces, r.labourDivisor) + ' + round-off ' + C.formatINR(r.adjustment, { decimals: 2 }), C.formatINR(r.labourAdjusted, { decimals: 2 })]);
     m.billText = r.final == null ? '—' : C.formatINR(r.final, { decimals: r.final % 100 ? 2 : 0 });
     if (L.any && L.ok) {
-      m.led = [['Pichla Balance (B)', '+ ' + m2(L.oldBal)], ['Total Due', m2(L.due + L.received), 1], ['Rec Cash', '− ' + m2(L.cash)], ['Rec Online', '− ' + m2(L.online)]];
-      m.balText = dueText(L.due); m.balPaise = L.due;
+      m.led = [[L.oldBal < 0 ? 'Pichla Advance' : 'Pichla Baaki', m2(Math.abs(L.oldBal))], ['Total Due', m2(L.due + L.received), 1], ['Rec Cash', '− ' + m2(L.cash)], ['Rec Online', '− ' + m2(L.online)]];
+      m.balText = m2(Math.abs(L.due)); m.balPaise = L.due;
     }
-    m.words = r.final == null ? '' : C.amountInWords(L.any && L.ok ? Math.max(L.due, 0) : r.final);
+    m.words = r.final == null ? '' : C.amountInWords(L.any && L.ok ? Math.abs(L.due) : r.final) + (L.any && L.ok ? (L.due < 0 ? ' (aapka advance jama hai)' : ' (aapko dena hai)') : '');
     return m;
   }
   function shareRow(id) {

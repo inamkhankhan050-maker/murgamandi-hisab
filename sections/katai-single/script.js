@@ -55,6 +55,7 @@
   }
   function heading() { return $('kFirm').value.trim() || 'MurgaMandi Hisab'; }
   var toastT;
+  function balT(p) { var a = Math.abs(p); return p > 0 ? K.money(a) + ' lena hai' : p < 0 ? K.money(a) + ' advance' : K.money(0); }
   function LG(r, f) { return window.MMHBal ? window.MMHBal.ledger(K.ledger, r, f) : K.ledger(r, f); }
   function toast(msg) { var t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, 2600); }
   function confirmDlg(title, text, yes, onYes) {
@@ -119,7 +120,7 @@
     if (L.any && L.ok) {
       lg.appendChild(add('Total Due (bill + pichla)', K.money(L.totalDue)));
       lg.appendChild(add('Received (cash + online)', '− ' + K.money(L.received)));
-      lg.appendChild(add('Remaining Balance', K.balanceText(L.balance), 'big due-r'));
+      lg.appendChild(add('Remaining Balance', balT(L.balance), 'big due-r'));
     }
     $('kErr').textContent = errs.join(' · ');
     if (bill.incomplete && !errs.length) $('kErr').textContent = bill.incomplete + ' product(s) need both quantity and rate.';
@@ -143,10 +144,12 @@
     if (!ok) { m.name = state.name.trim(); m.rows = []; m.extras = [{ label: 'Last Balance' }, { label: 'Received' }]; return { model: m, ok: false }; }
     var L = LG({ oldBal: state.oldBal, cash: state.cash, online: state.online }, bill.total), led = L.any && L.ok;
     m.total = { qty: anyPcs ? K.plainQty(pcs) : '', weight: anyKg ? K.plainQty(kg) : '', amount: n(bill.total) };
-    m.extras.push({ label: 'Last Balance', value: led && L.oldBal ? n(L.oldBal) : '—' });
+    var drcr = function (p) { return n(Math.abs(p)); };
+    m.extras.push({ label: led && L.oldBal < 0 ? 'Pichla Advance' : 'Pichla Baaki', value: led && L.oldBal ? drcr(L.oldBal) : '—' });
     m.extras.push({ label: 'Received', value: led && L.received ? n(L.received) : '—' });
     var g = led ? L.balance : bill.total;
-    m.grand.value = g < 0 ? 'Adv ' + n(-g) : n(g); m.words = K.amountInWords(Math.max(g, 0));
+    if (led) { m.grand.label = g < 0 ? 'AAPKA ADVANCE' : 'AAPKO DENA HAI'; m.grand.value = drcr(g); m.words = K.amountInWords(Math.abs(g)) + (g < 0 ? ' (aapka advance jama hai)' : ' (aapko dena hai)'); }
+    else { m.grand.value = n(g); m.words = K.amountInWords(Math.max(g, 0)); }
     return { model: m, ok: true };
   }
   function schedulePreview() {
@@ -167,7 +170,7 @@
       '<table class="rt"><tr class="th"><td>Product</td><td>Qty</td><td>Rate</td><td>Amount</td></tr>';
     K.PRODUCTS.forEach(function (p) { var c = bill.lines[p.id]; if (c.status === 'valid') h += '<tr><td>' + esc(p.name) + '</td><td>' + K.qtyText(c.qty, c.unit) + '</td><td>' + K.money(c.ratePaise) + '</td><td>' + K.money(c.amount) + '</td></tr>'; });
     h += '</table><table class="rt sm">' + t('Total Bill', K.money(bill.total), 'tot');
-    if (L.any && L.ok) h += t('Pichla Balance', '+ ' + K.money(L.oldBal)) + t('Total Due', K.money(L.totalDue), 'sub') + t('Rec Cash', '− ' + K.money(L.cash)) + t('Rec Online', '− ' + K.money(L.online)) + t('Remaining Balance', K.balanceText(L.balance), 'tot due');
+    if (L.any && L.ok) h += t('Pichla Balance', '+ ' + K.money(L.oldBal)) + t('Total Due', K.money(L.totalDue), 'sub') + t('Rec Cash', '− ' + K.money(L.cash)) + t('Rec Online', '− ' + K.money(L.online)) + t('Remaining Balance', balT(L.balance), 'tot due');
     h += '</table><div class="rw">' + esc(K.amountInWords(L.any && L.ok ? Math.max(L.balance, 0) : bill.total)) + '</div><div class="rf">Dhanyavaad · ' + esc(heading()) + '</div>';
     $('kReceipt').innerHTML = h;
     return true;
@@ -194,7 +197,7 @@
     var rows = [], n = 0;
     K.PRODUCTS.forEach(function (p) { var c = bill.lines[p.id]; if (c.status === 'valid') rows.push([++n, p.name, K.qtyText(c.qty, c.unit), K.money(c.ratePaise), K.money(c.amount)]); });
     var sum = [['Total Bill', K.money(bill.total), '#0B4F8A', 1]];
-    if (L.any && L.ok) sum.push(['Pichla Balance', K.money(L.oldBal)], ['Received (Cash + Online)', K.money(L.received)], ['Remaining Balance', K.balanceText(L.balance), '#B45309', 1]);
+    if (L.any && L.ok) sum.push(['Pichla Balance', balT(L.oldBal)], ['Received (Cash + Online)', K.money(L.received)], ['Remaining Balance', balT(L.balance), '#B45309', 1]);
     var name = state.name.trim() || 'Customer';
     var cv = window.KataiShare.billCanvas({ heading: heading(), title: 'Katai Bill', customer: name, date: dateText(),
       cols: [{ h: '#', w: 50 }, { h: 'Product', w: 260, b: 1 }, { h: 'Qty', w: 170, r: 1 }, { h: 'Rate', w: 150, r: 1 }, { h: 'Amount', w: 190, r: 1, b: 1 }], rows: rows, sum: sum });

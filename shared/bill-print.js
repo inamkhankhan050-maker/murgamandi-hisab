@@ -212,6 +212,7 @@
     g.strokeStyle = T.grid; g.lineWidth = 1.2; g.strokeRect(X0, headY, CW, endY - headY);
     // amount in words under the table (right), stamp over it
     text(model.words || '', X1, endY + 30, 17, '#3B2A1E', 400, 'right', CW);
+    if (model.note) text(model.note, X1, endY + 56, 16, '#6B4F3A', 600, 'right', CW);
     if (imgs && imgs.stamp) { var st = imgs.stamp, sh = 165, sw = st.width * sh / st.height; if (sw > 220) { sw = 220; sh = st.height * sw / st.width; } g.globalAlpha = 0.9; g.drawImage(st, 755 - sw / 2, endY + 75 - sh / 2, sw, sh); g.globalAlpha = 1; }
     return cv;
   }

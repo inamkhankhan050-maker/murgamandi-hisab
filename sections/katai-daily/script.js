@@ -61,6 +61,7 @@
   function calc(c) { var bill = K.computeBill(c.lines); return { bill: bill, L: LG(c, bill.total) }; }
   var toastT;
   var autoMap = {}, prevNames = {};
+  function balT(p) { var a = Math.abs(p); return p > 0 ? K.money(a) + ' lena hai' : p < 0 ? K.money(a) + ' advance' : K.money(0); }
   function LG(r, f) { return window.MMHBal ? window.MMHBal.ledger(K.ledger, r, f) : K.ledger(r, f); }
   function toast(msg) { var t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, 2600); }
   function confirmDlg(title, text, yes, onYes) {
@@ -170,7 +171,7 @@
       tr.appendChild(el('td', 'ra fin', K.money(r.bill.total)));
       tr.appendChild(el('td', 'ra', r.L.ok ? K.money(r.L.oldBal) : '—'));
       tr.appendChild(el('td', 'ra', r.L.ok ? K.money(r.L.received) : '—'));
-      tr.appendChild(el('td', 'ra due' + (r.L.ok && r.L.balance < 0 ? ' adv' : ''), r.L.ok ? K.balanceText(r.L.balance) : '—'));
+      tr.appendChild(el('td', 'ra due' + (r.L.ok && r.L.balance < 0 ? ' adv' : ''), r.L.ok ? balT(r.L.balance) : '—'));
       var act = el('td', 'c-act');
       var wa = el('button', 'ic wa1', '⇪'); wa.type = 'button'; wa.dataset.act = 'wa'; wa.title = 'WhatsApp bill'; wa.setAttribute('aria-label', 'WhatsApp bill');
       var img = el('img'); img.src = '../../assets/icons/whatsapp-green.svg'; img.alt = ''; img.width = 16; img.height = 16; wa.textContent = ''; wa.appendChild(img);
@@ -180,9 +181,9 @@
     });
     $('cEmpty').hidden = state.customers.length > 0;
     $('fItems').textContent = String(tot.items); $('fBill').textContent = K.money(tot.bill); $('fOld').textContent = K.money(tot.old);
-    $('fRec').textContent = K.money(tot.rec); $('fBal').textContent = K.balanceText(tot.bal);
+    $('fRec').textContent = K.money(tot.rec); $('fBal').textContent = balT(tot.bal);
     $('tCust').textContent = String(tot.n); $('tRec').textContent = K.money(tot.rec); $('tRecSplit').textContent = 'Cash ' + K.money(tot.cash) + ' · Online ' + K.money(tot.online);
-    $('tBal').textContent = K.balanceText(tot.bal); $('tBill').textContent = K.money(tot.bill); $('tWords').textContent = K.amountInWords(tot.bill);
+    $('tBal').textContent = balT(tot.bal); $('tBill').textContent = K.money(tot.bill); $('tWords').textContent = K.amountInWords(tot.bill);
     $('sheetNo').textContent = '#' + state.sheetNo;
     updateRecMeta();
     return tot;
@@ -315,7 +316,7 @@
     var s = $('edSum'); s.textContent = '';
     var add = function (k, v, cls) { var d = el('div', 'rc' + (cls ? ' ' + cls : '')); d.appendChild(el('span', 'k', k)); d.appendChild(el('span', 'val', v)); s.appendChild(d); };
     add('Aaj ka Bill (' + r.bill.items + ' item' + (r.bill.items === 1 ? '' : 's') + ')', K.money(r.bill.total), 'big');
-    if (r.L.any && r.L.ok) { add('Total Due (bill + pichla)', K.money(r.L.totalDue)); add('Received (cash + online)', '− ' + K.money(r.L.received)); add('Remaining Balance', K.balanceText(r.L.balance), 'big due-r'); }
+    if (r.L.any && r.L.ok) { add('Total Due (bill + pichla)', K.money(r.L.totalDue)); add('Received (cash + online)', '− ' + K.money(r.L.received)); add('Remaining Balance', balT(r.L.balance), 'big due-r'); }
     $('eErr').textContent = errs.length ? errs.join(' · ') : (r.bill.incomplete ? r.bill.incomplete + ' product(s) need both quantity and rate.' : '');
   }
   function renderAll() { renderList(); renderProductTotals(); buildEditor(); }
@@ -385,7 +386,7 @@
     var rows = [], n = 0;
     K.PRODUCTS.forEach(function (p) { var l = r.bill.lines[p.id]; if (l.status === 'valid') rows.push([++n, p.name, K.qtyText(l.qty, l.unit), K.money(l.ratePaise), K.money(l.amount)]); });
     var sum = [['Total Bill', K.money(r.bill.total), '#0B4F8A', 1]];
-    if (r.L.any && r.L.ok) sum.push(['Pichla Balance', K.money(r.L.oldBal)], ['Received (Cash + Online)', K.money(r.L.received)], ['Remaining Balance', K.balanceText(r.L.balance), '#B45309', 1]);
+    if (r.L.any && r.L.ok) sum.push(['Pichla Balance', balT(r.L.oldBal)], ['Received (Cash + Online)', K.money(r.L.received)], ['Remaining Balance', balT(r.L.balance), '#B45309', 1]);
     var name = c.name.trim() || 'Customer';
     var cv = window.KataiShare.billCanvas({ heading: heading(), title: 'Katai Bill', customer: name, date: dateText(),
       cols: [{ h: '#', w: 50 }, { h: 'Product', w: 260, b: 1 }, { h: 'Qty', w: 170, r: 1 }, { h: 'Rate', w: 150, r: 1 }, { h: 'Amount', w: 190, r: 1, b: 1 }], rows: rows, sum: sum });
@@ -394,7 +395,7 @@
   function shareSheet() {
     var d = exportData(); if (!d.count) { toast('Pehle kam se kam ek customer ka bill bhariye'); return; }
     var M = function (v) { return v === '' ? '—' : K.money(Math.round(parseFloat(v) * 100)); };
-    var B = function (v) { return v === '' ? '—' : K.balanceText(Math.round(parseFloat(v) * 100)); };
+    var B = function (v) { return v === '' ? '—' : balT(Math.round(parseFloat(v) * 100)); };
     var rows = d.ledRows.map(function (r) { return [r[0], r[1], r[2], M(r[3]), M(r[4]), M(r[5]), M(r[6]), B(r[7])]; });
     var T = d.ledTotal; rows.push(['', 'TOTAL', '', M(T[3]), M(T[4]), M(T[5]), M(T[6]), B(T[7])]);
     var rec = Math.round(parseFloat(T[5]) * 100) + Math.round(parseFloat(T[6]) * 100);
