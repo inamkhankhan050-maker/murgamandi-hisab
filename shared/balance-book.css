@@ -55,3 +55,19 @@ body.bb-lock{overflow:hidden}
 .bb-totrow .bb-tot{flex:1;min-width:0}
 .bb-totrow .btn{flex:none}
 .dlg-bg.show{z-index:95}
+
+/* Payment Jama */
+.bb-fab.bb-jama .bb-r{background:#16A34A;color:#fff}
+.bb-fab.bb-top.bb-jama{margin-left:auto;margin-right:6px}
+.bb-fab.bb-top.bb-jama+.bb-fab.bb-top{margin-left:0}
+.bb-fab.up2{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+.bb-ptop{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.bb-dl{font-size:13px;font-weight:600;color:#334155;display:flex;align-items:center;gap:6px}
+.bb-dl input{padding:8px;border:1px solid #cbd5e1;border-radius:10px;font:inherit}
+.bb-chk{font-size:13px;color:#334155;display:flex;align-items:center;gap:4px}
+.bb-ptab td.bb-pin{width:26%;padding:5px 3px}
+.bb-pin input{width:100%;box-sizing:border-box;padding:9px 8px;border:1px solid #cbd5e1;border-radius:9px;font:inherit;text-align:right;min-width:0}
+.bb-pin input.bad{border-color:#dc2626;background:#fef2f2}
+.bb-pfoot{position:sticky;bottom:calc(-18px - env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:8px;justify-content:space-between;background:#fff;border-top:1px solid #e2e8f0;padding:10px 0;margin-top:6px}
+.bb-psum{font-size:13px;font-weight:700;color:#0f172a}
+.bb-h3{font-size:14px;margin:14px 0 4px;color:#334155}

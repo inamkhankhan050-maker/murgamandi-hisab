@@ -28,7 +28,7 @@
     { id: 'fuel', name: 'Fuel / Diesel' }, { id: 'shop', name: 'Shop Expenses' }, { id: 'other', name: 'Other Expenses' }
   ];
   var SECTIONS = { zinda: 'Zinda', katai: 'Katai' };
-  var SOURCES = { 'zinda-single': 'Zinda Single Bill', 'zinda-daily': 'Zinda Daily Entry', 'katai-single': 'Katai Single Bill', 'katai-daily': 'Katai Daily Entry' };
+  var SOURCES = { 'zinda-single': 'Zinda Single Bill', 'zinda-daily': 'Zinda Daily Entry', 'katai-single': 'Katai Single Bill', 'katai-daily': 'Katai Daily Entry', 'payment-entry': 'Payment Jama Entry' };
   var MODES = { cash: 'Cash', online: 'Online' };
   var MAX_MONEY = 1e13;
   var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];

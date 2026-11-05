@@ -315,7 +315,7 @@
       if (!rows.length) { wrap.appendChild(el('p', 'bb-empty', all.length ? 'Koi customer nahi mila.' : 'Abhi koi balance nahi. Upar se add ya import kariye.')); return; }
       var t = el('table'), th = el('tr'); ['Customer', 'Balance', ''].forEach(function (h) { th.appendChild(el('th', null, h)); }); t.appendChild(th);
       rows.forEach(function (r) {
-        var tr = el('tr'), nt = el('td', 'bb-n', r.name); nt.appendChild(el('small', 'bb-d', (r.date && U() ? U().dateText(r.date) : r.date) + (r.from === 'opening' ? ' · opening' : ' · last bill')));
+        var tr = el('tr'), nt = el('td', 'bb-n', r.name); nt.appendChild(el('small', 'bb-d', (r.date && U() ? U().dateText(r.date) : r.date) + (r.from === 'opening' ? ' · opening' : ' · last entry')));
         tr.appendChild(nt); tr.appendChild(el('td', 'bb-a' + (r.balance < 0 ? ' adv' : ''), money(r.balance)));
         var td = el('td', 'bb-act'), e = el('button', 'btn bb-sm', 'Edit'); e.type = 'button';
         e.onclick = function () { fName.value = r.name; fAmt.value = plain(Math.abs(r.balance)); fType.value = r.balance < 0 ? 'adv' : 'due'; fAmt.focus(); fAmt.select(); };
@@ -369,6 +369,122 @@
     fab.onclick = open; x.onclick = close;
     ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
     doc.addEventListener('keydown', function (e) { if (e.key === 'Escape' && ov.classList.contains('show')) close(); });
+    root.addEventListener('storage', function (e) { if ((e.key === KEY || e.key === 'mmh.db.v2') && ov.classList.contains('show')) render(); });
+    var jama = payPanel(opts, bar, fab);
+    return { open: open, close: close, render: render, jama: jama };
+  }
+
+  // ---------- Payment Jama: bill abhi, paisa baad mein (cash / online entry for many customers at once) ----------
+  function payPanel(opts, bar, balFab) {
+    var doc = root.document, sec = opts.section, d0 = D(); if (!d0 || !d0.saveBatch) return null;
+    var title = NAMES[sec] + ' Payment Jama';
+    var toast = opts.toast || function (m) { root.alert(m); };
+    var ask = opts.confirm || function (t, b, ok, fn) { if (root.confirm(t + '\n' + b)) fn(); };
+    var fab = el('button', 'bb-fab bb-jama' + (opts.raise ? ' up2' : '')); fab.type = 'button'; fab.setAttribute('aria-label', title);
+    fab.innerHTML = '<span class="bb-r">+</span><span>Jama</span>';
+    if (bar) { fab.className = 'bb-fab bb-top bb-jama'; bar.insertBefore(fab, balFab); } else doc.body.appendChild(fab);
+    var ov = el('div', 'bb-ov'); ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', title);
+    var pn = el('div', 'bb-pn bb-pay'); ov.appendChild(pn);
+    var hd = el('div', 'bb-hd'); hd.appendChild(el('h2', null, title)); var x = el('button', 'bb-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Close'); hd.appendChild(x); pn.appendChild(hd);
+    pn.appendChild(el('p', 'bb-sub', 'Bill pehle bana kar de dijiye (Cash/Online khali chhod kar). Paisa jab aaye, yahan customer ke saamne Cash ya Online likhiye aur ek saath Save kariye. Balance khud kam ho jayega.'));
+    var top = el('div', 'bb-ptop'), dt = el('input'); dt.type = 'date'; dt.value = today(); dt.max = today();
+    var sr = el('input', 'bb-q'); sr.type = 'search'; sr.placeholder = 'Customer search…';
+    var onlyDue = el('label', 'bb-chk'), cb = el('input'); cb.type = 'checkbox'; cb.checked = true; onlyDue.appendChild(cb); onlyDue.appendChild(doc.createTextNode(' Sirf baaki wale'));
+    var dl = el('label', 'bb-dl', 'Paisa aaya: '); dl.appendChild(dt);
+    top.appendChild(dl); top.appendChild(onlyDue); pn.appendChild(top); pn.appendChild(sr);
+    var wrap = el('div', 'bb-list'); pn.appendChild(wrap);
+    var foot = el('div', 'bb-pfoot'), sum = el('div', 'bb-psum'), save = el('button', 'btn primary', 'Save'); save.type = 'button';
+    foot.appendChild(sum); foot.appendChild(save); pn.appendChild(foot);
+    pn.appendChild(el('h3', 'bb-h3', 'Is din ki jama entries'));
+    var done = el('div', 'bb-list'); pn.appendChild(done);
+    doc.body.appendChild(ov);
+    var vals = {}; // key -> {name, cash, online}
+
+    function payments(date) { return D().transactions({ section: sec }).filter(function (r) { return r.kind === 'payment' && r.date === date; }); }
+    function billedOn(date) { var o = {}; D().transactions({ section: sec }).forEach(function (r) { if (r.kind === 'bill' && r.date === date) o[key(r.customerName)] = 1; }); return o; }
+    function later(name, date) { var k = key(name); return D().transactions({ section: sec }).some(function (r) { return key(r.customerName) === k && r.date > date; }); }
+    function amt(v) { v = String(v == null ? '' : v).trim(); if (!v) return 0; var a = parseAmount(v); return isNaN(a) || a < 0 ? NaN : a; }
+    function totals() {
+      var c = 0, o = 0, n = 0, bad = 0;
+      Object.keys(vals).forEach(function (k) { var v = vals[k], a = amt(v.cash), b = amt(v.online); if (isNaN(a) || isNaN(b)) { bad++; return; } if (a + b > 0) { n++; c += a; o += b; } });
+      sum.textContent = n ? n + ' customer · Cash ' + money(c) + ' · Online ' + money(o) : 'Abhi koi rakam nahi likhi';
+      save.textContent = n ? 'Save ' + n : 'Save'; save.disabled = !n || bad > 0; return n;
+    }
+    function render() {
+      var date = dt.value || today(), q = key(sr.value), b = billedOn(date);
+      var all = list(sec).filter(function (r) { return (!cb.checked || r.balance > 0 || vals[key(r.name)]) && (!q || key(r.name).indexOf(q) >= 0); });
+      all.sort(function (a, c) { var x1 = b[key(a.name)] ? 0 : 1, x2 = b[key(c.name)] ? 0 : 1; return x1 - x2 || (a.name.toLowerCase() < c.name.toLowerCase() ? -1 : 1); });
+      wrap.textContent = '';
+      if (!all.length) wrap.appendChild(el('p', 'bb-empty', q ? 'Koi customer nahi mila.' : 'Koi baaki wala customer nahi.'));
+      else {
+        var t = el('table', 'bb-ptab'), th = el('tr'); ['Customer', 'Cash ₹', 'Online ₹'].forEach(function (h) { th.appendChild(el('th', null, h)); }); t.appendChild(th);
+        all.slice(0, 300).forEach(function (r) {
+          var k = key(r.name), v = vals[k] || { name: r.name, cash: '', online: '' };
+          var tr = el('tr'), nt = el('td', 'bb-n', r.name), bal = el('small', 'bb-d'); nt.appendChild(bal);
+          var show = function () {
+            var a = amt(v.cash), o = amt(v.online), after = r.balance - (isNaN(a) ? 0 : a) - (isNaN(o) ? 0 : o);
+            bal.textContent = (b[k] ? 'aaj bill · ' : '') + 'Baaki ' + money(r.balance) + ((a || o) && !isNaN(a) && !isNaN(o) ? ' → ' + money(after) : '');
+          };
+          [['cash', 'Cash'], ['online', 'Online']].forEach(function (f) {
+            var td = el('td', 'bb-pin'), inp = el('input'); inp.inputMode = 'decimal'; inp.autocomplete = 'off'; inp.maxLength = 12; inp.placeholder = '0'; inp.value = v[f[0]]; inp.setAttribute('aria-label', f[1] + ' ' + r.name);
+            inp.oninput = function () { v[f[0]] = inp.value; if (v.cash || v.online) vals[k] = v; else delete vals[k]; inp.classList.toggle('bad', isNaN(amt(inp.value))); show(); totals(); };
+            td.appendChild(inp); tr.appendChild(td);
+          });
+          tr.insertBefore(nt, tr.firstChild); show(); t.appendChild(tr);
+        });
+        wrap.appendChild(t);
+      }
+      totals(); renderDone();
+    }
+    function renderDone() {
+      var date = dt.value || today(), ps = payments(date); done.textContent = '';
+      if (!ps.length) { done.appendChild(el('p', 'bb-empty', 'Is din abhi koi payment entry nahi.')); return; }
+      var c = 0, o = 0, t = el('table'), th = el('tr'); ['Customer', 'Cash', 'Online', ''].forEach(function (h) { th.appendChild(el('th', null, h)); }); t.appendChild(th);
+      ps.slice().reverse().forEach(function (p) {
+        c += p.cash; o += p.online;
+        var tr = el('tr'), nt = el('td', 'bb-n', p.customerName); nt.appendChild(el('small', 'bb-d', 'Bacha ' + money(p.balance)));
+        tr.appendChild(nt); tr.appendChild(el('td', 'bb-a adv', p.cash ? money(p.cash) : '—')); tr.appendChild(el('td', 'bb-a adv', p.online ? money(p.online) : '—'));
+        var td = el('td', 'bb-act'), del = el('button', 'btn bb-sm danger', 'Hatao'); del.type = 'button';
+        del.onclick = function () {
+          if (later(p.customerName, p.date) || D().transactions({ section: sec }).some(function (r) { return key(r.customerName) === key(p.customerName) && r.date === p.date && (r.seq || 0) > (p.seq || 0); })) { toast(p.customerName + ' ka iske baad bill/entry bani hai. Statements mein jaakar theek kariye.'); return; }
+          ask('Payment hatayein?', p.customerName + ' · Cash ' + money(p.cash) + ' · Online ' + money(p.online) + '. Balance wapas ' + money(p.prevBalance) + ' ho jayega.', 'Hatao', function () { D().deletePayment(p.id); render(); changed(); toast('Payment hata diya'); });
+        };
+        td.appendChild(del); tr.appendChild(td); t.appendChild(tr);
+      });
+      done.appendChild(el('div', 'bb-tot', ps.length + ' entry · Cash ' + money(c) + ' · Online ' + money(o) + ' · Kul ' + money(c + o)));
+      done.appendChild(t);
+    }
+    function changed() { if (opts.onChange) opts.onChange(); }
+    save.onclick = function () {
+      var date = dt.value || today(), items = [], names = [], blocked = [];
+      if (date > today()) { toast('Aage ki date nahi chalegi'); return; }
+      Object.keys(vals).forEach(function (k) {
+        var v = vals[k], a = amt(v.cash), o = amt(v.online); if (isNaN(a) || isNaN(o) || a + o <= 0) return;
+        if (later(v.name, date)) { blocked.push(v.name); return; }
+        var c = current(sec, v.name, { onOrBefore: date }), prev = c ? c.balance : 0;
+        items.push({ kind: 'payment', input: { section: sec, source: 'payment-entry', date: date, customerName: v.name, cash: a, online: o, prevBalance: prev, balance: prev - a - o, note: 'Payment Jama' } });
+        names.push(v.name);
+      });
+      if (blocked.length) { toast(blocked.join(', ') + ': is date ke baad bill bana hai, aaj ki date se jama kariye'); if (!items.length) return; }
+      var go = function () {
+        var res = D().saveBatch(items, { allowDuplicate: true });
+        if (!res.ok) { toast(res.error || 'Save nahi hua'); return; }
+        if (res.errors.length) toast(res.errors.length + ' entry save nahi hui: ' + res.errors[0].error);
+        names.forEach(function (n) { if (!blocked.length || blocked.indexOf(n) < 0) delete vals[key(n)]; });
+        render(); changed(); if (res.created) toast(res.created + ' payment jama ho gaye');
+      };
+      var c = 0, o = 0; items.forEach(function (i) { c += i.input.cash; o += i.input.online; });
+      ask(items.length + ' payment jama karein?', (U() ? U().dateText(date) : date) + ' · Cash ' + money(c) + ' · Online ' + money(o) + '. Har customer ka balance utna kam ho jayega.', 'Save', go);
+    };
+    sr.oninput = render; cb.onchange = render; dt.onchange = function () { if (dt.value > today()) dt.value = today(); render(); };
+    function open() { dt.max = today(); if (!dt.value) dt.value = today(); render(); ov.classList.add('show'); doc.body.classList.add('bb-lock'); }
+    function close() {
+      var n = Object.keys(vals).filter(function (k) { return amt(vals[k].cash) + amt(vals[k].online) > 0; }).length;
+      var shut = function () { ov.classList.remove('show'); doc.body.classList.remove('bb-lock'); };
+      if (n) ask('Bina save band karein?', n + ' customer ki likhi rakam save nahi hui. Band karne par hat jayegi.', 'Band karo', function () { vals = {}; shut(); }); else shut();
+    }
+    fab.onclick = open; x.onclick = close;
+    ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
     root.addEventListener('storage', function (e) { if ((e.key === KEY || e.key === 'mmh.db.v2') && ov.classList.contains('show')) render(); });
     return { open: open, close: close, render: render };
   }
