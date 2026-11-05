@@ -13,7 +13,7 @@
 
   var $ = function (id) { return document.getElementById(id); };
   var uid = function () { return 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); };
-  var newRow = function (o) { o = o || {}; return { id: typeof o.id === 'string' && /^[\w-]{1,40}$/.test(o.id) ? o.id : uid(), name: o.name || '', pieces: o.pieces != null ? String(o.pieces) : '', kg: o.kg != null ? String(o.kg) : '', rate: o.rate != null ? String(o.rate) : '', customRate: !!o.customRate, jaal: o.jaal != null ? String(o.jaal) : '', customJaal: !!o.customJaal, oldBal: o.oldBal != null ? String(o.oldBal) : '', cash: o.cash != null ? String(o.cash) : '', online: o.online != null ? String(o.online) : '' }; };
+  var newRow = function (o) { o = o || {}; return { id: typeof o.id === 'string' && /^[\w-]{1,40}$/.test(o.id) ? o.id : uid(), name: o.name || '', pieces: o.pieces != null ? String(o.pieces) : '', kg: o.kg != null ? String(o.kg) : '', rate: o.rate != null ? String(o.rate) : '', customRate: !!o.customRate, jaal: o.jaal != null ? String(o.jaal) : '', customJaal: !!o.customJaal, oldBal: o.oldBal != null ? String(o.oldBal) : '', cash: o.cash != null ? String(o.cash) : '', online: o.online != null ? String(o.online) : '', payMode: o.payMode === 'online' ? 'online' : o.payMode === 'cash' ? 'cash' : '' }; };
 
   var state = { rows: [], defaultRate: '', defaultJaal: '', sheetNo: 1, selectedId: null, date: '' };
   var D = window.MMHData || null, U = D && D.util;   // shared records (Statements & Reports read these)
@@ -44,6 +44,7 @@
   // ---------- Row DOM ----------
   var ICON_DEL = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
   var ICON_WA = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3z"/></svg>';
+  function payMode(row) { return row.payMode === 'online' || (row.payMode !== 'cash' && String(row.online || '').trim() && !String(row.cash || '').trim()) ? 'online' : 'cash'; }
   function rowHTML(row) {
     function inp(f, cls, ph, mode) {
       return '<input class="cell-in ' + cls + '" data-f="' + f + '" inputmode="' + mode + '" autocomplete="off" aria-label="' + ph + '">';
@@ -61,8 +62,7 @@
       '<div class="c auto labour"><span class="m-lbl">Labour</span><span class="lab-wrap"><span class="adj" data-o="adj" hidden></span><span class="v" data-o="labour"></span></span></div>' +
       '<div class="c fin"><span class="v" data-o="final"></span></div>' +
       '<div class="c inp old"><span class="m-lbl">Pichla Bal (B)</span>' + inp('oldBal', 'n', 'Bal', 'decimal') + '</div>' +
-      '<div class="c inp cash"><span class="m-lbl">Rec Cash</span>' + inp('cash', 'n', 'Cash', 'decimal') + '</div>' +
-      '<div class="c inp onl"><span class="m-lbl">Rec Online</span>' + inp('online', 'n', 'Online', 'decimal') + '</div>' +
+      '<div class="c inp pay"><span class="m-lbl">Payment</span><span class="pay-w"><select class="pay-mode" data-pm aria-label="Cash ya Online"><option value="cash">Cash</option><option value="online">Online</option></select>' + inp(payMode(row), 'n pay-in', 'Payment amount', 'decimal') + '</span><span class="pay-other" data-o="payOther"></span></div>' +
       '<div class="c due"><span class="m-lbl">Balance Baaki</span><span class="v" data-o="due"></span></div>' +
       '<div class="c act"><button class="wa1" data-wa title="Is customer ka bill WhatsApp par bhejo" aria-label="WhatsApp PDF">' + ICON_WA + '</button><button class="del" data-del title="Delete row" aria-label="Delete row">' + ICON_DEL + '</button></div>' +
       '<div class="m-meta" data-o="meta"></div>';
@@ -73,7 +73,8 @@
     el.setAttribute('role', 'row');
     el.dataset.id = row.id;
     el.innerHTML = rowHTML(row);
-    FIELDS.forEach(function (f) { el.querySelector('[data-f="' + f + '"]').value = row[f]; });
+    FIELDS.forEach(function (f) { var i = el.querySelector('[data-f="' + f + '"]'); if (i) i.value = row[f]; });
+    el.querySelector('[data-pm]').value = payMode(row);
     return el;
   }
   function renderAll() {
@@ -137,7 +138,9 @@
   function dueText(p) { var a = Math.abs(p), t = C.formatINR(a, { decimals: a % 100 ? 2 : 0 }); return p > 0 ? t + ' Debit (lena hai)' : p < 0 ? t + ' Credit (dena hai)' : t; }
   function updateLedgerCell(row, el, c) {
     var l = LG(row, 0);
-    ['oldBal', 'cash', 'online'].forEach(function (f) { var i = el.querySelector('[data-f="' + f + '"]'); i.classList.toggle('err', !!l.errors[f]); i.title = l.errors[f] || ''; });
+    ['oldBal', 'cash', 'online'].forEach(function (f) { var i = el.querySelector('[data-f="' + f + '"]'); if (!i) return; i.classList.toggle('err', !!l.errors[f]); i.title = l.errors[f] || ''; });
+    var pm = payMode(row), oth = pm === 'cash' ? row.online : row.cash, po = el.querySelector('[data-o="payOther"]');
+    po.textContent = String(oth || '').trim() ? '+ ' + (pm === 'cash' ? 'Online ' : 'Cash ') + oth : '';
     var L = rowLedger(row, c), o = el.querySelector('[data-o="due"]');
     if (L && L.ok) { setV(o, dueText(L.due)); o.classList.toggle('adv', L.due < 0); }
     else { setV(o, '—', true); o.classList.remove('adv'); }
@@ -159,7 +162,7 @@
     var lo = 0, lc = 0, ln = 0, ld = 0;
     state.rows.forEach(function (r) { var L = rowLedger(r); if (L && L.ok) { lo += L.oldBal; lc += L.cash; ln += L.online; ld += L.due; } });
     var m2 = function (p) { return C.formatINR(p, { decimals: p % 100 ? 2 : 0 }); };
-    map.fOld = m2(lo); map.fCash = m2(lc); map.fOnline = m2(ln); map.fDue = dueText(ld);
+    map.fOld = m2(lo); map.fCash = m2(lc + ln); map.fOnline = 'Cash ' + m2(lc) + ' · Online ' + m2(ln); map.fDue = dueText(ld);
     map.tRec = m2(lc + ln); map.sRec = m2(lc + ln); map.tRecSplit = 'Cash ' + m2(lc) + ' · Online ' + m2(ln);
     map.tDue = dueText(ld); map.sDue = dueText(ld);
     var tav = C.averageKg(t.net, t.pieces) || '—';
@@ -448,6 +451,13 @@
       save();
     });
     body.addEventListener('change', function (e) {
+      if (e.target.matches && e.target.matches('[data-pm]')) {
+        var rid = e.target.closest('.r').dataset.id, rw = state.rows.filter(function (r) { return r.id === rid; })[0]; if (!rw) return;
+        var oldM = payMode(rw), newM = e.target.value === 'online' ? 'online' : 'cash', pin = e.target.closest('.r').querySelector('.pay-in');
+        if (oldM !== newM) { rw[newM] = rw[oldM]; rw[oldM] = ''; }
+        rw.payMode = newM; pin.dataset.f = newM; pin.value = rw[newM];
+        updateRow(rw); updateTotals(); renderPreview(); save(); return;
+      }
       if (e.target.dataset.f !== 'name') return; var id = e.target.closest('.r').dataset.id;
       autoBal(state.rows.filter(function (r) { return r.id === id; })[0]);
     });
@@ -467,7 +477,7 @@
       var next = rowE.nextElementSibling;
       while (next && next.classList.contains('hidden')) next = next.nextElementSibling;
       if (!next) { addRows(1, false); next = body.lastElementChild; }
-      var i = next.querySelector('[data-f="' + f + '"]'); i.focus(); i.select && i.select();
+      var i = next.querySelector('[data-f="' + f + '"]') || ((f === 'cash' || f === 'online') && next.querySelector('.pay-in')); if (i) { i.focus(); i.select && i.select(); }
     });
     $('btnAdd').onclick = function () { addRows(1, true); };
     $('btnAdd10').onclick = function () { addRows(10, false); };

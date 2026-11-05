@@ -322,3 +322,8 @@ th{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--mute
 .ex-btns{display:flex;flex-wrap:wrap;gap:8px}
 @media (max-width:600px){.ex-btns .btn{flex:1 1 45%}}
 @media print{.exportbar{display:none!important}}
+.gtable .ic.del{display:inline-flex;align-items:center;justify-content:center;border-color:#E2E8F0;color:#64748B}
+.gtable .ic.del:hover{color:var(--err);border-color:#F3C7C7;background:#FEF2F2}
+.gtable .g-nmw{display:flex;align-items:center;gap:5px}
+.gtable .g-nmw .g-name{flex:1;min-width:0}
+.gtable .g-sn{flex:none;min-width:20px;height:20px;padding:0 4px;border-radius:6px;background:#EEF4FB;color:#0B4F8A;font-weight:700;font-size:11px;display:inline-flex;align-items:center;justify-content:center}

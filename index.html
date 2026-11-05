@@ -8,7 +8,7 @@
 <title>MurgaMandi Hisab</title>
 <link rel="icon" href="assets/icons/logo-64.png" type="image/png">
 <link rel="apple-touch-icon" href="assets/icons/logo-192.png">
-<link rel="stylesheet" href="style.css?v=20261106d">
+<link rel="stylesheet" href="style.css?v=20261106g">
 </head>
 <body>
 <header class="top" id="top">
@@ -54,16 +54,6 @@
 
 <main class="wrap">
   <p class="notice" id="dbNotice" hidden></p>
-
-  <h2 class="sec-h small">Aaj ka Hisab</h2>
-  <section class="glance" id="glance" aria-label="Today at a glance">
-    <div class="g-card"><span class="g-l">Aaj ke Bills</span><b class="g-n" id="gBills">—</b><span class="g-s" id="gBillsN"></span></div>
-    <div class="g-card"><span class="g-l">Aaj Received</span><b class="g-n" id="gRec">—</b><span class="g-s" id="gRecSplit"></span></div>
-    <div class="g-card g-buy"><label class="g-l" for="gBuyIn">Aaj ki Purchase (maal kharida)</label><div class="g-buy-row"><input id="gBuyIn" inputmode="decimal" autocomplete="off" placeholder="₹ amount likhiye"><button class="g-buy-btn" id="gBuySave" type="button">Save</button></div><span class="g-s" id="gBuyN">Zinda murga / maal ki kharid</span></div>
-    <div class="g-card"><span class="g-l">Aaj ka Kharcha</span><b class="g-n" id="gExp">—</b><span class="g-s" id="gExpN"></span></div>
-    <div class="g-card g-pl" id="gPlCard"><span class="g-l" id="gPlL">Aaj ka Profit / Loss</span><b class="g-n" id="gPl">—</b><span class="g-s" id="gPlN">Bills − Purchase − Kharcha</span></div>
-    <div class="g-card"><span class="g-l">Saved Records</span><b class="g-n" id="gRecords">—</b><span class="g-s" id="gCust"></span></div>
-  </section>
 
 <h2 class="sec-h big">Choose Section</h2>
   <p class="no-match" id="noMatch" hidden>No section matches your search.</p>
@@ -112,6 +102,17 @@
     </a>
   </nav>
 
+  <h2 class="sec-h small">Aaj ka Hisab</h2>
+  <section class="glance" id="glance" aria-label="Today at a glance">
+    <div class="g-card"><span class="g-l">Aaj ke Bills</span><b class="g-n" id="gBills">—</b><span class="g-s" id="gBillsN"></span></div>
+    <div class="g-card"><span class="g-l">Aaj Received</span><b class="g-n" id="gRec">—</b><span class="g-s" id="gRecSplit"></span></div>
+    <div class="g-card g-buy"><label class="g-l" for="gBuyIn">Aaj ki Purchase (maal kharida)</label><div class="g-buy-row"><input id="gBuyIn" autocomplete="off" placeholder="jaise 520 × 98.5"><button class="g-buy-btn" id="gBuySave" type="button">Save</button></div><div class="g-ops" id="gOps"><button type="button" data-op="+">+</button><button type="button" data-op="-">−</button><button type="button" data-op="×">×</button><button type="button" data-op="÷">÷</button><button type="button" data-op="(">(</button><button type="button" data-op=")">)</button><button type="button" data-op="=" class="eq">=</button><button type="button" data-op="C" class="clr">C</button></div><span class="g-s" id="gBuyN">Zinda murga / maal ki kharid</span></div>
+    <div class="g-card"><span class="g-l">Aaj ka Kharcha</span><b class="g-n" id="gExp">—</b><span class="g-s" id="gExpN"></span></div>
+    <div class="g-card g-pl" id="gPlCard"><span class="g-l" id="gPlL">Aaj ka Profit / Loss</span><b class="g-n" id="gPl">—</b><span class="g-s" id="gPlN">Bills − Purchase − Kharcha</span></div>
+    <div class="g-card"><span class="g-l">Saved Records</span><b class="g-n" id="gRecords">—</b><span class="g-s" id="gCust"></span></div>
+  </section>
+
+
   <section class="card backup" aria-labelledby="bkH">
     <div class="bk-ic"><img src="assets/icons/backup.svg" alt="" width="34" height="34"></div>
     <div class="bk-t">
@@ -131,8 +132,8 @@
 <div class="dlg-bg" id="dlg"><div class="dlg" role="alertdialog" aria-labelledby="dlgT" aria-describedby="dlgP"><h4 id="dlgT">Restore backup?</h4><p id="dlgP"></p><div class="acts"><button class="btn" id="dlgNo" type="button">Cancel</button><button class="btn danger-fill" id="dlgYes" type="button">Replace my data</button></div></div></div>
 <div class="toast" id="toast" role="status"></div>
 
-<script src="shared/storage-service.js?v=20261106d"></script>
-<script src="shared/data-service.js?v=20261106d"></script>
-<script src="script.js?v=20261106d"></script>
+<script src="shared/storage-service.js?v=20261106g"></script>
+<script src="shared/data-service.js?v=20261106g"></script>
+<script src="script.js?v=20261106g"></script>
 </body>
 </html>

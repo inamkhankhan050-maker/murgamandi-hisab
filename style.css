@@ -133,3 +133,9 @@ button,input{font:inherit;color:inherit}
 .g-buy-btn{min-height:40px;padding:6px 14px;border:0;border-radius:10px;background:#1D4ED8;color:#fff;font-weight:700;cursor:pointer}
 .g-pl.profit{background:#ECFDF5;border-color:#6EE7B7}.g-pl.profit .g-n{color:#047857}
 .g-pl.loss{background:#FEF2F2;border-color:#FCA5A5}.g-pl.loss .g-n{color:#B91C1C}
+.g-ops{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin:2px 0}
+.g-ops button{min-height:32px;border:1px solid #CBD5E1;border-radius:8px;background:#F1F5F9;font-weight:800;font-size:16px;cursor:pointer;color:#0F172A}
+.g-ops button:hover{background:#E2E8F0}
+.g-ops .eq{background:#DBEAFE;border-color:#93C5FD;color:#1D4ED8}
+.g-ops .clr{background:#FEE2E2;border-color:#FCA5A5;color:#B91C1C}
+.g-buy-row input.bad{border-color:#B91C1C}

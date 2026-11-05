@@ -7,8 +7,8 @@
 <title>Zinda Daily Entry · MurgaMandi Hisab</title>
 <link rel="icon" href="../../assets/icons/logo-64.png" type="image/png">
 <link rel="apple-touch-icon" href="../../assets/icons/logo-192.png">
-<link rel="stylesheet" href="style.css?v=20261106d">
-<link rel="stylesheet" href="../../shared/balance-book.css?v=20261106d">
+<link rel="stylesheet" href="style.css?v=20261106g">
+<link rel="stylesheet" href="../../shared/balance-book.css?v=20261106g">
 </head>
 <body>
 <header class="appbar">
@@ -66,8 +66,7 @@
             <div class="c auto r-al">Labour Charge <span class="tag au">ƒx Auto</span></div>
             <div class="c fin r-al">Final Amount <span class="tag fi">Aaj ka bill</span></div>
             <div class="c r-al">Pichla Bal <span class="tag in">B</span></div>
-            <div class="c r-al">Rec Cash <span class="tag in">Rec</span></div>
-            <div class="c r-al">Rec Online <span class="tag in">Rec</span></div>
+            <div class="c r-al">Aaj ka Payment <span class="tag in">Cash / Online</span></div>
             <div class="c due r-al">Balance <span class="tag fi">Baaki</span></div>
             <div class="c act"><span class="sr">Delete</span></div>
           </div>
@@ -85,8 +84,7 @@
             <div class="c auto"><span class="v" id="fLabour">₹0</span></div>
             <div class="c fin"><span class="v" id="fFinal">₹0</span></div>
             <div class="c inp"><span class="v" id="fOld">₹0</span></div>
-            <div class="c inp"><span class="v" id="fCash">₹0</span></div>
-            <div class="c inp"><span class="v" id="fOnline">₹0</span></div>
+            <div class="c inp pay-f"><span class="v" id="fCash">₹0</span><span class="pay-other" id="fOnline"></span></div>
             <div class="c due"><span class="v" id="fDue">₹0</span></div>
             <div class="c act"></div>
           </div>
@@ -138,13 +136,13 @@
 <div class="dlg-bg" id="dlg"><div class="dlg" role="alertdialog" aria-labelledby="dlgT"><h4 id="dlgT">Clear all customers?</h4><p id="dlgP">This removes every entry from this bill. It can't be undone.</p><div class="acts"><button class="btn" id="dlgNo">Cancel</button><button class="btn danger-fill" id="dlgYes">Clear All</button></div></div></div>
 <div class="toast" id="toast" role="status"></div>
 
-<script src="../../shared/storage-service.js?v=20261106d"></script>
-<script src="../../shared/data-service.js?v=20261106d"></script>
-<script src="../../engines/zinda/calc.js?v=20261106d"></script>
-<script src="../../engines/zinda/share.js?v=20261106d"></script>
-<script src="../../engines/zinda/keypad.js?v=20261106d"></script>
-<script src="../../shared/bill-print.js?v=20261106d"></script>
-  <script src="../../shared/balance-book.js?v=20261106d"></script>
-<script src="script.js?v=20261106d"></script>
+<script src="../../shared/storage-service.js?v=20261106g"></script>
+<script src="../../shared/data-service.js?v=20261106g"></script>
+<script src="../../engines/zinda/calc.js?v=20261106g"></script>
+<script src="../../engines/zinda/share.js?v=20261106g"></script>
+<script src="../../engines/zinda/keypad.js?v=20261106g"></script>
+<script src="../../shared/bill-print.js?v=20261106g"></script>
+  <script src="../../shared/balance-book.js?v=20261106g"></script>
+<script src="script.js?v=20261106g"></script>
 </body>
 </html>

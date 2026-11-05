@@ -61,7 +61,7 @@ button,input{font-family:inherit;font-size:inherit;color:inherit}
 /* ---------- Sheet ---------- */
 .sheet{overflow:hidden;display:flex;flex-direction:column}
 .sheet-scroll{overflow:auto;max-height:calc(100vh - 330px);min-height:360px}
-.grid{--cols:34px minmax(128px,1.6fr) minmax(54px,.6fr) minmax(64px,.7fr) minmax(52px,.55fr) minmax(64px,.65fr) minmax(58px,.6fr) minmax(86px,.95fr) minmax(66px,.7fr) minmax(80px,.85fr) minmax(94px,1fr) minmax(76px,.8fr) minmax(72px,.75fr) minmax(72px,.75fr) minmax(92px,1fr) 64px;min-width:1180px}
+.grid{--cols:34px minmax(128px,1.6fr) minmax(54px,.6fr) minmax(64px,.7fr) minmax(52px,.55fr) minmax(64px,.65fr) minmax(58px,.6fr) minmax(86px,.95fr) minmax(66px,.7fr) minmax(80px,.85fr) minmax(94px,1fr) minmax(76px,.8fr) minmax(128px,1.3fr) minmax(92px,1fr) 64px;min-width:1180px}
 .r{display:grid;grid-template-columns:var(--cols);border-bottom:1px solid var(--line-2);min-height:44px;align-items:stretch}
 .r > .c{display:flex;align-items:center;padding:0 6px;min-width:0}
 .body .r > .c{font-size:14px}
@@ -200,13 +200,13 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--line);border-botto
   .sheet-scroll{max-height:none;overflow:visible;min-height:0}
   .grid{min-width:0}
   .head,.foot{display:none}
-  .body .r,.body .r:nth-child(even){display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-template-areas:"idx name name name name name fin fin fin fin act act" "pcs pcs pcs kg kg kg jaal jaal jaal rate rate rate" "avg avg avg basic basic basic samiti samiti samiti labour labour labour" "old old old cash cash cash onl onl onl due due due" "meta meta meta meta meta meta meta meta meta meta meta meta";gap:6px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:10px;margin-bottom:8px;min-height:0;position:relative;align-items:center}
+  .body .r,.body .r:nth-child(even){display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-template-areas:"idx name name name name name fin fin fin fin act act" "pcs pcs pcs kg kg kg jaal jaal jaal rate rate rate" "avg avg avg basic basic basic samiti samiti samiti labour labour labour" "old old old pay pay pay pay pay due due due due" "meta meta meta meta meta meta meta meta meta meta meta meta";gap:6px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:10px;margin-bottom:8px;min-height:0;position:relative;align-items:center}
   .body .r.sel{border-color:var(--green-line)}
   .r > .c{padding:0;background:transparent !important;border:0 !important;position:static;min-width:0}
   .c.idx{display:flex !important;grid-area:idx;width:28px;height:28px;border-radius:50%;background:var(--green) !important;color:#fff !important;font-size:13px;font-weight:700;justify-content:center;align-items:center;position:static}
   .c.name{grid-area:name}
   .c.pcs{grid-area:pcs}.c.kg{grid-area:kg}.c.jaal{grid-area:jaal}.c.rate{grid-area:rate}
-  .c.avg{grid-area:avg}.c.old{grid-area:old}.c.cash{grid-area:cash}.c.onl{grid-area:onl}.c.due{grid-area:due}.c.basic{grid-area:basic}.c.samiti{grid-area:samiti}.c.labour{grid-area:labour}
+  .c.avg{grid-area:avg}.c.old{grid-area:old}.c.pay{grid-area:pay}.c.due{grid-area:due}.c.basic{grid-area:basic}.c.samiti{grid-area:samiti}.c.labour{grid-area:labour}
   .c.fin{grid-area:fin;justify-content:flex-end;font-size:18px;font-weight:800}
   .c.act{grid-area:act;justify-content:flex-end}
   .c.act .del,.c.act .wa1{width:34px;height:34px}
@@ -254,7 +254,7 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--line);border-botto
   .main{display:block}
   .card{box-shadow:none;border-color:#ccc}
   .sheet-scroll{max-height:none;overflow:visible}
-  .grid{--cols:22px 1.6fr .5fr .65fr .5fr .55fr .55fr .95fr .7fr .75fr 1fr .85fr .75fr .75fr .95fr;min-width:0}
+  .grid{--cols:22px 1.6fr .5fr .65fr .5fr .55fr .55fr .95fr .7fr .75fr 1fr .85fr 1.4fr .95fr;min-width:0}
   body{font-size:10px}
   .r{min-height:24px;break-inside:avoid}
   .r.blank,.r.hidden{display:none !important}
@@ -348,3 +348,10 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
 }
 @media (max-width:440px){#saveText{display:none}#saveState{padding:6px}}
 @media (max-width:640px){.appbar .brand p{display:none}.appbar .brand h1{font-size:16px;line-height:1.2}.appbar-in{gap:10px}}
+.pay-w{display:flex;gap:4px;width:100%;align-items:center}
+.pay-mode{flex:0 0 auto;min-height:30px;border:1px solid #CBD5E1;border-radius:7px;background:#fff;font-size:12px;padding:2px 2px;font-weight:600}
+.pay-w .pay-in{flex:1;min-width:0}
+.c.pay{flex-direction:column;align-items:stretch;justify-content:center}
+.pay-other{display:block;font-size:10.5px;color:var(--muted,#64748B);text-align:right;line-height:1.2}
+.pay-other:empty{display:none}
+.c.pay-f{flex-direction:column;align-items:flex-end;justify-content:center}

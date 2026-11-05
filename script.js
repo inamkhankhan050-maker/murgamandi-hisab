@@ -44,13 +44,32 @@
     var last = D.getSetting('lastBackupAt');
     $('bkLast').textContent = last ? 'Last backup downloaded: ' + new Date(last).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'No backup downloaded yet from this device.';
   }
+  // Small safe calculator for the purchase box: + - × ÷ ( ) only, no eval.
+  function calcExpr(src) {
+    var s = String(src).replace(/,/g, '').replace(/[×xX*]/g, '*').replace(/[÷/]/g, '/').replace(/[−–]/g, '-').replace(/\s+/g, '');
+    if (s === '') return null;
+    if (!/^[0-9.+\-*/()]+$/.test(s)) return NaN;
+    var i = 0;
+    function num() { var m = /^\d*\.?\d+|^\d+\.?/.exec(s.slice(i)); if (!m) throw 0; i += m[0].length; return parseFloat(m[0]); }
+    function atom() { if (s[i] === '-') { i++; return -atom(); } if (s[i] === '+') { i++; return atom(); } if (s[i] === '(') { i++; var v = expr(); if (s[i] !== ')') throw 0; i++; return v; } return num(); }
+    function term() { var v = atom(); while (s[i] === '*' || s[i] === '/') { var o = s[i++], r = atom(); if (o === '*') v *= r; else { if (r === 0) throw 0; v /= r; } } return v; }
+    function expr() { var v = term(); while (s[i] === '+' || s[i] === '-') { var o = s[i++], r = term(); v = o === '+' ? v + r : v - r; } return v; }
+    try { var v = expr(); if (i !== s.length || !isFinite(v)) return NaN; return Math.round(v * 100); } catch (e) { return NaN; }
+  }
+  function previewBuy() {
+    var raw = $('gBuyIn').value, v = calcExpr(raw), bad = raw.trim() !== '' && !(v >= 0);
+    $('gBuyIn').classList.toggle('bad', bad);
+    if (raw.trim() === '') { glance(); return; }
+    $('gBuyN').textContent = bad ? 'Hisab sahi nahi (jaise 520 × 98.5)' : (/[^0-9.,\s]/.test(raw) ? '= ' + U.money(v) + ' · Save dabaiye' : U.money(v) + ' · Save dabaiye');
+  }
   function saveBuy() {
     if (!D) return;
     var raw = $('gBuyIn').value.trim(), today = U.todayISO(), buys = D.getSetting('purchaseByDate') || {};
     buys = JSON.parse(JSON.stringify(buys));
     if (raw === '') { delete buys[today]; D.setSetting('purchaseByDate', buys); glance(); toast('Aaj ki purchase hata di'); return; }
-    var v = U.parseMoney(raw);
-    if (!(typeof v === 'number' && isFinite(v) && v >= 0)) { toast('Sahi amount likhiye (jaise 45000)'); $('gBuyIn').focus(); return; }
+    var v = calcExpr(raw);
+    if (!(typeof v === 'number' && isFinite(v) && v >= 0)) { toast('Sahi amount ya hisab likhiye (jaise 520 × 98.5)'); $('gBuyIn').focus(); return; }
+    $('gBuyIn').blur();
     buys[today] = v; D.setSetting('purchaseByDate', buys); glance(); toast('Aaj ki purchase ' + U.money(v) + ' save ho gayi');
   }
   function showStatus() {
@@ -152,6 +171,16 @@
     $('today').textContent = new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
     showStatus();
     if (!D) { $('glance').hidden = true; $('btnBackup').disabled = true; return; }
+    $('gBuyIn').addEventListener('input', previewBuy);
+    $('gOps').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-op]'); if (!b) return; var inp = $('gBuyIn'), op = b.dataset.op;
+      if (op === 'C') { inp.value = ''; previewBuy(); inp.focus(); return; }
+      if (op === '=') { var v = calcExpr(inp.value); if (v >= 0) inp.value = U.plain(v).replace(/\.00$/, ''); previewBuy(); inp.focus(); return; }
+      var st = inp.selectionStart == null ? inp.value.length : inp.selectionStart, en = inp.selectionEnd == null ? st : inp.selectionEnd;
+      var ins = /[()]/.test(op) ? op : ' ' + op + ' ';
+      inp.value = inp.value.slice(0, st) + ins + inp.value.slice(en); var p = st + ins.length;
+      inp.focus(); try { inp.setSelectionRange(p, p); } catch (er) {} previewBuy();
+    });
     $('gBuySave').onclick = saveBuy; $('gBuyIn').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); saveBuy(); } });
     glance();
     $('btnBackup').onclick = backup;

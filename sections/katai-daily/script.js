@@ -169,7 +169,7 @@
   function buildHead() {
     var h = $('gHead'); h.textContent = '';
     var r1 = el('tr'), r2 = el('tr', 'g-rate');
-    r1.appendChild(el('th', 'g-nm', 'Customer')); r2.appendChild(el('th', 'g-nm g-rl', 'Aaj ka Rate →'));
+    r1.appendChild(el('th', 'g-nm', '# Customer')); r2.appendChild(el('th', 'g-nm g-rl', 'Aaj ka Rate →'));
     K.PRODUCTS.forEach(function (p) {
       var th = el('th', 'g-it'); th.appendChild(el('span', null, p.name)); r1.appendChild(th);
       var t2 = el('th', 'g-it'), ri = inp('n g-dr', 'dayRate', (state.rates[p.id] || {}).rate || '', p.name + ' aaj ka rate'); ri.dataset.dr = p.id; ri.placeholder = 'rate'; t2.appendChild(ri); r2.appendChild(t2);
@@ -179,7 +179,7 @@
   }
   function buildRow(c, i) {
     var tr = el('tr'); tr.dataset.id = c.id;
-    var nm = el('td', 'g-nm'), ni = inp('g-name', 'name', c.name, 'Customer ' + (i + 1) + ' name'); ni.placeholder = 'Customer naam'; ni.maxLength = 80; nm.appendChild(ni);
+    var nm = el('td', 'g-nm'), ni = inp('g-name', 'name', c.name, 'Customer ' + (i + 1) + ' name'); ni.placeholder = 'Customer naam'; ni.maxLength = 80; var sn = el('span', 'g-sn', String(i + 1)); var nw = el('div', 'g-nmw'); nw.appendChild(sn); nw.appendChild(ni); nm.appendChild(nw);
     nm.appendChild(el('span', 'rec-chip')); tr.appendChild(nm);
     K.PRODUCTS.forEach(function (p) {
       var l = c.lines[p.id] || (c.lines[p.id] = { unit: unitOf(p.id), qty: '', rate: '' });
@@ -197,7 +197,7 @@
     var act = el('td', 'g-act');
     var wa = el('button', 'btn wa g-wa'); wa.type = 'button'; wa.dataset.act = 'wa'; wa.title = 'WhatsApp bill';
     var img = el('img'); img.src = '../../assets/icons/whatsapp.svg'; img.alt = ''; img.width = 16; img.height = 16; wa.appendChild(img); wa.setAttribute('aria-label', 'WhatsApp bill');
-    var del = el('button', 'ic del', '✕'); del.type = 'button'; del.dataset.act = 'del'; del.title = 'Delete'; del.setAttribute('aria-label', 'Delete customer');
+    var del = el('button', 'ic del'); del.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>'; del.type = 'button'; del.dataset.act = 'del'; del.title = 'Delete'; del.setAttribute('aria-label', 'Delete customer');
     act.appendChild(wa); act.appendChild(del); tr.appendChild(act);
     return tr;
   }
