@@ -262,6 +262,12 @@
       else { cellL('Net', shortBal(tot.old)); cellL('Kul Jama', K.money(tot.rec)); cellL('Net · Bill ' + K.money(tot.bill), shortBal(tot.bal)); }
       tr.appendChild(el('td', 'g-act')); f.appendChild(tr);
     });
+    var live = liveKg(), kgSum = 0, pr = el('tr', 'g-ft g-ft3');
+    pr.appendChild(el('td', 'g-nm', 'Percentage'));
+    K.PRODUCTS.forEach(function (p) { var x = pt[p.id]; kgSum += x.kg; pr.appendChild(el('td', 'g-it ra g-pc', x.kg && live ? pct(x.kg, live) : '—')); });
+    var cellP = function (lab, val) { var td = el('td', 'g-x ra g-fx'); td.appendChild(el('small', null, lab)); td.appendChild(el('b', null, val)); pr.appendChild(td); };
+    cellP('Zinda murga', live ? K.qtyText(live, 'kg') : 'kg likhiye ↑'); cellP('Kul katai', K.qtyText(kgSum, 'kg')); cellP('Kul percentage', kgSum && live ? pct(kgSum, live) : '—');
+    pr.appendChild(el('td', 'g-act')); f.appendChild(pr);
     $('tCust').textContent = String(tot.n); $('tRec').textContent = K.money(tot.rec); $('tRecSplit').textContent = 'Cash ' + K.money(tot.cash) + ' · Online ' + K.money(tot.online);
     $('tBal').textContent = balT(tot.bal); $('tBill').textContent = K.money(tot.bill); $('tWords').textContent = K.amountInWords(tot.bill);
     $('sheetNo').textContent = '#' + state.sheetNo;
@@ -349,28 +355,10 @@
   function pct(part, whole) { if (!whole) return '—'; return (Math.round(part * 10000 / whole) / 100).toFixed(2) + '%'; }
   function ratio(part, whole) { if (!whole) return '—'; return (part / whole).toFixed(3); }
   function renderProductTotals() {
-    var t = productTotals(), body = $('ptBody'), live = liveKg(); body.textContent = '';
-    $('liveKg').classList.toggle('err', String(state.liveKg).trim() !== '' && !live);
-    var sum = { kg: 0, amt: 0 };
-    K.PRODUCTS.forEach(function (p) {
-      var x = t[p.id]; sum.kg += x.kg; sum.amt += x.amt;
-      var tr = el('tr'); if (!x.amt) tr.className = 'zero';
-      var a = avgRate(x);
-      tr.appendChild(el('td', null, p.name));
-      tr.appendChild(el('td', 'ra', x.kg ? K.qtyText(x.kg, 'kg') : x.pcs ? K.qtyText(x.pcs, 'pcs') : '—'));
-      tr.appendChild(el('td', 'ra', K.money(x.amt)));
-      tr.appendChild(el('td', 'ra', a ? K.money(a) + (x.unit === 'pcs' ? '/pc' : '/kg') : '—'));
-      tr.appendChild(el('td', 'ra', x.kg ? ratio(x.kg, live) : '—'));
-      tr.appendChild(el('td', 'ra pc', x.kg ? pct(x.kg, live) : '—'));
-      body.appendChild(tr);
-    });
-    var tr = el('tr', 'tot'); tr.appendChild(el('td', null, 'TOTAL KATAI'));
-    tr.appendChild(el('td', 'ra', K.qtyText(sum.kg, 'kg'))); tr.appendChild(el('td', 'ra', K.money(sum.amt)));
-    tr.appendChild(el('td', 'ra', sum.kg ? K.money(Math.round(sum.amt * 1000 / sum.kg)) + '/kg' : '—'));
-    tr.appendChild(el('td', 'ra', sum.kg ? ratio(sum.kg, live) : '—')); tr.appendChild(el('td', 'ra pc', sum.kg ? pct(sum.kg, live) : '—'));
-    body.appendChild(tr);
-    if (live) { var lt = el('tr', 'live'); lt.appendChild(el('td', null, 'Zinda murga (live)')); lt.appendChild(el('td', 'ra', K.qtyText(live, 'kg'))); ['', '', '1.000', '100.00%'].forEach(function (v) { lt.appendChild(el('td', 'ra', v)); }); body.appendChild(lt); }
+    $('liveKg').classList.toggle('err', String(state.liveKg).trim() !== '' && !liveKg());
+    updateFoot();
   }
+
 
   // ---------- Export ----------
   function exportData() {

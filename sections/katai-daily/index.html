@@ -7,8 +7,8 @@
 <title>Katai Daily Customer Entry · MurgaMandi Hisab</title>
 <link rel="icon" href="../../assets/icons/logo-64.png" type="image/png">
 <link rel="apple-touch-icon" href="../../assets/icons/logo-192.png">
-<link rel="stylesheet" href="style.css?v=20261106b">
-<link rel="stylesheet" href="../../shared/balance-book.css?v=20261106b">
+<link rel="stylesheet" href="style.css?v=20261106c">
+<link rel="stylesheet" href="../../shared/balance-book.css?v=20261106c">
 </head>
 <body>
 <header class="appbar">
@@ -48,7 +48,7 @@
   </section>
 
   <section class="card gridcard" aria-label="Customers">
-    <div class="g-hd"><h3>Customers</h3><p class="rec-meta" id="recMeta"></p></div>
+    <div class="g-hd"><h3>Customers</h3><p class="rec-meta" id="recMeta"></p><label class="y-live"><span>Zinda murga (live bird) kitne kg kata?</span><input id="liveKg" class="n" inputmode="decimal" autocomplete="off" placeholder="kg likhiye"></label></div>
     <p class="g-help">Har item: upar <b>kg</b>, neeche <b>rate</b>. Pichla balance naam chunte hi aa jata hai.</p>
     <div class="g-scroll">
       <table class="gtable" id="gTable">
@@ -59,11 +59,6 @@
     </div>
     <p class="empty-state" id="cEmpty">Abhi koi customer nahi. "+ Add Customer" dabaiye.</p>
     <div class="g-add"><button class="btn primary" id="btnAdd2" type="button">+ Add Customer</button></div>
-  </section>
-  <section class="card yield" aria-label="Item yield">
-    <div class="y-hd"><h3>Item ka % (Zinda murga se)</h3>
-      <label class="y-live"><span>Zinda murga (live bird) kitne kg kata?</span><input id="liveKg" class="n" inputmode="decimal" autocomplete="off" placeholder="jaise 500"></label></div>
-    <div class="t-scroll"><table class="ptable"><thead><tr><th>Item</th><th class="ra">Total KG</th><th class="ra">Total ₹</th><th class="ra">Avg Rate</th><th class="ra">KG ÷ Zinda KG</th><th class="ra">% nikla</th></tr></thead><tbody id="ptBody"></tbody></table></div>
   </section>
   <section class="kpis" aria-label="Grand totals">
     <div class="card kpi"><div class="l">Customers</div><div class="n" id="tCust">0</div></div>
@@ -77,12 +72,12 @@
 <div class="dlg-bg" id="dlg"><div class="dlg" role="alertdialog" aria-labelledby="dlgT"><h4 id="dlgT">Are you sure?</h4><p id="dlgP"></p><div class="acts"><button class="btn" id="dlgNo" type="button">Cancel</button><button class="btn danger-fill" id="dlgYes" type="button">Yes</button></div></div></div>
 <div class="toast" id="toast" role="status"></div>
 
-<script src="../../shared/storage-service.js?v=20261106b"></script>
-<script src="../../shared/data-service.js?v=20261106b"></script>
-<script src="../../engines/katai/calc.js?v=20261106b"></script>
-<script src="../../engines/katai/share.js?v=20261106b"></script>
-<script src="../../shared/bill-print.js?v=20261106b"></script>
-  <script src="../../shared/balance-book.js?v=20261106b"></script>
-<script src="script.js?v=20261106b"></script>
+<script src="../../shared/storage-service.js?v=20261106c"></script>
+<script src="../../shared/data-service.js?v=20261106c"></script>
+<script src="../../engines/katai/calc.js?v=20261106c"></script>
+<script src="../../engines/katai/share.js?v=20261106c"></script>
+<script src="../../shared/bill-print.js?v=20261106c"></script>
+  <script src="../../shared/balance-book.js?v=20261106c"></script>
+<script src="script.js?v=20261106c"></script>
 </body>
 </html>
