@@ -449,10 +449,34 @@
           if (later(p.customerName, p.date) || D().transactions({ section: sec }).some(function (r) { return key(r.customerName) === key(p.customerName) && r.date === p.date && (r.seq || 0) > (p.seq || 0); })) { toast(p.customerName + ' ka iske baad bill/entry bani hai. Statements mein jaakar theek kariye.'); return; }
           ask('Payment hatayein?', p.customerName + ' · Cash ' + money(p.cash) + ' · Online ' + money(p.online) + '. Balance wapas ' + money(p.prevBalance) + ' ho jayega.', 'Hatao', function () { D().deletePayment(p.id); render(); changed(); toast('Payment hata diya'); });
         };
+        var sh = el('button', 'btn bb-sm bb-wa', 'WhatsApp'); sh.type = 'button'; sh.onclick = function () { shareReceipt(p); };
+        if (root.MMHBill && (root.ZindaShare || root.KataiShare)) td.appendChild(sh);
         td.appendChild(del); tr.appendChild(td); t.appendChild(tr);
       });
       done.appendChild(el('div', 'bb-tot', ps.length + ' entry · Cash ' + money(c) + ' · Online ' + money(o) + ' · Kul ' + money(c + o)));
       done.appendChild(t);
+    }
+    function receiptModel(p) {
+      var B = root.MMHBill, n = B.num, C = root.BillingCalc || root.KataiCalc, w = function (v) { return C && C.amountInWords ? C.amountInWords(Math.abs(v)) : ''; };
+      var m = { firm: B.getFirm(), date: p.date, name: p.customerName, rows: [], minRows: 6, total: {}, extras: [], grand: {}, words: '', fallbackTitle: 'MurgaMandi Hisab' };
+      if (p.cash) m.rows.push({ qty: '', weight: '', part: 'Jama (Cash)', rate: '', amount: n(p.cash) });
+      if (p.online) m.rows.push({ qty: '', weight: '', part: 'Jama (Online)', rate: '', amount: n(p.online) });
+      m.total = { qty: '', weight: '', amount: n(p.cash + p.online) };
+      m.extras.push({ label: p.prevBalance < 0 ? 'Pichla Credit (Advance)' : 'Pichla Debit (Baaki)', value: p.prevBalance ? n(Math.abs(p.prevBalance)) : '0' });
+      m.extras.push({ label: 'Jama Cash', value: p.cash ? n(p.cash) : '—' });
+      m.extras.push({ label: 'Jama Online', value: p.online ? n(p.online) : '—' });
+      m.extras.push({ label: 'Kul Jama', value: n(p.cash + p.online), hl: 1 });
+      var g = p.balance;
+      m.grand = { label: g < 0 ? 'CREDIT (Aapka advance)' : 'DEBIT (Aapko dena hai)', value: n(Math.abs(g)) };
+      m.words = w(g) + (g < 0 ? ' (Credit - aapka advance jama hai)' : ' (Debit - aapko dena hai)');
+      return m;
+    }
+    function shareReceipt(p) {
+      var S = root.ZindaShare || root.KataiShare, dtx = U() ? U().dateText(p.date) : p.date;
+      root.MMHBill.render(receiptModel(p), function (cv) {
+        if (!cv) { toast('Bill photo nahi ban payi'); return; }
+        S.share(cv, p.customerName + ' Jama ' + dtx, p.customerName + ' · ' + dtx + ' · Jama ' + money(p.cash + p.online) + ' · Balance ' + (p.balance < 0 ? money(-p.balance) + ' Credit' : money(p.balance) + ' Debit'));
+      });
     }
     function changed() { if (opts.onChange) opts.onChange(); }
     save.onclick = function () {

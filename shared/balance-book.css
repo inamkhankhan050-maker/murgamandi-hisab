@@ -71,3 +71,5 @@ body.bb-lock{overflow:hidden}
 .bb-pfoot{position:sticky;bottom:calc(-18px - env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:8px;justify-content:space-between;background:#fff;border-top:1px solid #e2e8f0;padding:10px 0;margin-top:6px}
 .bb-psum{font-size:13px;font-weight:700;color:#0f172a}
 .bb-h3{font-size:14px;margin:14px 0 4px;color:#334155}
+.bb-wa{background:#16A34A;color:#fff;border-color:#16A34A}
+.bb-pay .bb-act{display:flex;flex-direction:column;gap:4px;align-items:flex-end}
