@@ -275,14 +275,16 @@
       D.deleteBill(id); if (state.savedId === id) { state.savedId = null; save(); } renderSaved(); renderRecent(); toast('Saved bill deleted');
     });
   }
+  var autoOld = null;
   function balanceHint(auto) {
     var h = $('kHint'); if (!h || !D) return;
     var BB = window.MMHBal, name = state.name.trim(), o = { onOrBefore: state.date || todayISO(), excludeId: state.savedId }, lb = name ? (BB ? BB.current('katai', name, o) : D.lastBalance(name, 'katai', o)) : null;
-    if (!lb) { h.hidden = true; return; }
+    var cur = String(state.oldBal).trim(), mine = cur === '' || (autoOld !== null && cur === autoOld);
+    if (!lb) { h.hidden = true; if (BB && auto && !state.savedId && cur !== '' && mine) { state.oldBal = ''; $('kOld').value = ''; autoOld = null; render(); save(); renderSaved(); } return; }
     h.hidden = false; h.dataset.paise = String(lb.balance);
     $('kHintT').textContent = 'Katai balance: ' + U.balanceText(lb.balance) + ' (' + U.dateText(lb.date) + ')';
     $('kHintUse').hidden = false;
-    if (BB && auto && !state.savedId && String(state.oldBal).trim() === '') { state.oldBal = BB.fieldText(lb.balance); $('kOld').value = state.oldBal; render(); save(); renderSaved(); toast('Pichla balance ' + U.balanceText(lb.balance) + ' khud bhar diya'); }
+    if (BB && auto && !state.savedId && mine && cur !== BB.fieldText(lb.balance)) { state.oldBal = autoOld = BB.fieldText(lb.balance); $('kOld').value = state.oldBal; render(); save(); renderSaved(); toast('Pichla balance ' + U.balanceText(lb.balance) + ' khud bhar diya'); }
   }
   function customerList() {
     var dl = $('custList'); if (!dl || !D) return; dl.textContent = '';
@@ -310,7 +312,7 @@
     $('kDate').addEventListener('change', function () { state.date = /^\d{4}-\d{2}-\d{2}$/.test($('kDate').value) ? $('kDate').value : todayISO(); $('kDate').value = state.date; save(); renderSaved(); balanceHint(); schedulePreview(); });
     $('kFirm').addEventListener('input', renderSaved);
     $('kName').addEventListener('change', function () { balanceHint(true); }); $('kName').addEventListener('blur', function () { balanceHint(true); });
-    $('kHintUse').onclick = function () { var p = +$('kHint').dataset.paise; if (isNaN(p)) return; state.oldBal = window.MMHBal ? window.MMHBal.fieldText(p) : String(p / 100); $('kOld').value = state.oldBal; render(); save(); renderSaved(); };
+    $('kHintUse').onclick = function () { var p = +$('kHint').dataset.paise; if (isNaN(p)) return; state.oldBal = autoOld = window.MMHBal ? window.MMHBal.fieldText(p) : String(p / 100); $('kOld').value = state.oldBal; render(); save(); renderSaved(); };
     $('kSave').onclick = function () { saveRecord(false); };
     $('kToDaily').onclick = toDaily;
     $('kRecent').addEventListener('click', onRecentClick);

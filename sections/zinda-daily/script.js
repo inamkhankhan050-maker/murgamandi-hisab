@@ -51,7 +51,7 @@
     return '' +
       '<div class="c idx"></div>' +
       '<div class="c name">' + inp('name', 'name-in', 'Enter customer name', 'text') + '<span class="status" hidden></span></div>' +
-      '<div class="c inp pcs"><span class="m-lbl">Pieces</span>' + inp('pieces', 'n', 'Pieces', 'numeric') + '</div>' +
+      '<div class="c inp pcs"><span class="m-lbl">Chicken Qty</span>' + inp('pieces', 'n', 'Chicken Qty', 'numeric') + '</div>' +
       '<div class="c inp kg"><span class="m-lbl">Total KG</span>' + inp('kg', 'n', 'KG', 'decimal') + '</div>' +
       '<div class="c inp jaal"><span class="m-lbl">Jaal KG</span>' + inp('jaal', 'n', 'Jaal', 'decimal') + '</div>' +
       '<div class="c auto avg"><span class="m-lbl">Average</span><span class="v" data-o="avg"></span></div>' +
@@ -193,7 +193,7 @@
     }
     var r = c.result;
     var gkg = C.formatKg(c.grams), kg = C.formatKg(c.netGrams), rate = C.formatINR(c.ratePaise);
-    h += rc('Pieces', C.formatInt(c.pieces)) + rc('Total Weight', gkg + ' kg') + (c.jaalGrams ? rc('Jaal Weight', '− ' + C.formatKg(c.jaalGrams) + ' kg') + rc('Net Weight<small>' + gkg + ' − ' + C.formatKg(c.jaalGrams) + '</small>', kg + ' kg') : '') + rc('Average Size<small>' + kg + ' kg ÷ ' + C.formatInt(c.pieces) + ' pcs</small>', C.averageKg(c.netGrams, c.pieces) + ' kg / pc') + rc('Rate', rate + ' / kg') +
+    h += rc('Chicken Qty', C.formatInt(c.pieces)) + rc('Total Weight', gkg + ' kg') + (c.jaalGrams ? rc('Jaal Weight', '− ' + C.formatKg(c.jaalGrams) + ' kg') + rc('Net Weight<small>' + gkg + ' − ' + C.formatKg(c.jaalGrams) + '</small>', kg + ' kg') : '') + rc('Average Size<small>' + kg + ' kg ÷ ' + C.formatInt(c.pieces) + ' chicken</small>', C.averageKg(c.netGrams, c.pieces) + ' kg / chicken') + rc('Rate', rate + ' / kg') +
       rc('Basic Amount<small>' + kg + ' × ' + rate + '</small>', C.formatINR(r.basic)) +
       rc('Samiti Charge<small>1% of basic, rounded down</small>', C.formatINR(r.samiti)) +
       rc('Original Labour<small>' + C.labourRuleText(c.pieces, r.labourDivisor) + '</small>', C.formatINR(r.labourOriginal, { decimals: 2 })) +
@@ -257,7 +257,7 @@
 
   // ---------- Export ----------
   function exportRows() {
-    var head = ['S.No', 'Customer Name', 'Pieces', 'Total KG', 'Jaal KG', 'Net KG', 'Average KG / Piece', 'Rate / KG', 'Basic Amount', 'Samiti Charge', 'Original Labour', 'Labour Adjustment', 'Labour Charge', 'Final Amount', 'Pichla Balance', 'Rec Cash', 'Rec Online', 'Balance Baaki'];
+    var head = ['S.No', 'Customer Name', 'Chicken Qty', 'Total KG', 'Jaal KG', 'Net KG', 'Average KG / Chicken', 'Rate / KG', 'Basic Amount', 'Samiti Charge', 'Original Labour', 'Labour Adjustment', 'Labour Charge', 'Final Amount', 'Pichla Balance', 'Rec Cash', 'Rec Online', 'Balance Baaki'];
     var rows = [], n = 0, P = C.paiseToPlain, lo = 0, lc = 0, ln = 0, ld = 0;
     state.rows.forEach(function (row) {
       var c = C.computeRow(row), L = rowLedger(row, c);
@@ -328,10 +328,14 @@
   // ---------- UI helpers ----------
   var toastT;
   function LG(r, f) { return window.MMHBal ? window.MMHBal.ledger(C.ledger, r, f) : C.ledger(r, f); }
+  var autoMap = {}; // row id -> pichla balance jo app ne bhara
   function autoBal(row) {
-    var BB = window.MMHBal; if (!BB || !row || !row.name.trim() || String(row.oldBal).trim() !== '') return;
-    var lb = BB.current('zinda', row.name, { onOrBefore: state.date || todayISO(), excludeSourceKey: srcKey(row.id) }); if (!lb) return;
-    row.oldBal = BB.fieldText(lb.balance);
+    var BB = window.MMHBal; if (!BB || !row) return;
+    var cur = String(row.oldBal).trim(), mine = cur === '' || autoMap[row.id] === cur; if (!mine) return;
+    var lb = row.name.trim() ? BB.current('zinda', row.name, { onOrBefore: state.date || todayISO(), excludeSourceKey: srcKey(row.id) }) : null;
+    if (!lb) { if (cur === '') return; row.oldBal = ''; delete autoMap[row.id]; var e0 = document.querySelector('.r[data-id="' + row.id + '"] [data-f="oldBal"]'); if (e0) e0.value = ''; updateRow(row); updateTotals(); renderPreview(); save(); return; }
+    if (cur === BB.fieldText(lb.balance)) return;
+    row.oldBal = autoMap[row.id] = BB.fieldText(lb.balance);
     var el = document.querySelector('.r[data-id="' + row.id + '"] [data-f="oldBal"]'); if (el) el.value = row.oldBal;
     updateRow(row); updateTotals(); renderPreview(); save(); toast(row.name.trim() + ': pichla balance ' + (U ? U.balanceText(lb.balance) : row.oldBal) + ' bhar diya');
   }
@@ -562,7 +566,7 @@
     var rows = d.rows.map(function (r) { return map(r); }); rows.push(map(d.total, true));
     var T = d.total, rec = String((parseFloat(T[15] || 0) + parseFloat(T[16] || 0)).toFixed(2));
     return { title: 'Wholesale Bill · ' + d.count + ' customers', sub: firmName(), date: todayText(),
-      cols: [{ h: '#', w: 44 }, { h: 'Customer', w: 230, b: 1 }, { h: 'Pcs', w: 70, r: 1 }, { h: 'Total KG', w: 105, r: 1 }, { h: 'Jaal', w: 75, r: 1 }, { h: 'Net KG', w: 105, r: 1 }, { h: 'Rate', w: 70, r: 1 },
+      cols: [{ h: '#', w: 44 }, { h: 'Customer', w: 230, b: 1 }, { h: 'Qty', w: 70, r: 1 }, { h: 'Total KG', w: 105, r: 1 }, { h: 'Jaal', w: 75, r: 1 }, { h: 'Net KG', w: 105, r: 1 }, { h: 'Rate', w: 70, r: 1 },
         { h: 'Basic', w: 125, r: 1 }, { h: 'Samiti', w: 95, r: 1 }, { h: 'Labour', w: 100, r: 1 }, { h: 'Aaj ka Bill', w: 135, r: 1, b: 1, color: '#1D4ED8' },
         { h: 'Pichla Bal', w: 125, r: 1 }, { h: 'Rec Cash', w: 115, r: 1 }, { h: 'Rec Online', w: 115, r: 1 }, { h: 'Balance', w: 140, r: 1, b: 1, color: '#B45309' }],
       rows: rows, bold: [rows.length - 1],

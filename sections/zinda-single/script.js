@@ -86,7 +86,7 @@
     if (!v.ok) {
       $('sErr').textContent = errs.join(' · ');
       if (!labourManual && document.activeElement !== $('sLabour')) $('sLabour').value = '';
-      out.innerHTML = h + '<p class="empty">Pieces, total KG and rate bharte hi bill yahan dikhega.</p>'; return;
+      out.innerHTML = h + '<p class="empty">Chicken Qty, total KG and rate bharte hi bill yahan dikhega.</p>'; return;
     }
     var lm = manualLabour(); $('sLabour').classList.toggle('err', isNaN(lm));
     if (isNaN(lm)) errs.push('Labour sahi bhariye (0 or more, max 2 decimals)');
@@ -95,7 +95,7 @@
     if (!labourManual && document.activeElement !== $('sLabour')) $('sLabour').value = (r.labourAdjusted / 100).toFixed(2);
     var gkg = C.formatKg(v.grams), kg = C.formatKg(v.netGrams), rate = C.formatINR(v.ratePaise);
     var q = function (k, val) { return '<div><span>' + k + '</span><b>' + val + '</b></div>'; };
-    h += '<div class="sq">' + q('Pieces', C.formatInt(v.pieces)) + q('Total KG', gkg) + (v.jaalGrams ? q('Jaal', '− ' + C.formatKg(v.jaalGrams)) + q('Net KG', kg) : '') +
+    h += '<div class="sq">' + q('Chicken Qty', C.formatInt(v.pieces)) + q('Total KG', gkg) + (v.jaalGrams ? q('Jaal', '− ' + C.formatKg(v.jaalGrams)) + q('Net KG', kg) : '') +
       q('Average', (C.averageKg(v.netGrams, v.pieces) || '—') + ' kg') + q('Rate', rate) + '</div>';
     var L = LG(row, r.final), led = ledgerHTML(L);
     h += '<div class="s2' + (led ? '' : ' one') + '"><div class="s2a">' +
@@ -148,7 +148,7 @@
     var h = '<div class="rh"><div><b>Ghazipur Murga Mandi</b>' + (firm ? '<i>' + esc(firm) + '</i>' : '') + '<span>Wholesale Bill</span></div><div class="rd">' + esc(todayText()) + '</div></div>' +
       '<div class="rn">' + (nm ? esc(nm) : 'Customer') + '</div>' +
       '<div class="rq">' +
-        '<div><span>Pieces</span><b>' + C.formatInt(v.pieces) + '</b></div>' +
+        '<div><span>Chicken Qty</span><b>' + C.formatInt(v.pieces) + '</b></div>' +
         '<div><span>Total KG</span><b>' + C.formatKg(v.grams) + '</b></div>' +
         (v.jaalGrams ? '<div><span>Jaal KG</span><b>− ' + C.formatKg(v.jaalGrams) + '</b></div><div><span>Net KG</span><b>' + C.formatKg(v.netGrams) + '</b></div>' : '') +
         '<div><span>Average</span><b>' + C.averageKg(v.netGrams, v.pieces) + ' kg</b></div>' +
@@ -304,14 +304,16 @@
       D.deleteBill(id); if (savedId === id) { savedId = null; save(); } renderSaved(); renderRecent(); toast('Saved bill deleted');
     });
   }
+  var autoOld = null; // pichla balance jo app ne khud bhara (user ne nahi likha)
   function balanceHint(auto) {
     var h = $('sHint'); if (!h || !D) return;
     var BB = window.MMHBal, name = $('sName').value.trim(), lb = name ? (BB ? BB.current('zinda', name, { onOrBefore: billDate || todayISO(), excludeId: savedId }) : D.lastBalance(name, 'zinda', { onOrBefore: billDate || todayISO(), excludeId: savedId })) : null;
-    if (!lb) { h.hidden = true; return; }
+    var cur = $('sOld').value.trim(), mine = cur === '' || (autoOld !== null && cur === autoOld);
+    if (!lb) { h.hidden = true; if (BB && auto && !savedId && cur !== '' && mine) { $('sOld').value = ''; autoOld = null; render(); save(); renderSaved(); } return; }
     h.hidden = false; h.dataset.paise = String(lb.balance);
     $('sHintT').textContent = 'Zinda balance: ' + U.balanceText(lb.balance) + ' (' + U.dateText(lb.date) + ')';
     $('sHintUse').hidden = false;
-    if (BB && auto && !savedId && $('sOld').value.trim() === '') { $('sOld').value = BB.fieldText(lb.balance); render(); save(); renderSaved(); toast('Pichla balance ' + U.balanceText(lb.balance) + ' khud bhar diya'); }
+    if (BB && auto && !savedId && mine && cur !== BB.fieldText(lb.balance)) { $('sOld').value = autoOld = BB.fieldText(lb.balance); render(); save(); renderSaved(); toast('Pichla balance ' + U.balanceText(lb.balance) + ' khud bhar diya'); }
   }
   function customerList() {
     var dl = $('custList'); if (!dl || !D) return; dl.textContent = '';
@@ -334,7 +336,7 @@
     $('sLabour').addEventListener('blur', function () { if (!labourManual) render(); });
     Object.keys(sF).forEach(function (f) { $(sF[f]).addEventListener('input', function () { render(); save(); renderSaved(); }); });
     $('sName').addEventListener('change', function () { balanceHint(true); }); $('sName').addEventListener('blur', function () { balanceHint(true); });
-    $('sHintUse').onclick = function () { var p = +$('sHint').dataset.paise; if (isNaN(p)) return; $('sOld').value = window.MMHBal ? window.MMHBal.fieldText(p) : String(p / 100); render(); save(); renderSaved(); };
+    $('sHintUse').onclick = function () { var p = +$('sHint').dataset.paise; if (isNaN(p)) return; $('sOld').value = autoOld = window.MMHBal ? window.MMHBal.fieldText(p) : String(p / 100); render(); save(); renderSaved(); };
     $('sSave').onclick = function () { saveRecord(false); };
     $('sRecent').addEventListener('click', onRecentClick);
     $('sLabour').addEventListener('input', renderSaved);

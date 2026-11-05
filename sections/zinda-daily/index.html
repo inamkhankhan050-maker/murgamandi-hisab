@@ -7,8 +7,8 @@
 <title>Zinda Daily Entry · MurgaMandi Hisab</title>
 <link rel="icon" href="../../assets/icons/logo-64.png" type="image/png">
 <link rel="apple-touch-icon" href="../../assets/icons/logo-192.png">
-<link rel="stylesheet" href="style.css?v=20261105n">
-<link rel="stylesheet" href="../../shared/balance-book.css?v=20261105n">
+<link rel="stylesheet" href="style.css?v=20261105p">
+<link rel="stylesheet" href="../../shared/balance-book.css?v=20261105p">
 </head>
 <body>
 <header class="appbar">
@@ -36,7 +36,7 @@
       <span class="pill" title="Applies to every row; a rate you change in a row stays as you set it">Default rate ₹<input id="defaultRate" class="n" inputmode="decimal" aria-label="Default rate per kg, applies to all rows">/kg <small class="pill-note">· sab rows mein</small></span>
       <span class="pill" title="Jaal (crate) weight is subtracted from Total KG in every row; a jaal you change in a row stays as you set it">Default jaal<input id="defaultJaal" class="n" inputmode="decimal" aria-label="Default jaal weight in kg, applies to all rows">kg <small class="pill-note">· sab rows mein</small></span>
       <span class="pill">Samiti <b>1%</b> (rounded down)</span>
-      <span class="pill" title="Average 2.50 kg se kam: pcs ÷ 9 × ₹5 · 2.50–2.99: ÷ 8 × ₹5 · 3 kg+: ÷ 7 × ₹5">Labour <b>÷9 / ÷8 / ÷7 × ₹5</b> avg se</span>
+      <span class="pill" title="Average 2.50 kg se kam: qty ÷ 9 × ₹5 · 2.50–2.99: ÷ 8 × ₹5 · 3 kg+: ÷ 7 × ₹5">Labour <b>÷9 / ÷8 / ÷7 × ₹5</b> avg se</span>
     </div>
     <div class="tb-sp"></div>
     <button class="btn primary save-rec" id="btnSaveRec" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3h11l3 3v15H5z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/></svg>Save to Records</button>
@@ -56,7 +56,7 @@
           <div class="r head" role="row">
             <div class="c idx">#</div>
             <div class="c name">Customer Name <span class="tag in">Input</span></div>
-            <div class="c r-al">Pieces <span class="tag in">Input</span></div>
+            <div class="c r-al">Chicken Qty <span class="tag in">Input</span></div>
             <div class="c r-al">Total KG <span class="tag in">Input</span></div>
             <div class="c r-al">Jaal KG <span class="tag in">Minus</span></div>
             <div class="c auto r-al">Average <span class="tag au">kg / pc</span></div>
@@ -100,7 +100,7 @@
 
   <section class="totals" aria-label="Grand total">
     <div class="card kpi"><div class="l">Total Customers</div><div class="n" id="tCust">0</div></div>
-    <div class="card kpi"><div class="l">Total Pieces</div><div class="n" id="tPcs">0</div></div>
+    <div class="card kpi"><div class="l">Total Chicken Qty</div><div class="n" id="tPcs">0</div></div>
     <div class="card kpi"><div class="l">Total Weight</div><div class="n"><span id="tKg">0</span> <small>kg</small></div></div>
     <div class="card kpi"><div class="l">Average Size</div><div class="n"><span id="tAvg">—</span> <small>kg/pc</small></div></div>
     <div class="card kpi"><div class="l">Total Basic Amount</div><div class="n" id="tBasic">₹0</div></div>
@@ -121,7 +121,7 @@
   <div class="hd"><button class="btn" id="btnBack" aria-label="Back">‹ Back</button><h2>Bill Summary</h2></div>
   <div class="grid2">
     <div class="card kpi"><div class="l">Customers</div><div class="n" id="sCust">0</div></div>
-    <div class="card kpi"><div class="l">Pieces</div><div class="n" id="sPcs">0</div></div>
+    <div class="card kpi"><div class="l">Chicken Qty</div><div class="n" id="sPcs">0</div></div>
     <div class="card kpi"><div class="l">Weight</div><div class="n"><span id="sKg">0</span> <small>kg</small></div></div>
     <div class="card kpi"><div class="l">Average</div><div class="n"><span id="sAvg">—</span> <small>kg/pc</small></div></div>
     <div class="card kpi"><div class="l">Basic</div><div class="n" id="sBasic">₹0</div></div>
@@ -138,12 +138,12 @@
 <div class="dlg-bg" id="dlg"><div class="dlg" role="alertdialog" aria-labelledby="dlgT"><h4 id="dlgT">Clear all customers?</h4><p id="dlgP">This removes every entry from this bill. It can't be undone.</p><div class="acts"><button class="btn" id="dlgNo">Cancel</button><button class="btn danger-fill" id="dlgYes">Clear All</button></div></div></div>
 <div class="toast" id="toast" role="status"></div>
 
-<script src="../../shared/storage-service.js?v=20261105n"></script>
-<script src="../../shared/data-service.js?v=20261105n"></script>
-<script src="../../engines/zinda/calc.js?v=20261105n"></script>
-<script src="../../engines/zinda/share.js?v=20261105n"></script>
-<script src="../../engines/zinda/keypad.js?v=20261105n"></script>
-<script src="../../shared/balance-book.js?v=20261105n"></script>
-<script src="script.js?v=20261105n"></script>
+<script src="../../shared/storage-service.js?v=20261105p"></script>
+<script src="../../shared/data-service.js?v=20261105p"></script>
+<script src="../../engines/zinda/calc.js?v=20261105p"></script>
+<script src="../../engines/zinda/share.js?v=20261105p"></script>
+<script src="../../engines/zinda/keypad.js?v=20261105p"></script>
+<script src="../../shared/balance-book.js?v=20261105p"></script>
+<script src="script.js?v=20261105p"></script>
 </body>
 </html>

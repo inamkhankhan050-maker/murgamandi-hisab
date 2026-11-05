@@ -7,9 +7,9 @@
 <title>Zinda Single Customer Bill · MurgaMandi Hisab</title>
 <link rel="icon" href="../../assets/icons/logo-64.png" type="image/png">
 <link rel="apple-touch-icon" href="../../assets/icons/logo-192.png">
-<link rel="stylesheet" href="style.css?v=20261105n">
-<link rel="stylesheet" href="../../shared/balance-book.css?v=20261105n">
-<link rel="stylesheet" href="../../shared/bill-print.css?v=20261105n">
+<link rel="stylesheet" href="style.css?v=20261105p">
+<link rel="stylesheet" href="../../shared/balance-book.css?v=20261105p">
+<link rel="stylesheet" href="../../shared/bill-print.css?v=20261105p">
 </head>
 <body>
 <header class="appbar">
@@ -37,7 +37,7 @@
       </div>
       <datalist id="custList"></datalist>
       <div class="fld3">
-        <label class="fld"><span>Pieces</span><input id="sPieces" class="n" inputmode="numeric" autocomplete="off"></label>
+        <label class="fld"><span>Chicken Qty</span><input id="sPieces" class="n" inputmode="numeric" autocomplete="off"></label>
         <label class="fld"><span>Total KG</span><input id="sKgIn" class="n" inputmode="decimal" autocomplete="off"></label>
         <label class="fld"><span>Jaal KG <em>(minus)</em></span><input id="sJaal" class="n" inputmode="decimal" autocomplete="off"></label>
         <label class="fld"><span>Rate / KG (₹)</span><input id="sRate" class="n" inputmode="decimal" autocomplete="off"></label>
@@ -78,7 +78,7 @@
     <ul>
       <li>Net KG = Total KG − Jaal KG. Basic Amount = Net KG × Rate / KG.</li>
       <li>Samiti = 1% of Basic Amount, rounded down to the whole rupee.</li>
-      <li>Labour by average bird size (Net KG ÷ Pieces): below 2.50 kg → Pieces ÷ 9 × ₹5 · 2.50–2.99 kg → ÷ 8 × ₹5 · 3.00 kg and above → ÷ 7 × ₹5.</li>
+      <li>Labour by average bird size (Net KG ÷ Chicken Qty): below 2.50 kg → Qty ÷ 9 × ₹5 · 2.50–2.99 kg → ÷ 8 × ₹5 · 3.00 kg and above → ÷ 7 × ₹5.</li>
       <li>Labour is adjusted upward (max ₹9.99) so the bill lands on a multiple of ₹10. Labour charge is automatic and cannot be edited.</li>
       <li>Balance Baaki = Pichla Balance + Aaj ka Bill − Rec Cash − Rec Online.</li>
       <li>Number boxes accept sums like 50+60.5+94.</li>
@@ -91,13 +91,13 @@
 <div class="toast" id="toast" role="status"></div>
 <div class="rcpt" id="sReceipt" aria-hidden="true"></div>
 
-<script src="../../shared/storage-service.js?v=20261105n"></script>
-<script src="../../shared/data-service.js?v=20261105n"></script>
-<script src="../../shared/bill-print.js?v=20261105n"></script>
-<script src="../../engines/zinda/calc.js?v=20261105n"></script>
-<script src="../../engines/zinda/share.js?v=20261105n"></script>
-<script src="../../engines/zinda/keypad.js?v=20261105n"></script>
-<script src="../../shared/balance-book.js?v=20261105n"></script>
-<script src="script.js?v=20261105n"></script>
+<script src="../../shared/storage-service.js?v=20261105p"></script>
+<script src="../../shared/data-service.js?v=20261105p"></script>
+<script src="../../shared/bill-print.js?v=20261105p"></script>
+<script src="../../engines/zinda/calc.js?v=20261105p"></script>
+<script src="../../engines/zinda/share.js?v=20261105p"></script>
+<script src="../../engines/zinda/keypad.js?v=20261105p"></script>
+<script src="../../shared/balance-book.js?v=20261105p"></script>
+<script src="script.js?v=20261105p"></script>
 </body>
 </html>
