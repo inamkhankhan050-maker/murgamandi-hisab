@@ -335,6 +335,41 @@
     return { open: open, close: close, render: render };
   }
 
+
+  // ---------- name picker (saved customers of this section; typing a new name still works) ----------
+  var pk = null;
+  function picker(section, root0, selector) {
+    var doc = root.document;
+    if (!pk) {
+      pk = el('div', 'bb-pk'); pk.setAttribute('role', 'listbox'); pk.hidden = true; doc.body.appendChild(pk);
+      var place = function () { if (pk.hidden || !pk._in) return; var r = pk._in.getBoundingClientRect(); pk.style.left = Math.max(4, r.left) + 'px'; pk.style.top = (r.bottom + 2) + 'px'; pk.style.width = Math.max(220, r.width) + 'px'; };
+      pk._place = place; root.addEventListener('resize', place); root.addEventListener('scroll', place, true);
+    }
+    function show(inp) {
+      var q = key(inp.value), all = list(section), rows = all.filter(function (r) { return !q || key(r.name).indexOf(q) >= 0; }).slice(0, 60);
+      pk.textContent = ''; pk._in = inp;
+      if (!all.length) { pk.hidden = true; return; }
+      if (!rows.length) { pk.appendChild(el('div', 'bb-pk-new', 'Naya customer: "' + norm(inp.value) + '"')); }
+      else if (q && !rows.some(function (r) { return key(r.name) === q; })) pk.appendChild(el('div', 'bb-pk-new', 'Naya naam likh rahe ho to bas likhte raho'));
+      rows.forEach(function (r) {
+        var it = el('div', 'bb-pk-i'); it.setAttribute('role', 'option');
+        it.appendChild(el('span', null, r.name)); it.appendChild(el('b', r.balance < 0 ? 'adv' : null, money(r.balance)));
+        it.addEventListener('mousedown', function (e) { e.preventDefault(); });
+        it.addEventListener('click', function () {
+          inp.value = r.name; pk._busy = true;
+          inp.dispatchEvent(new Event('input', { bubbles: true })); inp.dispatchEvent(new Event('change', { bubbles: true }));
+          pk._busy = false; pk.hidden = true;
+        });
+        pk.appendChild(it);
+      });
+      pk.hidden = false; pk._place();
+    }
+    var match = function (t) { return t && t.matches && t.matches(selector); };
+    root0.addEventListener('focusin', function (e) { if (match(e.target)) { e.target.removeAttribute('list'); show(e.target); } });
+    root0.addEventListener('input', function (e) { if (match(e.target) && pk._in === e.target && !pk._busy) show(e.target); });
+    root0.addEventListener('focusout', function (e) { if (match(e.target)) setTimeout(function () { if (doc.activeElement !== pk._in) pk.hidden = true; }, 150); });
+    root0.addEventListener('keydown', function (e) { if (match(e.target) && (e.key === 'Escape' || e.key === 'Enter')) pk.hidden = true; });
+  }
   root.MMHBal = { KEY: KEY, current: current, list: list, setOpening: setOpening, removeOpening: removeOpening, getOpening: getOpening,
-    ledger: ledger, fieldText: fieldText, parseAmount: parseAmount, rowsFromMatrix: rowsFromMatrix, csvToMatrix: csvToMatrix, readFile: readFile, mount: mount };
+    ledger: ledger, fieldText: fieldText, parseAmount: parseAmount, rowsFromMatrix: rowsFromMatrix, csvToMatrix: csvToMatrix, readFile: readFile, mount: mount, picker: picker };
 })(typeof window !== 'undefined' ? window : this);

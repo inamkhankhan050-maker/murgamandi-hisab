@@ -621,7 +621,7 @@
     window.ZindaShare.init(toast);
     $('shareDlg').addEventListener('keydown', function (e) { if (e.key === 'Escape') $('shareDlg').classList.remove('show'); });
     bind(); renderAll(); window.ZindaKeypad.init();
-    if (window.MMHBal) window.MMHBal.mount({ section: 'zinda', raise: true, toast: toast, confirm: function (t, b, ok, fn) { fn(); } });
+    if (window.MMHBal) { window.MMHBal.picker('zinda', document, '#body [data-f="name"]'); window.MMHBal.mount({ section: 'zinda', raise: true, toast: toast, confirm: function (t, b, ok, fn) { fn(); } }); }
     window.addEventListener('storage', function (e) { if (e.key === 'mmh.db.v2') { refreshIndex(); updateRecMeta(); } });
     if (D && D.status().corrupt) { $('storageNotice').textContent = D.status().message; $('storageNotice').classList.add('show'); }
     if (got) { $('inbox').textContent = got + ' bill' + (got === 1 ? '' : 's') + ' added from Zinda Single Customer Bill.'; $('inbox').classList.add('show'); save(); }

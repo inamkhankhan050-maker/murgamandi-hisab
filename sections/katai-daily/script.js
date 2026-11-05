@@ -487,7 +487,7 @@
     $('dDate').value = state.date;
     buildRates(); bind();
     window.KataiShare.init(toast);
-    if (window.MMHBal) window.MMHBal.mount({ section: 'katai', raise: true, toast: toast, confirm: confirmDlg });
+    if (window.MMHBal) { window.MMHBal.picker('katai', document, '#eName'); window.MMHBal.mount({ section: 'katai', raise: true, toast: toast, confirm: confirmDlg }); }
     var got = takeInbox();
     selectedId = state.customers[0] ? state.customers[0].id : null;
     refreshIndex();

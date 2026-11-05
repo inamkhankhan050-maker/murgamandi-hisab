@@ -338,7 +338,7 @@
     $('sSave').onclick = function () { saveRecord(false); };
     $('sRecent').addEventListener('click', onRecentClick);
     $('sLabour').addEventListener('input', renderSaved);
-    if (window.MMHBal) window.MMHBal.mount({ section: 'zinda', toast: toast, confirm: confirmDlg, onChange: function () { balanceHint(false); } });
+    if (window.MMHBal) { window.MMHBal.picker('zinda', document, '#sName'); window.MMHBal.mount({ section: 'zinda', toast: toast, confirm: confirmDlg, onChange: function () { balanceHint(false); } }); }
     $('sClear').onclick = function () { confirmDlg('Clear this bill?', 'All fields of this bill will be emptied.', 'Clear', clearBill); };
     $('sPrint').onclick = doPrint;
     $('sShare').onclick = shareReceipt;

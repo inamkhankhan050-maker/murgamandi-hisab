@@ -314,7 +314,7 @@
     $('kSave').onclick = function () { saveRecord(false); };
     $('kToDaily').onclick = toDaily;
     $('kRecent').addEventListener('click', onRecentClick);
-    if (window.MMHBal) window.MMHBal.mount({ section: 'katai', toast: toast, confirm: confirmDlg, onChange: function () { balanceHint(false); } });
+    if (window.MMHBal) { window.MMHBal.picker('katai', document, '#kName'); window.MMHBal.mount({ section: 'katai', toast: toast, confirm: confirmDlg, onChange: function () { balanceHint(false); } }); }
     $('kClear').onclick = function () {
       confirmDlg(function () {
         state = { name: '', date: state.date || todayISO(), lines: {}, oldBal: '', cash: '', online: '', savedId: null };
