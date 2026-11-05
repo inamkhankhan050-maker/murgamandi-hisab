@@ -272,11 +272,11 @@
         var tx = el('div', 'bp-tx'); tx.appendChild(el('b', null, f.name));
         [f.phone, f.shop, f.address].forEach(function (s) { if (s) tx.appendChild(el('span', null, s)); });
         card.appendChild(tx); view.appendChild(card);
-        var acts = el('div', 'bp-acts'), ed = el('button', 'btn', 'Edit'), rm = el('button', 'btn danger', 'Remove firm');
-        ed.type = rm.type = 'button'; ed.onclick = function () { showForm(f); };
+        var acts = el('div', 'bp-acts'), rm = el('button', 'btn danger', 'Remove firm');
+        rm.type = 'button';
         rm.onclick = function () { o.confirm('Firm details hatayein?', f.name + ' ki details (naam, phone, address, logo) is phone se hat jayengi. Saved bills nahi hatenge.', 'Remove', function () { removeFirm(); showView(); o.onChange && o.onChange(); o.toast && o.toast('Firm details hata di'); }); };
-        acts.appendChild(ed); acts.appendChild(rm); view.appendChild(acts);
-        view.appendChild(el('p', 'bp-note', 'Ye details save hain. Har bill par apne aap aayengi jab tak aap Remove na karein.'));
+        acts.appendChild(rm); view.appendChild(acts);
+        view.appendChild(el('p', 'bp-note', 'Ye details lock hain, edit nahi hongi. Har bill par apne aap aayengi.'));
       } else {
         view.appendChild(el('p', 'bp-note', 'Firm ka naam, phone aur address ek baar save karein. Har bill par apne aap aayega.'));
         var add = el('button', 'btn primary', '+ Firm details add karein'); add.type = 'button'; add.onclick = function () { showForm(null); };
@@ -286,7 +286,8 @@
     function showForm(f) {
       draft = f ? JSON.parse(JSON.stringify(f)) : { name: '', phone: '', shop: '', address: '', logo: '', stamp: '' };
       view.hidden = true; form.hidden = false; form.textContent = '';
-      form.appendChild(el('h3', null, f ? 'Firm details badlein' : 'Firm details add karein'));
+      form.appendChild(el('h3', null, 'Firm details add karein'));
+      form.appendChild(el('p', 'bp-note', 'Dhyan se bhariye: save hone ke baad edit nahi hoga.'));
       var grid = el('div', 'bp-grid');
       grid.appendChild(field('Firm / Dukaan ka naam *', 'name', 80, 'jaise SB FOOD'));
       grid.appendChild(field('Upar wali line (phone)', 'phone', 90, 'jaise NUNTUN: 8178357317'));
@@ -300,8 +301,11 @@
       cancel.onclick = showView;
       save.onclick = function () {
         if (!clean(draft.name)) { err.textContent = 'Firm ka naam bhariye'; return; }
+        var go = function () {
         if (!saveFirm(draft)) { err.textContent = 'Save nahi ho paya (storage full ya band). Logo/stamp hata kar dobara try karein.'; return; }
         showView(); o.onChange && o.onChange(); o.toast && o.toast('Firm details save ho gayi');
+        };
+        o.confirm('Firm details lock karein?', 'Save ke baad ye details edit nahi hongi. Naam, phone aur address ek baar check kar lijiye.', 'Save', go);
       };
       acts.appendChild(cancel); acts.appendChild(save); form.appendChild(acts);
       var first = form.querySelector('input'); if (first) first.focus();

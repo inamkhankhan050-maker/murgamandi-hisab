@@ -61,9 +61,9 @@ Products: Thigh, Breast, Tangri, Wings, Full Leg, Haddi, Pota, Panja, Tandoori, 
 - No labour, samiti, discount or rounding has been defined. Add a future Katai rule only in `engines/katai/calc.js`.
 
 ## Shop-style bill (Zinda Single and Katai Single)
-- Print, PDF and WhatsApp photo use one bill design: firm name, top line (phone), shop line, address, optional logo and stamp, then Qty, Weight, Particulars, Rate, Amount, totals and G. TOTAL with the amount in words. A live Bill Preview sits under the form.
+- Print, PDF and WhatsApp photo use one bill design: firm name, top line (phone), shop line, address, optional logo and stamp, then Qty, Weight, Particulars, Rate, Amount, totals and G. TOTAL with the amount in words. A live Bill Preview sits under the form; firm details and colour sit at the top of the page.
 - `shared/bill-print.js` + `shared/bill-print.css` only draw the bill. Figures come from each section's own engine. Katai bills show no labour and no samiti.
-- Firm details are saved once under `mmh.firm.v1` (shared by both bills) and stay until "Remove firm" is pressed. Old per-section firm names are moved in automatically.
+- Firm details are filled once and then locked: there is no Edit (saving asks for confirmation first). They are stored under `mmh.firm.v1` (shared by both bills); "Remove firm" is the only way to clear them. The panel sits at the top of both single-bill pages; the bill colour can still be changed and is saved automatically. Old per-section firm names are moved in automatically.
 - Bill colour (8 presets or your own) is saved automatically under `mmh.billTheme.v1`. Both keys are included in the home-page backup.
 
 ## Data model and storage
