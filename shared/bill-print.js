@@ -151,13 +151,14 @@
     if (firm.phone) text(firm.phone, PW / 2, headY + 28, 22, T.hi, 700, 'center', CW - 40);
     text(name, hasLogo ? 450 : PW / 2, headY + 95, 70, '#FFFFFF', 800, 'center', hasLogo ? 560 : CW - 40);
     if (hasLogo) {
-      var L = imgs.logo, cx = 108, cy = headY + 106, r = 48;
+      var brand = !!imgs.brand, L = imgs.logo, cx = 108, cy = headY + (brand ? 88 : 106), r = brand ? 40 : 48;
       g.save(); g.beginPath(); g.arc(cx, cy, r + 3, 0, Math.PI * 2); g.fillStyle = '#FFFFFF'; g.fill();
       g.lineWidth = 2.5; g.strokeStyle = T.head; g.stroke();
       g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.clip();
       var sc = Math.max((2 * r) / L.width, (2 * r) / L.height), dw = L.width * sc, dh = L.height * sc;
       if (L.width / L.height > 1.6 || L.height / L.width > 1.6) { sc = Math.min((2 * r) / L.width, (2 * r) / L.height); dw = L.width * sc; dh = L.height * sc; }
       g.drawImage(L, cx - dw / 2, cy - dh / 2, dw, dh); g.restore();
+      if (brand) { g.globalAlpha = 0.85; text('MurgaMandi Hisab', cx, cy + r + 17, 14, T.hi, 700, 'center', 116); g.globalAlpha = 1; }
     }
     // shop line + date
     var dy = headY + 159, dh2 = 55;
@@ -219,7 +220,7 @@
   function render(model, cb) {
     var f = model.firm || {};
     var probe = root.document.createElement('canvas'); if (!(probe.getContext && probe.getContext('2d'))) return cb(null);
-    loadImg(f.logo || DEFAULT_LOGO, function (logo) { loadImg(f.stamp, function (stamp) { var cv = null; try { cv = draw(model, { logo: logo, stamp: stamp }); } catch (e) { if (root.console) root.console.error(e); } cb(cv); }); });
+    loadImg(f.logo || DEFAULT_LOGO, function (logo) { loadImg(f.stamp, function (stamp) { var cv = null; try { cv = draw(model, { logo: logo, stamp: stamp, brand: !f.logo }); } catch (e) { if (root.console) root.console.error(e); } cb(cv); }); });
   }
 
   /** Print a canvas through the section's hidden receipt box. */
