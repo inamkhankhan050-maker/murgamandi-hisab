@@ -185,3 +185,7 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
 
 /* Labour charge is automatic and locked */
 #sLabour.lab-lock{background:#EEF2F7;color:#334155;cursor:not-allowed;font-weight:700}
+
+/* section logo in the header */
+.sec-logo{width:44px;height:44px;flex:none;border-radius:12px;background:#fff;padding:3px;box-sizing:border-box;object-fit:contain}
+@media (max-width:640px){.sec-logo{width:36px;height:36px}}

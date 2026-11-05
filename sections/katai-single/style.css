@@ -163,3 +163,7 @@ input.err{border-color:var(--err)!important;background:var(--err-soft)!important
 .t-scroll,.t-wrap{position:relative}
 @media (max-width:440px){#saveText{display:none}#saveState{padding:6px}}
 @media (max-width:640px){.appbar .brand p{display:none}.appbar .brand h1{font-size:16px;line-height:1.2}.appbar-in{gap:10px}}
+
+/* section logo in the header */
+.sec-logo{width:44px;height:44px;flex:none;border-radius:12px;background:#fff;padding:3px;box-sizing:border-box;object-fit:contain}
+@media (max-width:640px){.sec-logo{width:36px;height:36px}}
