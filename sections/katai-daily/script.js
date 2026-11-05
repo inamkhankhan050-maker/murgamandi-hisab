@@ -452,6 +452,27 @@
     window.addEventListener('beforeunload', function () { if (saveTimer) { clearTimeout(saveTimer); flush(); } });
   }
 
+  // ---------- Bills sent from Katai Single Customer Bill ----------
+  var HANDOFF_KEY = 'mmh.kataiDaily.inbox';
+  function takeInbox() {
+    if (!storage) return 0;
+    var inbox = [];
+    try { inbox = JSON.parse(storage.getItem(HANDOFF_KEY) || '[]'); } catch (e) { inbox = []; }
+    if (!Array.isArray(inbox) || !inbox.length) return 0;
+    var n = 0;
+    inbox.forEach(function (d) {
+      if (!d || typeof d !== 'object' || state.customers.length >= MAX_CUSTOMERS) return;
+      var c = { id: uid(), name: str(d.name, 80), lines: cleanLines(d.lines), oldBal: str(d.oldBal), cash: str(d.cash), online: str(d.online) };
+      K.PRODUCTS.forEach(function (p) { if (!c.lines[p.id]) { var r = state.rates[p.id]; c.lines[p.id] = { unit: r ? r.unit : 'kg', qty: '', rate: '' }; } });
+      var blank = state.customers.filter(function (x) { return !x.name.trim() && !K.PRODUCTS.some(function (p) { var l = x.lines[p.id]; return l && String(l.qty).trim(); }); })[0];
+      if (blank) { blank.name = c.name; blank.lines = c.lines; blank.oldBal = c.oldBal; blank.cash = c.cash; blank.online = c.online; }
+      else state.customers.push(c);
+      n++;
+    });
+    try { storage.removeItem(HANDOFF_KEY); } catch (e) {}
+    return n;
+  }
+
   function init() {
     if (!storage) { $('storageNotice').hidden = false; $('saveState').classList.add('off'); $('saveText').textContent = 'Not saved'; }
     if (!load()) state.date = todayISO();
@@ -459,11 +480,13 @@
     $('dDate').value = state.date;
     buildRates(); bind();
     window.KataiShare.init(toast);
+    var got = takeInbox();
     selectedId = state.customers[0] ? state.customers[0].id : null;
     refreshIndex();
     renderAll();
     if (D && D.status().corrupt) { $('storageNotice').hidden = false; $('storageNotice').textContent = D.status().message; }
     window.addEventListener('storage', function (e) { if (e.key === 'mmh.db.v2') { refreshIndex(); renderList(); } });
+    if (got) { $('inbox').textContent = got + ' bill' + (got === 1 ? '' : 's') + ' added from Katai Single Customer Bill.'; $('inbox').classList.add('show'); save(); }
   }
   try { init(); } catch (e) { toast('Something went wrong: ' + e.message); if (window.console) console.error(e); }
 

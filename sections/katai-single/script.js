@@ -310,6 +310,7 @@
     $('kName').addEventListener('change', balanceHint); $('kName').addEventListener('blur', balanceHint);
     $('kHintUse').onclick = function () { var p = +$('kHint').dataset.paise; if (!(p >= 0)) return; state.oldBal = String(p / 100); $('kOld').value = state.oldBal; render(); save(); renderSaved(); };
     $('kSave').onclick = function () { saveRecord(false); };
+    $('kToDaily').onclick = toDaily;
     $('kRecent').addEventListener('click', onRecentClick);
     $('kClear').onclick = function () {
       confirmDlg(function () {
@@ -328,6 +329,22 @@
     $('kOld').value = state.oldBal; $('kCash').value = state.cash; $('kOnline').value = state.online;
   }
 
+
+  // ---------- Send to Katai Daily Entry (queued, picked up when that page opens) ----------
+  var HANDOFF_KEY = 'mmh.kataiDaily.inbox';
+  function toDaily() {
+    var bill = K.computeBill(state.lines);
+    var any = K.PRODUCTS.some(function (p) { var l = bill.lines[p.id]; return l && l.status === 'valid'; });
+    var bad = K.PRODUCTS.some(function (p) { var l = bill.lines[p.id]; return l && (l.status === 'invalid' || l.status === 'incomplete'); });
+    if (!any || bad) { toast('Pehle product ki quantity aur rate sahi bhariye'); return; }
+    if (!storage) { toast('Storage not available in this window'); return; }
+    var data = { name: state.name.trim() || 'Customer', lines: JSON.parse(JSON.stringify(state.lines)), oldBal: state.oldBal, cash: state.cash, online: state.online };
+    var inbox = [];
+    try { inbox = JSON.parse(storage.getItem(HANDOFF_KEY) || '[]'); if (!Array.isArray(inbox)) inbox = []; } catch (e) { inbox = []; }
+    if (inbox.length >= 100) { toast('Daily inbox is full. Open Katai Daily Entry first.'); return; }
+    inbox.push(data);
+    try { storage.setItem(HANDOFF_KEY, JSON.stringify(inbox)); toast(data.name + ' will be added to Katai Daily Entry'); } catch (e) { toast('Could not save. Storage full.'); }
+  }
   function init() {
     if (!storage) { $('storageNotice').hidden = false; $('saveState').classList.add('off'); $('saveText').textContent = 'Not saved'; }
     load();

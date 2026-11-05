@@ -209,3 +209,8 @@ th{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--mute
 }
 @media (max-width:440px){#saveText{display:none}#saveState{padding:6px}}
 @media (max-width:640px){.appbar .brand p{display:none}.appbar .brand h1{font-size:16px;line-height:1.2}.appbar-in{gap:10px}}
+
+/* bills sent from Katai Single Customer Bill */
+.inbox{display:none;margin:0 0 12px;padding:10px 14px;border:1px solid #86EFAC;background:#F0FDF4;color:#166534;border-radius:12px;font-size:13px}
+.inbox.show{display:block}
+@media print{.inbox{display:none!important}}
