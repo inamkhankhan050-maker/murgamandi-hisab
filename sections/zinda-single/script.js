@@ -40,7 +40,7 @@
   function esc(s) { return String(s).replace(/[&<>"']/g, function (m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]; }); }
   function rc(k, v) { return '<div class="rc"><span class="k">' + k + '</span><span class="val">' + v + '</span></div>'; }
   function m2(p) { return C.formatINR(p, { decimals: p % 100 ? 2 : 0 }); }
-  function dueText(p) { var a = Math.abs(p), t = C.formatINR(a, { decimals: a % 100 ? 2 : 0 }); return p > 0 ? t + ' lena hai' : p < 0 ? t + ' advance' : t; }
+  function dueText(p) { var a = Math.abs(p), t = C.formatINR(a, { decimals: a % 100 ? 2 : 0 }); return p > 0 ? t + ' Debit (lena hai)' : p < 0 ? t + ' Credit (dena hai)' : t; }
   function drcr(p, n) { return n(Math.abs(p)); }
   function todayText() { var p = String(billDate || '').split('-'), d = p.length === 3 ? new Date(+p[0], +p[1] - 1, +p[2]) : new Date(); if (isNaN(d.getTime())) d = new Date(); return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); }
   var toastT;
@@ -125,11 +125,11 @@
     m.extras.push({ label: 'Labour', value: n(r.labourAdjusted) });
     m.extras.push({ label: 'Total Bill', value: r.final == null ? '' : n(r.final), hl: 1 });
     var led = L.any && L.ok, rec = led ? L.received : 0;
-    m.extras.push({ label: led && L.oldBal < 0 ? 'Pichla Advance' : 'Pichla Baaki', value: led && L.oldBal ? drcr(L.oldBal, n) : '—' });
+    m.extras.push({ label: led && L.oldBal < 0 ? 'Pichla Credit (Advance)' : 'Pichla Debit (Baaki)', value: led && L.oldBal ? drcr(L.oldBal, n) : '—' });
     m.extras.push({ label: 'Received', value: rec ? n(rec) : '—' });
     var g = led ? L.due : r.final;
     if (g != null) {
-      if (led) { m.grand.label = g < 0 ? 'AAPKA ADVANCE' : 'AAPKO DENA HAI'; m.grand.value = drcr(g, n); m.words = C.amountInWords(Math.abs(g)) + (g < 0 ? ' (aapka advance jama hai)' : ' (aapko dena hai)'); }
+      if (led) { m.grand.label = g < 0 ? 'CREDIT (Aapka advance)' : 'DEBIT (Aapko dena hai)'; m.grand.value = drcr(g, n); m.words = C.amountInWords(Math.abs(g)) + (g < 0 ? ' (Credit - aapka advance jama hai)' : ' (Debit - aapko dena hai)'); }
       else { m.grand.value = n(g); m.words = C.amountInWords(Math.max(g, 0)); }
     }
     return { model: m, ok: true };

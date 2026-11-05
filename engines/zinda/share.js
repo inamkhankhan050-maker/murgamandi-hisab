@@ -48,7 +48,7 @@
       m.led.forEach(function (r) { y += 36; txt(r[0], P + 4, y, 22, '#222', r[2] ? 700 : 400); txt(r[1], W - P - 4, y, 22, '#111', r[2] ? 700 : 500, 'right'); y += 10; line(y); });
       line(y, '#B45309', 3);
       y += 50; var bc = m.balPaise < 0 ? '#1D4ED8' : '#B45309';
-      txt(m.balPaise < 0 ? 'Aapka Advance' : 'Aapko Dena Hai', P + 4, y, 30, bc, 700); txt(m.balText, W - P - 4, y, 32, bc, 700, 'right'); y += 16;
+      txt(m.balPaise < 0 ? 'Credit (Aapka advance)' : 'Debit (Aapko dena hai)', P + 4, y, 28, bc, 700); txt(m.balText, W - P - 4, y, 32, bc, 700, 'right'); y += 16;
     }
     if (m.words) { y += 40; txt(m.words, W - P - 4, y, 20, '#444', 400, 'right'); }
     y += 30; g.strokeStyle = '#999'; g.setLineDash([6, 5]); g.beginPath(); g.moveTo(P, y); g.lineTo(W - P, y); g.stroke(); g.setLineDash([]);

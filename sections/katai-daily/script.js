@@ -61,7 +61,7 @@
   function calc(c) { var bill = K.computeBill(c.lines); return { bill: bill, L: LG(c, bill.total) }; }
   var toastT;
   var autoMap = {}, prevNames = {};
-  function balT(p) { var a = Math.abs(p); return p > 0 ? K.money(a) + ' lena hai' : p < 0 ? K.money(a) + ' advance' : K.money(0); }
+  function balT(p) { var a = Math.abs(p); return p > 0 ? K.money(a) + ' Debit (lena hai)' : p < 0 ? K.money(a) + ' Credit (dena hai)' : K.money(0); }
   function LG(r, f) { return window.MMHBal ? window.MMHBal.ledger(K.ledger, r, f) : K.ledger(r, f); }
   function toast(msg) { var t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, 2600); }
   function confirmDlg(title, text, yes, onYes) {

@@ -55,7 +55,7 @@
   }
   function heading() { return $('kFirm').value.trim() || 'MurgaMandi Hisab'; }
   var toastT;
-  function balT(p) { var a = Math.abs(p); return p > 0 ? K.money(a) + ' lena hai' : p < 0 ? K.money(a) + ' advance' : K.money(0); }
+  function balT(p) { var a = Math.abs(p); return p > 0 ? K.money(a) + ' Debit (lena hai)' : p < 0 ? K.money(a) + ' Credit (dena hai)' : K.money(0); }
   function LG(r, f) { return window.MMHBal ? window.MMHBal.ledger(K.ledger, r, f) : K.ledger(r, f); }
   function toast(msg) { var t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, 2600); }
   function confirmDlg(title, text, yes, onYes) {
@@ -145,10 +145,10 @@
     var L = LG({ oldBal: state.oldBal, cash: state.cash, online: state.online }, bill.total), led = L.any && L.ok;
     m.total = { qty: anyPcs ? K.plainQty(pcs) : '', weight: anyKg ? K.plainQty(kg) : '', amount: n(bill.total) };
     var drcr = function (p) { return n(Math.abs(p)); };
-    m.extras.push({ label: led && L.oldBal < 0 ? 'Pichla Advance' : 'Pichla Baaki', value: led && L.oldBal ? drcr(L.oldBal) : '—' });
+    m.extras.push({ label: led && L.oldBal < 0 ? 'Pichla Credit (Advance)' : 'Pichla Debit (Baaki)', value: led && L.oldBal ? drcr(L.oldBal) : '—' });
     m.extras.push({ label: 'Received', value: led && L.received ? n(L.received) : '—' });
     var g = led ? L.balance : bill.total;
-    if (led) { m.grand.label = g < 0 ? 'AAPKA ADVANCE' : 'AAPKO DENA HAI'; m.grand.value = drcr(g); m.words = K.amountInWords(Math.abs(g)) + (g < 0 ? ' (aapka advance jama hai)' : ' (aapko dena hai)'); }
+    if (led) { m.grand.label = g < 0 ? 'CREDIT (Aapka advance)' : 'DEBIT (Aapko dena hai)'; m.grand.value = drcr(g); m.words = K.amountInWords(Math.abs(g)) + (g < 0 ? ' (Credit - aapka advance jama hai)' : ' (Debit - aapko dena hai)'); }
     else { m.grand.value = n(g); m.words = K.amountInWords(Math.max(g, 0)); }
     return { model: m, ok: true };
   }

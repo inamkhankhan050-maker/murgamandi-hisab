@@ -134,7 +134,7 @@
     if (billBlank && row.name.trim()) { var l = LG(row, 0); return l.any ? l : null; }
     return null;
   }
-  function dueText(p) { var a = Math.abs(p), t = C.formatINR(a, { decimals: a % 100 ? 2 : 0 }); return p > 0 ? t + ' lena hai' : p < 0 ? t + ' advance' : t; }
+  function dueText(p) { var a = Math.abs(p), t = C.formatINR(a, { decimals: a % 100 ? 2 : 0 }); return p > 0 ? t + ' Debit (lena hai)' : p < 0 ? t + ' Credit (dena hai)' : t; }
   function updateLedgerCell(row, el, c) {
     var l = LG(row, 0);
     ['oldBal', 'cash', 'online'].forEach(function (f) { var i = el.querySelector('[data-f="' + f + '"]'); i.classList.toggle('err', !!l.errors[f]); i.title = l.errors[f] || ''; });
@@ -542,10 +542,10 @@
     m.rows.push(['Labour', C.labourRuleText(v.pieces, r.labourDivisor) + ' + round-off ' + C.formatINR(r.adjustment, { decimals: 2 }), C.formatINR(r.labourAdjusted, { decimals: 2 })]);
     m.billText = r.final == null ? '—' : C.formatINR(r.final, { decimals: r.final % 100 ? 2 : 0 });
     if (L.any && L.ok) {
-      m.led = [[L.oldBal < 0 ? 'Pichla Advance' : 'Pichla Baaki', m2(Math.abs(L.oldBal))], ['Total Due', m2(L.due + L.received), 1], ['Rec Cash', '− ' + m2(L.cash)], ['Rec Online', '− ' + m2(L.online)]];
+      m.led = [[L.oldBal < 0 ? 'Pichla Credit (Advance)' : 'Pichla Debit (Baaki)', m2(Math.abs(L.oldBal))], ['Total Due', m2(L.due + L.received), 1], ['Rec Cash', '− ' + m2(L.cash)], ['Rec Online', '− ' + m2(L.online)]];
       m.balText = m2(Math.abs(L.due)); m.balPaise = L.due;
     }
-    m.words = r.final == null ? '' : C.amountInWords(L.any && L.ok ? Math.abs(L.due) : r.final) + (L.any && L.ok ? (L.due < 0 ? ' (aapka advance jama hai)' : ' (aapko dena hai)') : '');
+    m.words = r.final == null ? '' : C.amountInWords(L.any && L.ok ? Math.abs(L.due) : r.final) + (L.any && L.ok ? (L.due < 0 ? ' (Credit - aapka advance jama hai)' : ' (Debit - aapko dena hai)') : '');
     return m;
   }
   function shareRow(id) {
