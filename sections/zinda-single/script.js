@@ -74,6 +74,7 @@
 
   // ---------- Render ----------
   function render() {
+    schedulePreview();
     var row = singleRow(), v = C.validateRow(row), out = $('sOut');
     ['pieces', 'kg', 'jaal', 'rate'].forEach(function (f) { $(sF[f]).classList.toggle('err', !!v.errors[f]); });
     var sl = C.ledger(row, 0);
@@ -107,7 +108,37 @@
     out.innerHTML = h;
   }
 
-  // ---------- Print receipt ----------
+  // ---------- Shop-style bill (shared/bill-print.js draws it; figures come from the Zinda engine above) ----------
+  var B = window.MMHBill || null, prevT = null;
+  function firmNow() { var f = B && B.getFirm(FIRM_KEY); if (f) return f; var n = $('sFirm').value.trim(); return n ? { name: n } : null; }
+  function billModel() {
+    var row = singleRow(), v = C.validateRow(row), n = B.num;
+    var m = { firm: firmNow(), date: billDate || todayISO(), name: $('sName').value.trim() || 'Customer', rows: [], minRows: 4, total: {}, extras: [], grand: { label: 'G. TOTAL', value: '' }, words: '', fallbackTitle: 'MurgaMandi Hisab' };
+    if (!v.ok) { m.name = $('sName').value.trim(); m.extras = [{ label: 'Average' }, { label: 'Samiti' }, { label: 'Labour' }, { label: 'Total Bill', hl: 1 }, { label: 'Last Balance' }, { label: 'Received' }]; return { model: m, ok: false }; }
+    var r = calcSingle(v), L = C.ledger(row, r.final), avg = C.averageKg(v.netGrams, v.pieces);
+    m.rows.push({ qty: C.formatInt(v.pieces), weight: C.formatKg(v.netGrams), part: 'Chicken', partNote: v.jaalGrams ? 'Total ' + C.formatKg(v.grams) + ' − Jaal ' + C.formatKg(v.jaalGrams) + ' kg' : '',
+      rate: n(v.ratePaise), amount: n(r.basic), note: 'avg ' + avg + ' · ÷' + r.labourDivisor });
+    m.total = { qty: C.formatInt(v.pieces), weight: C.formatKg(v.netGrams), amount: n(r.basic) };
+    m.extras.push({ label: 'Average', value: avg + ' kg' });
+    m.extras.push({ label: 'Samiti', value: n(r.samiti) });
+    m.extras.push({ label: 'Labour', mid: r.manual ? 'manual' : v.pieces + '÷' + r.labourDivisor + '×5 + round ₹' + (r.adjustment / 100).toFixed(2), value: n(r.labourAdjusted) });
+    m.extras.push({ label: 'Total Bill', value: r.final == null ? '' : n(r.final), hl: 1 });
+    var led = L.any && L.ok, rec = led ? L.received : 0;
+    m.extras.push({ label: 'Last Balance', value: led && L.oldBal ? n(L.oldBal) : '—' });
+    m.extras.push({ label: 'Received', mid: led && L.cash && L.online ? 'Cash ' + n(L.cash) + ' + Online ' + n(L.online) : (led && L.online ? 'Online' : (led && L.cash ? 'Cash' : '')), value: rec ? n(rec) : '—' });
+    var g = led ? L.due : r.final;
+    if (g != null) { m.grand.value = g < 0 ? 'Adv ' + n(-g) : n(g); m.words = C.amountInWords(Math.max(g, 0)); }
+    return { model: m, ok: true };
+  }
+  function schedulePreview() {
+    if (!B || !$('billPrev')) return;
+    clearTimeout(prevT);
+    prevT = setTimeout(function () {
+      B.render(billModel().model, function (cv) { var box = $('billPrev'); if (!cv) { box.textContent = ''; return; } box.textContent = ''; box.appendChild(cv); });
+    }, 180);
+  }
+
+  // ---------- Print receipt (plain fallback when canvas is not available) ----------
   function buildReceipt() {
     var row = singleRow(), v = C.validateRow(row);
     if (!v.ok) return false;
@@ -138,13 +169,19 @@
     $('sReceipt').innerHTML = h;
     return true;
   }
-  function doPrint() {
+  function plainPrint() {
     if (!buildReceipt()) { toast('Pehle pieces, KG aur rate sahi bhariye'); return; }
+    $('sReceipt').classList.remove('bill-mode');
     document.body.classList.add('print-rcpt');
     var done = function () { document.body.classList.remove('print-rcpt'); window.removeEventListener('afterprint', done); };
     window.addEventListener('afterprint', done);
     try { window.print(); } catch (e) { toast('Printing is blocked in this window.'); }
     setTimeout(function () { if (!window.matchMedia || !window.matchMedia('print').matches) done(); }, 1500);
+  }
+  function doPrint() {
+    if (!B) return plainPrint();
+    var bm = billModel(); if (!bm.ok) { toast('Pehle pieces, KG aur rate sahi bhariye'); return; }
+    B.render(bm.model, function (cv) { if (!cv) return plainPrint(); B.printCanvas(cv, $('sReceipt'), function () { toast('Printing is blocked in this window.'); }); });
   }
 
   // ---------- WhatsApp PDF ----------
@@ -170,7 +207,9 @@
   function shareReceipt() {
     var m = receiptModel();
     if (!m) { toast('Pehle pieces, KG aur rate sahi bhariye'); return; }
-    window.ZindaShare.share(window.ZindaShare.receiptCanvas(m), 'Bill ' + m.name + ' ' + m.date, 'Bill · ' + m.date);
+    var send = function (cv) { window.ZindaShare.share(cv || window.ZindaShare.receiptCanvas(m), 'Bill ' + m.name + ' ' + m.date, 'Bill · ' + m.date); };
+    if (!B) return send(null);
+    B.render(billModel().model, send);
   }
 
   // ---------- Send to Zinda Daily Entry (queued, picked up when that page opens) ----------
@@ -188,6 +227,7 @@
 
   function clearBill() {
     ['sName', 'sPieces', 'sKgIn', 'sJaal', 'sRate', 'sOld', 'sCash', 'sOnline', 'sLabour'].forEach(function (id) { $(id).value = ''; });
+    var ff = firmNow(); if (B && B.getFirm(FIRM_KEY)) $('sFirm').value = ff.name;
     labourManual = false; savedId = null; render(); save(); renderSaved(); balanceHint(); $('sPieces').focus();
   }
 
@@ -285,9 +325,11 @@
     if (s) { Object.keys(sF).forEach(function (f) { $(sF[f]).value = str(s[f]); }); $('sLabour').value = str(s.labour); labourManual = false; savedId = typeof s.savedId === 'string' ? s.savedId : null; billDate = /^\d{4}-\d{2}-\d{2}$/.test(s.date) ? s.date : ''; }
     if (!billDate) billDate = todayISO();
     $('sDate').value = billDate;
-    $('sDate').addEventListener('change', function () { billDate = /^\d{4}-\d{2}-\d{2}$/.test($('sDate').value) ? $('sDate').value : todayISO(); $('sDate').value = billDate; save(); renderSaved(); balanceHint(); });
-    try { $('sFirm').value = (storage && storage.getItem(FIRM_KEY)) || ''; } catch (e) {}
-    $('sFirm').addEventListener('input', function () { if (storage) try { storage.setItem(FIRM_KEY, $('sFirm').value); } catch (e) {} renderSaved(); });
+    $('sDate').addEventListener('change', function () { billDate = /^\d{4}-\d{2}-\d{2}$/.test($('sDate').value) ? $('sDate').value : todayISO(); $('sDate').value = billDate; save(); renderSaved(); balanceHint(); schedulePreview(); });
+    var syncFirm = function () { var f = B && B.getFirm(FIRM_KEY); if (f) $('sFirm').value = f.name; else if (B && !f) $('sFirm').value = ''; };
+    if (B) { syncFirm(); B.mountPanel($('firmPanel'), { legacyKey: FIRM_KEY, confirm: confirmDlg, toast: toast, onChange: function () { syncFirm(); renderSaved(); schedulePreview(); } }); }
+    else { try { $('sFirm').value = (storage && storage.getItem(FIRM_KEY)) || ''; } catch (e) {} }
+    $('sFirm').addEventListener('input', renderSaved);
     $('sLabour').addEventListener('blur', function () { if (!labourManual) render(); });
     Object.keys(sF).forEach(function (f) { $(sF[f]).addEventListener('input', function () { render(); save(); renderSaved(); }); });
     $('sName').addEventListener('change', balanceHint); $('sName').addEventListener('blur', balanceHint);

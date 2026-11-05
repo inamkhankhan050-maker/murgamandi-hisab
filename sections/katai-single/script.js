@@ -90,6 +90,7 @@
 
   // ---------- Render ----------
   function render() {
+    schedulePreview();
     var bill = K.computeBill(state.lines);
     var errs = [];
     K.PRODUCTS.forEach(function (p) {
@@ -124,7 +125,38 @@
     return { bill: bill, L: L };
   }
 
-  // ---------- Print ----------
+  // ---------- Shop-style bill (shared/bill-print.js draws it; figures come from the Katai engine only: Qty × Rate, no labour, no samiti) ----------
+  var B = window.MMHBill || null, prevT = null;
+  function firmNow() { var f = B && B.getFirm(FIRM_KEY); if (f) return f; var n = $('kFirm').value.trim(); return n ? { name: n } : null; }
+  function billModel() {
+    var bill = K.computeBill(state.lines), n = B.num;
+    var m = { firm: firmNow(), date: state.date || todayISO(), name: state.name.trim() || 'Customer', rows: [], minRows: 4, total: {}, extras: [], grand: { label: 'G. TOTAL', value: '' }, words: '', fallbackTitle: 'MurgaMandi Hisab' };
+    var pcs = 0, kg = 0, anyPcs = false, anyKg = false;
+    K.PRODUCTS.forEach(function (p) {
+      var c = bill.lines[p.id]; if (!c || c.status !== 'valid') return;
+      var q = K.plainQty(c.qty);
+      if (c.unit === 'pcs') { pcs += c.qty; anyPcs = true; } else { kg += c.qty; anyKg = true; }
+      m.rows.push({ qty: c.unit === 'pcs' ? q : '', weight: c.unit === 'pcs' ? '' : q, part: p.name, rate: n(c.ratePaise), amount: n(c.amount) });
+    });
+    var ok = !!bill.items && !bill.invalid && !bill.incomplete;
+    if (!ok) { m.name = state.name.trim(); m.rows = []; m.extras = [{ label: 'Last Balance' }, { label: 'Received' }]; return { model: m, ok: false }; }
+    var L = K.ledger({ oldBal: state.oldBal, cash: state.cash, online: state.online }, bill.total), led = L.any && L.ok;
+    m.total = { qty: anyPcs ? K.plainQty(pcs) : '', weight: anyKg ? K.plainQty(kg) : '', amount: n(bill.total) };
+    m.extras.push({ label: 'Last Balance', value: led && L.oldBal ? n(L.oldBal) : '—' });
+    m.extras.push({ label: 'Received', mid: led && L.cash && L.online ? 'Cash ' + n(L.cash) + ' + Online ' + n(L.online) : (led && L.online ? 'Online' : (led && L.cash ? 'Cash' : '')), value: led && L.received ? n(L.received) : '—' });
+    var g = led ? L.balance : bill.total;
+    m.grand.value = g < 0 ? 'Adv ' + n(-g) : n(g); m.words = K.amountInWords(Math.max(g, 0));
+    return { model: m, ok: true };
+  }
+  function schedulePreview() {
+    if (!B || !$('billPrev')) return;
+    clearTimeout(prevT);
+    prevT = setTimeout(function () {
+      B.render(billModel().model, function (cv) { var box = $('billPrev'); box.textContent = ''; if (cv) box.appendChild(cv); });
+    }, 180);
+  }
+
+  // ---------- Print (plain fallback when canvas is not available) ----------
   function buildReceipt() {
     var res = render(), bill = res.bill, L = res.L;
     if (!bill.items) return false;
@@ -139,13 +171,19 @@
     $('kReceipt').innerHTML = h;
     return true;
   }
-  function doPrint() {
+  function plainPrint() {
     if (!buildReceipt()) { toast('Pehle kam se kam ek product ki quantity aur rate bhariye'); return; }
+    $('kReceipt').classList.remove('bill-mode');
     document.body.classList.add('print-rcpt');
     var done = function () { document.body.classList.remove('print-rcpt'); window.removeEventListener('afterprint', done); };
     window.addEventListener('afterprint', done);
     try { window.print(); } catch (e) { toast('Printing is blocked in this window.'); }
     setTimeout(function () { if (!window.matchMedia || !window.matchMedia('print').matches) done(); }, 1500);
+  }
+  function doPrint() {
+    if (!B) return plainPrint();
+    var bm = billModel(); if (!bm.ok) { toast('Pehle kam se kam ek product ki quantity aur rate bhariye'); return; }
+    B.render(bm.model, function (cv) { if (!cv) return plainPrint(); B.printCanvas(cv, $('kReceipt'), function () { toast('Printing is blocked in this window.'); }); });
   }
 
   // ---------- WhatsApp PDF ----------
@@ -159,7 +197,9 @@
     var name = state.name.trim() || 'Customer';
     var cv = window.KataiShare.billCanvas({ heading: heading(), title: 'Katai Bill', customer: name, date: dateText(),
       cols: [{ h: '#', w: 50 }, { h: 'Product', w: 260, b: 1 }, { h: 'Qty', w: 170, r: 1 }, { h: 'Rate', w: 150, r: 1 }, { h: 'Amount', w: 190, r: 1, b: 1 }], rows: rows, sum: sum });
-    window.KataiShare.share(cv, 'Katai Bill ' + name + ' ' + dateText(), 'Katai Bill · ' + name + ' · ' + dateText());
+    var send = function (c2) { window.KataiShare.share(c2 || cv, 'Katai Bill ' + name + ' ' + dateText(), 'Katai Bill · ' + name + ' · ' + dateText()); };
+    if (!B) return send(null);
+    B.render(billModel().model, send);
   }
 
   // ---------- Saved records (shared data service) ----------
@@ -265,8 +305,8 @@
     });
     var map = { kName: 'name', kOld: 'oldBal', kCash: 'cash', kOnline: 'online' };
     Object.keys(map).forEach(function (id) { $(id).addEventListener('input', function () { state[map[id]] = $(id).value.slice(0, 80); render(); save(); renderSaved(); }); });
-    $('kDate').addEventListener('change', function () { state.date = /^\d{4}-\d{2}-\d{2}$/.test($('kDate').value) ? $('kDate').value : todayISO(); $('kDate').value = state.date; save(); renderSaved(); balanceHint(); });
-    $('kFirm').addEventListener('input', function () { if (storage) try { storage.setItem(FIRM_KEY, $('kFirm').value.slice(0, 80)); } catch (e) {} renderSaved(); });
+    $('kDate').addEventListener('change', function () { state.date = /^\d{4}-\d{2}-\d{2}$/.test($('kDate').value) ? $('kDate').value : todayISO(); $('kDate').value = state.date; save(); renderSaved(); balanceHint(); schedulePreview(); });
+    $('kFirm').addEventListener('input', renderSaved);
     $('kName').addEventListener('change', balanceHint); $('kName').addEventListener('blur', balanceHint);
     $('kHintUse').onclick = function () { var p = +$('kHint').dataset.paise; if (!(p >= 0)) return; state.oldBal = String(p / 100); $('kOld').value = state.oldBal; render(); save(); renderSaved(); };
     $('kSave').onclick = function () { saveRecord(false); };
@@ -274,6 +314,7 @@
     $('kClear').onclick = function () {
       confirmDlg(function () {
         state = { name: '', date: state.date || todayISO(), lines: {}, oldBal: '', cash: '', online: '', savedId: null };
+        var ff = B && B.getFirm(FIRM_KEY); if (ff) $('kFirm').value = ff.name;
         fill(); buildRows(); render(); save(); renderSaved(); balanceHint(); $('kName').focus();
       });
     };
@@ -291,7 +332,9 @@
     if (!storage) { $('storageNotice').hidden = false; $('saveState').classList.add('off'); $('saveText').textContent = 'Not saved'; }
     load();
     if (!state.date) state.date = todayISO();
-    try { $('kFirm').value = (storage && storage.getItem(FIRM_KEY)) || ''; } catch (e) {}
+    var syncFirm = function () { var f = B && B.getFirm(FIRM_KEY); $('kFirm').value = f ? f.name : ''; };
+    if (B) { syncFirm(); B.mountPanel($('firmPanel'), { legacyKey: FIRM_KEY, confirm: confirmDlg, toast: toast, onChange: function () { syncFirm(); renderSaved(); schedulePreview(); } }); }
+    else { try { $('kFirm').value = (storage && storage.getItem(FIRM_KEY)) || ''; } catch (e) {} }
     fill(); buildRows(); bind();
     window.KataiShare.init(toast);
     render(); renderSaved(); renderRecent(); customerList(); balanceHint();
