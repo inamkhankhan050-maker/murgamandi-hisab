@@ -624,6 +624,7 @@
       state.date = /^\d{4}-\d{2}-\d{2}$/.test(saved.date) ? saved.date : '';
     } else for (var bi = 0; bi < 5; bi++) state.rows.push(newRow({ rate: '' }));
     if (!state.date) state.date = todayISO();
+    if (state.date < todayISO() && !state.rows.some(function (r) { return String(r.name || '').trim(); })) state.date = todayISO(); // auto date on empty sheet
     $('dDate').value = state.date;
     refreshIndex();
     var got = takeInbox();

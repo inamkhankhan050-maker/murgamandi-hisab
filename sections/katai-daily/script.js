@@ -562,6 +562,7 @@
   function init() {
     if (!storage) { $('storageNotice').hidden = false; $('saveState').classList.add('off'); $('saveText').textContent = 'Not saved'; }
     if (!load()) state.date = todayISO();
+    if (state.date < todayISO() && !state.customers.some(function (c) { return String(c.name || '').trim(); })) state.date = todayISO(); // auto date on empty sheet
     try { $('dFirm').value = (storage && storage.getItem(FIRM_KEY)) || ''; } catch (e) {}
     $('dDate').value = state.date; $('liveKg').value = state.liveKg;
     buildRates(); bind();

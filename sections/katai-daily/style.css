@@ -436,3 +436,13 @@ html,body{max-width:100%;overflow-x:clip}
 }
 @media (max-width:767px){.gtable tbody td.g-x:not(.g-pay):not(.g-fin)::before{content:'Pichla Balance';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10.5px}}
 @media (max-width:767px){.gtable tbody td.g-x:not(.g-pay):not(.g-fin){grid-column:span 2}.gtable tbody td.g-x:not(.g-pay):not(.g-fin)::before{font-size:11.5px}.gtable tbody td.g-fin{grid-column:1/-1;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;font-size:12.5px}.gtable tbody td.g-fin::before{content:'Final';margin:0}}
+/* 2026-11-07c: 5 items per line in phone totals */
+@media (max-width:767px){
+  .gtable tfoot tr{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;padding:8px}
+  .gtable tfoot td.g-it{padding:4px 2px!important;font-size:12px!important}
+  .gtable tfoot td.g-it::before{font-size:9.5px!important;letter-spacing:-.1px}
+  .gtable tfoot td.g-it+td:not(.g-it){grid-column:1/span 2}
+  .gtable tfoot td.g-it+td:not(.g-it)+td{grid-column:span 3}
+  .gtable tfoot td.g-it+td:not(.g-it)+td+td{grid-column:1/-1}
+}
+@media (max-width:767px){.gtable tfoot td.g-it::before{white-space:normal!important;overflow:visible!important;line-height:1.05;min-height:2.1em;display:flex!important;align-items:center;justify-content:center}}

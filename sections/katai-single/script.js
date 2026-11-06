@@ -323,7 +323,7 @@
     if (window.MMHBal) { window.MMHBal.picker('katai', document, '#kName'); window.MMHBal.mount({ section: 'katai', toast: toast, confirm: confirmDlg, onChange: function () { balanceHint(false); } }); }
     $('kClear').onclick = function () {
       confirmDlg(function () {
-        state = { name: '', date: state.date || todayISO(), lines: {}, oldBal: '', cash: '', online: '', savedId: null };
+        state = { name: '', date: todayISO(), lines: {}, oldBal: '', cash: '', online: '', savedId: null };
         var ff = B && B.getFirm(FIRM_KEY); if (ff) $('kFirm').value = ff.name;
         fill(); buildRows(); render(); save(); renderSaved(); balanceHint(); $('kName').focus();
       });
@@ -358,6 +358,7 @@
     if (!storage) { $('storageNotice').hidden = false; $('saveState').classList.add('off'); $('saveText').textContent = 'Not saved'; }
     load();
     if (!state.date) state.date = todayISO();
+    if (state.date < todayISO()) { if (state.savedId) state = { name: '', date: todayISO(), lines: {}, oldBal: '', cash: '', online: '', savedId: null }; state.date = todayISO(); }
     var syncFirm = function () { var f = B && B.getFirm(FIRM_KEY); $('kFirm').value = f ? f.name : ''; };
     if (B) { syncFirm(); B.mountPanel($('firmPanel'), { legacyKey: FIRM_KEY, confirm: confirmDlg, toast: toast, onChange: function () { syncFirm(); renderSaved(); schedulePreview(); } }); }
     else { try { $('kFirm').value = (storage && storage.getItem(FIRM_KEY)) || ''; } catch (e) {} }

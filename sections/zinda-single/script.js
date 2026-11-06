@@ -232,7 +232,7 @@
   function clearBill() {
     ['sName', 'sPieces', 'sKgIn', 'sJaal', 'sRate', 'sOld', 'sCash', 'sOnline', 'sLabour'].forEach(function (id) { $(id).value = ''; });
     var ff = firmNow(); if (B && B.getFirm(FIRM_KEY)) $('sFirm').value = ff.name;
-    labourManual = false; savedId = null; render(); save(); renderSaved(); balanceHint(); $('sPieces').focus();
+    labourManual = false; savedId = null; billDate = todayISO(); $('sDate').value = billDate; render(); save(); renderSaved(); balanceHint(); $('sPieces').focus();
   }
 
   // ---------- Saved records (shared data service) ----------
@@ -332,6 +332,8 @@
     var s = load();
     if (s) { Object.keys(sF).forEach(function (f) { $(sF[f]).value = str(s[f]); }); $('sLabour').value = str(s.labour); labourManual = false; savedId = typeof s.savedId === 'string' ? s.savedId : null; billDate = /^\d{4}-\d{2}-\d{2}$/.test(s.date) ? s.date : ''; }
     if (!billDate) billDate = todayISO();
+    // auto date (user 2026-11-07): an old-day bill already saved starts fresh; any old date becomes today
+    if (billDate < todayISO()) { if (savedId) { ['sName', 'sPieces', 'sKgIn', 'sJaal', 'sRate', 'sOld', 'sCash', 'sOnline', 'sLabour'].forEach(function (id) { $(id).value = ''; }); savedId = null; } billDate = todayISO(); }
     $('sDate').value = billDate;
     $('sDate').addEventListener('change', function () { billDate = /^\d{4}-\d{2}-\d{2}$/.test($('sDate').value) ? $('sDate').value : todayISO(); $('sDate').value = billDate; save(); renderSaved(); balanceHint(); schedulePreview(); });
     var syncFirm = function () { var f = B && B.getFirm(FIRM_KEY); if (f) $('sFirm').value = f.name; else if (B && !f) $('sFirm').value = ''; };
