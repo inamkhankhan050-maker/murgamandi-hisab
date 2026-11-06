@@ -139,3 +139,8 @@ button,input{font:inherit;color:inherit}
 .g-ops .eq{background:#DBEAFE;border-color:#93C5FD;color:#1D4ED8}
 .g-ops .clr{background:#FEE2E2;border-color:#FCA5A5;color:#B91C1C}
 .g-buy-row input.bad{border-color:#B91C1C}
+
+/* phone: never wider than screen (2026-11-06) */
+html,body{max-width:100%;overflow-x:clip}
+.appbar-in{min-width:0}.appbar .brand{min-width:0}
+@media (max-width:420px){#saveState{display:none}}

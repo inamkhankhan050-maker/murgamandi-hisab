@@ -189,3 +189,9 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
 /* section logo in the header */
 .sec-logo{width:44px;height:44px;flex:none;border-radius:12px;background:#fff;padding:3px;box-sizing:border-box;object-fit:contain}
 @media (max-width:640px){.sec-logo{width:36px;height:36px}}
+.t-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+/* phone: never wider than screen (2026-11-06) */
+html,body{max-width:100%;overflow-x:clip}
+.appbar-in{min-width:0}.appbar .brand{min-width:0}
+@media (max-width:420px){#saveState{display:none}}

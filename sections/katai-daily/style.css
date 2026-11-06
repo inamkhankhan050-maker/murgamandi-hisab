@@ -407,3 +407,8 @@ th{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--mute
 }
 @media (max-width:767px){.gtable tbody td.g-fin,.gtable tbody td.g-fin *{white-space:normal!important;max-width:100%}}
 @media (max-width:767px){.gtable tbody td.g-pay{align-content:start}}
+
+/* phone: never wider than screen (2026-11-06) */
+html,body{max-width:100%;overflow-x:clip}
+.appbar-in{min-width:0}.appbar .brand{min-width:0}
+@media (max-width:420px){#saveState{display:none}}

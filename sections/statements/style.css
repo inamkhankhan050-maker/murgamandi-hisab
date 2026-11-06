@@ -147,3 +147,8 @@ input.err,select.err{border-color:var(--err)!important;background:var(--err-soft
 @media (max-width:640px){.fl,.fl[data-for=month]{flex:1 1 140px}.fl.grow{flex:1 1 100%}}
 @media (max-width:640px){.appbar .brand p{display:none}.appbar .brand h1{font-size:16px;line-height:1.2}.appbar-in{gap:10px}}
 @media (max-width:640px){.dc-ctl .fl{flex:1 1 100%}}
+
+/* phone: never wider than screen (2026-11-06) */
+html,body{max-width:100%;overflow-x:clip}
+.appbar-in{min-width:0}.appbar .brand{min-width:0}
+@media (max-width:420px){#saveState{display:none}}

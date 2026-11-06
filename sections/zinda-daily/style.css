@@ -363,3 +363,8 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
 .ex-btns{display:flex;flex-wrap:wrap;gap:8px}
 @media (max-width:600px){.ex-btns .btn{flex:1 1 45%}}
 @media print{.exportbar{display:none!important}}
+
+/* phone: never wider than screen (2026-11-06) */
+html,body{max-width:100%;overflow-x:clip}
+.appbar-in{min-width:0}.appbar .brand{min-width:0}
+@media (max-width:420px){#saveState{display:none}}
