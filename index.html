@@ -8,7 +8,10 @@
 <title>MurgaMandi Hisab</title>
 <link rel="icon" href="assets/icons/logo-64.png" type="image/png">
 <link rel="apple-touch-icon" href="assets/icons/logo-192.png">
-<link rel="stylesheet" href="style.css?v=20261107h">
+<link rel="stylesheet" href="style.css?v=20261107i">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1e4fd8">
+<script>if("serviceWorker"in navigator)addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});</script>
 </head>
 <body>
 <header class="top" id="top">
@@ -113,6 +116,8 @@
   </section>
 
 
+  <button id="installApp" type="button" hidden style="display:block;width:100%;margin:12px 0;padding:14px;border:0;border-radius:14px;background:#16a34a;color:#fff;font:700 17px system-ui,sans-serif">📲 Phone mein App install karo</button>
+  <script>(function(){var ev,b=document.getElementById('installApp');addEventListener('beforeinstallprompt',function(e){e.preventDefault();ev=e;b.hidden=false;});b.addEventListener('click',function(){if(!ev)return;ev.prompt();ev.userChoice.then(function(){ev=null;b.hidden=true;});});addEventListener('appinstalled',function(){b.hidden=true;});})();</script>
   <section class="card backup" aria-labelledby="bkH">
     <div class="bk-ic"><img src="assets/icons/backup.svg" alt="" width="34" height="34"></div>
     <div class="bk-t">
@@ -132,8 +137,8 @@
 <div class="dlg-bg" id="dlg"><div class="dlg" role="alertdialog" aria-labelledby="dlgT" aria-describedby="dlgP"><h4 id="dlgT">Restore backup?</h4><p id="dlgP"></p><div class="acts"><button class="btn" id="dlgNo" type="button">Cancel</button><button class="btn danger-fill" id="dlgYes" type="button">Replace my data</button></div></div></div>
 <div class="toast" id="toast" role="status"></div>
 
-<script src="shared/storage-service.js?v=20261107h"></script>
-<script src="shared/data-service.js?v=20261107h"></script>
-<script src="script.js?v=20261107h"></script>
+<script src="shared/storage-service.js?v=20261107i"></script>
+<script src="shared/data-service.js?v=20261107i"></script>
+<script src="script.js?v=20261107i"></script>
 </body>
 </html>
