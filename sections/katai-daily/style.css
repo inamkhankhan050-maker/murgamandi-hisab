@@ -423,3 +423,14 @@ html,body{max-width:100%;overflow-x:clip}
   .gtable tfoot td.g-x,.gtable tfoot td.g-fx{grid-column:span 2}
   .gtable tfoot *{font-size:inherit}
 }
+/* 2026-11-07b: totals as clear boxes (items in white boxes, summary boxes on own row) */
+@media (max-width:767px){
+  .gtable tfoot tr{gap:6px;padding:10px}
+  .gtable tfoot td.g-it{background:#fff!important;border:1px solid rgba(15,23,42,.10)!important;border-radius:8px;padding:5px 6px!important;text-align:center!important}
+  .gtable tfoot td.g-it::before{text-align:center}
+  .gtable tfoot td.g-it+td:not(.g-it){grid-column:1/span 2}
+  .gtable tfoot td:not(.g-it):not(.g-nm):not(.g-act){background:rgba(255,255,255,.65)!important;border:1px solid rgba(15,23,42,.18)!important;border-left:4px solid #0B4F8A!important;border-radius:8px;padding:6px 8px!important;font-size:14px!important}
+  .gtable tfoot td:not(.g-it):not(.g-nm)::before{font-size:11px!important;color:#334155}
+  .gtable tfoot td.g-it+td:not(.g-it){margin-top:4px}
+  .gtable tfoot td.g-it+td:not(.g-it)+td{margin-top:4px}
+}
