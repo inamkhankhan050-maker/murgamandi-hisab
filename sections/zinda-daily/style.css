@@ -368,3 +368,5 @@ body.calc-on:has(.calc-bar.pad){padding-bottom:300px}
 html,body{max-width:100%;overflow-x:clip}
 .appbar-in{min-width:0}.appbar .brand{min-width:0}
 @media (max-width:420px){#saveState{display:none}}
+/* numbers on left (user 2026-11-06) */ .cell-in,.cell-in.n,.pay-in,.pill input{text-align:left!important}
+/* all entries start from left (user 2026-11-06) */ input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea{text-align:left!important}

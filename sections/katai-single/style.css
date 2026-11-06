@@ -172,3 +172,13 @@ input.err{border-color:var(--err)!important;background:var(--err-soft)!important
 html,body{max-width:100%;overflow-x:clip}
 .appbar-in{min-width:0}.appbar .brand{min-width:0}
 @media (max-width:420px){#saveState{display:none}}
+/* 2026-11-06: phone fit + numbers on left (user) */
+input.n{text-align:left}
+.single,.k-single,.layout{grid-template-columns:minmax(0,1fr)}
+@media (min-width:1000px){.single{grid-template-columns:minmax(320px,440px) minmax(0,1fr)}}
+.single>*,.wrap>*,.card,.card *{min-width:0}
+@media (max-width:640px){
+  .btn{white-space:normal;line-height:1.2}
+  .card .big,.card [class*="bal"],.card [class*="grand"]{overflow-wrap:anywhere;white-space:normal}
+}
+/* all entries start from left (user 2026-11-06) */ input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea{text-align:left!important}

@@ -73,3 +73,4 @@ body.bb-lock{overflow:hidden}
 .bb-h3{font-size:14px;margin:14px 0 4px;color:#334155}
 .bb-wa{background:#16A34A;color:#fff;border-color:#16A34A}
 .bb-pay .bb-act{display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+/* all entries start from left (user 2026-11-06) */ input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea{text-align:left!important}

@@ -412,3 +412,5 @@ th{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--mute
 html,body{max-width:100%;overflow-x:clip}
 .appbar-in{min-width:0}.appbar .brand{min-width:0}
 @media (max-width:420px){#saveState{display:none}}
+/* numbers on left (user 2026-11-06) */ input.n,.gtable input{text-align:left}
+/* all entries start from left (user 2026-11-06) */ input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea{text-align:left!important}
