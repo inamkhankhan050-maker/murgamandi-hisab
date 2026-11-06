@@ -68,7 +68,14 @@
     document.addEventListener('keydown', function (e) { if (e.key === 'Enter' && cur && e.target === cur && C.hasExpr(cur.value)) { e.preventDefault(); settle(cur); show(); } });
     bar.addEventListener('pointerdown', function (e) { e.preventDefault(); });
     bar.addEventListener('mousedown', function (e) { e.preventDefault(); });
+    var lpT = null, lpDone = false;
+    bar.addEventListener('pointerdown', function (e) {
+      var b = e.target.closest('button'); lpDone = false; clearTimeout(lpT);
+      if (b && b.dataset.op === '⌫' && cur) lpT = setTimeout(function () { lpDone = true; cur.value = ''; fire(cur); show(); cur.focus(); }, 500);
+    });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (t) { bar.addEventListener(t, function () { clearTimeout(lpT); }); });
     bar.addEventListener('click', function (e) {
+      if (lpDone) { lpDone = false; return; }
       var b = e.target.closest('button'); if (!b || !cur) return;
       var op = b.dataset.op, v = cur.value, len = v.length,
         st = cur.selectionStart == null ? len : cur.selectionStart, en = cur.selectionEnd == null ? len : cur.selectionEnd;

@@ -231,3 +231,16 @@ input.n{text-align:left}
 .cb-keys.pad .cb-clr,.cb-keys.pad .cb-pct,.cb-keys.pad .cb-del{background:#E5E7EB;color:#111827;font-size:24px;font-weight:600}
 .cb-keys.pad .cb-eq{font-size:34px}
 @media (max-height:700px){.cb-keys.pad button{max-height:58px;aspect-ratio:auto;height:58px;border-radius:29px}}
+
+/* 2026-11-07: smaller phone header + slightly smaller keypad so form stays visible */
+@media (max-width:640px){
+  .appbar-in{padding:6px 10px;gap:8px}
+  .appbar .brand h1{font-size:14px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sec-logo{width:30px;height:30px;border-radius:8px}
+  .appbar .btn,.appbar a.btn{padding:6px 10px;min-height:34px;font-size:14px}
+}
+.cb-keys.pad{gap:7px 12px}
+.cb-keys.pad button{max-height:60px;font-size:26px}
+.calc-bar.pad .cb-top{padding:0 6px 6px}
+.calc-bar.pad .cb-top button{height:32px}
+@media (max-height:700px){.cb-keys.pad button{max-height:50px;height:50px}}
