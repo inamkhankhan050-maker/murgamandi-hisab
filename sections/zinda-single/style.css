@@ -218,3 +218,16 @@ input.n{text-align:left}
 .cb-keys.pad .cb-eq{background:#F97316;color:#fff;font-size:30px}
 .cb-keys.pad .cb-done{background:#1E3A8A;color:#fff;font-size:17px}
 @media (max-width:360px){.cb-keys.pad button{height:46px}}
+
+/* standard phone-calculator size (user 2026-11-07): AC % ⌫ ÷ / 789× / 456− / 123+ / 00 0 . = ; Next + Done in top strip */
+.calc-bar.pad .cb-top{align-items:center;padding:2px 6px 8px}
+.calc-bar.pad .cb-top button{border:0;border-radius:18px;height:36px;padding:0 14px;font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation}
+.calc-bar.pad .cb-top .cb-next{background:#E5E7EB;color:#111827}
+.calc-bar.pad .cb-top .cb-done{background:#1E3A8A;color:#fff}
+.calc-bar.pad .cb-res{min-width:0}
+.cb-keys.pad{gap:10px 12px;max-width:420px;padding:0 6px}
+.cb-keys.pad button{height:auto;aspect-ratio:1/1;max-height:76px;border-radius:50%;font-size:28px;font-weight:500}
+.cb-keys.pad .op{font-size:32px;font-weight:500}
+.cb-keys.pad .cb-clr,.cb-keys.pad .cb-pct,.cb-keys.pad .cb-del{background:#E5E7EB;color:#111827;font-size:24px;font-weight:600}
+.cb-keys.pad .cb-eq{font-size:34px}
+@media (max-height:700px){.cb-keys.pad button{max-height:58px;aspect-ratio:auto;height:58px;border-radius:29px}}

@@ -15,14 +15,15 @@
     try { touchPad = window.matchMedia && window.matchMedia('(pointer: coarse)').matches; } catch (e) {}
     var bar = document.createElement('div'); bar.id = 'calcBar'; bar.className = 'calc-bar' + (touchPad ? ' pad' : '');
     var K = function (k, cls, lbl) { return '<button type="button" data-op="' + k + '"' + (cls ? ' class="' + cls + '"' : '') + '>' + (lbl || k) + '</button>'; };
-    bar.innerHTML = '<div class="cb-top"><span class="cb-lbl" id="cbLbl"></span><span class="cb-res" id="cbRes"></span></div>' +
+    bar.innerHTML = '<div class="cb-top"><span class="cb-lbl" id="cbLbl"></span><span class="cb-res" id="cbRes"></span>' +
+      (touchPad ? K('next', 'cb-next', 'Next ›') + K('done', 'cb-done', 'Done') : '') + '</div>' +
       (touchPad
         ? '<div class="cb-keys pad">' +
-          K('C', 'cb-clr', 'AC') + K('⌫', 'cb-del') + K('next', 'cb-next', 'Next ›') + K('÷', 'op') +
+          K('C', 'cb-clr', 'AC') + K('%', 'cb-pct') + K('⌫', 'cb-del') + K('÷', 'op') +
           K('7') + K('8') + K('9') + K('×', 'op') +
           K('4') + K('5') + K('6') + K('−', 'op') +
           K('1') + K('2') + K('3') + K('+', 'op') +
-          K('done', 'cb-done', 'Done') + K('0') + K('.') + K('=', 'cb-eq') + '</div>'
+          K('00') + K('0') + K('.') + K('=', 'cb-eq') + '</div>'
         : '<div class="cb-keys">' + K('+', 'op') + K('−', 'op') + K('×', 'op') + K('÷', 'op') + K('⌫', 'cb-del') + K('=', 'cb-eq') + '</div>');
     document.body.appendChild(bar);
     var cur = null;
@@ -73,6 +74,7 @@
         st = cur.selectionStart == null ? len : cur.selectionStart, en = cur.selectionEnd == null ? len : cur.selectionEnd;
       if (touchPad && document.activeElement !== cur) { st = en = len; }
       if (op === '=') { settle(cur); show(); cur.focus(); return; }
+      if (op === '%') { settle(cur); var pn = parseFloat(cur.value); if (!isNaN(pn)) cur.value = String(+(pn / 100).toFixed(4)); fire(cur); show(); cur.focus(); return; }
       if (op === 'done') { settle(cur); cur.blur(); close(); return; }
       if (op === 'next') {
         settle(cur); var list = numInputs(), i = list.indexOf(cur), nx = list[i + 1];
