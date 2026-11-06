@@ -458,7 +458,7 @@
         if (root.MMHBill && (root.ZindaShare || root.KataiShare)) td.appendChild(sh);
         td.appendChild(del); tr.appendChild(td); t.appendChild(tr);
       });
-      done.appendChild(el('div', 'bb-tot', ps.length + ' entry · Cash ' + money(c) + ' · Online ' + money(o) + ' · Kul ' + money(c + o)));
+      done.appendChild(el('div', 'bb-tot', ps.length + ' entry · Cash ' + money(c) + ' · Online ' + money(o) + ' · Total ' + money(c + o)));
       done.appendChild(t);
     }
     function receiptModel(p) {
@@ -470,7 +470,7 @@
       m.extras.push({ label: p.prevBalance < 0 ? 'Pichla Credit (Advance)' : 'Pichla Debit (Baaki)', value: p.prevBalance ? n(Math.abs(p.prevBalance)) : '0' });
       m.extras.push({ label: 'Jama Cash', value: p.cash ? n(p.cash) : '—' });
       m.extras.push({ label: 'Jama Online', value: p.online ? n(p.online) : '—' });
-      m.extras.push({ label: 'Kul Jama', value: n(p.cash + p.online), hl: 1 });
+      m.extras.push({ label: 'Total Jama', value: n(p.cash + p.online), hl: 1 });
       var g = p.balance;
       m.grand = { label: g < 0 ? 'CREDIT (Aapka advance)' : 'DEBIT (Aapko dena hai)', value: n(Math.abs(g)) };
       m.words = w(g) + (g < 0 ? ' (Credit - aapka advance jama hai)' : ' (Debit - aapko dena hai)');

@@ -259,14 +259,14 @@
       var cellL = function (lab, val, cls) { var td = el('td', 'g-x ra g-fx ' + (cls || '')); td.appendChild(el('small', null, lab)); td.appendChild(el('b', null, val)); tr.appendChild(td); };
       if (ri === 0) { cellL('Debit', K.money(dc.oDr), 'dr'); cellL('Cash', K.money(tot.cash)); cellL('Debit (lena)', K.money(dc.bDr), 'dr'); }
       else if (ri === 1) { cellL('Credit', K.money(dc.oCr), 'cr'); cellL('Online', K.money(tot.online)); cellL('Credit (dena)', K.money(dc.bCr), 'cr'); }
-      else { cellL('Net', shortBal(tot.old)); cellL('Kul Jama', K.money(tot.rec)); cellL('Net · Bill ' + K.money(tot.bill), shortBal(tot.bal)); }
+      else { cellL('Net', shortBal(tot.old)); cellL('Total Jama', K.money(tot.rec)); cellL('Net · Bill ' + K.money(tot.bill), shortBal(tot.bal)); }
       tr.appendChild(el('td', 'g-act')); f.appendChild(tr);
     });
     var live = liveKg(), kgSum = 0, pr = el('tr', 'g-ft g-ft3');
     pr.appendChild(el('td', 'g-nm', 'Percentage'));
     K.PRODUCTS.forEach(function (p) { var x = pt[p.id]; kgSum += x.kg; var pc = el('td', 'g-it ra g-pc', x.kg && live ? pct(x.kg, live) : '—'); pc.dataset.l = p.name; pr.appendChild(pc); });
     var cellP = function (lab, val) { var td = el('td', 'g-x ra g-fx'); td.appendChild(el('small', null, lab)); td.appendChild(el('b', null, val)); pr.appendChild(td); };
-    cellP('Zinda murga', live ? K.qtyText(live, 'kg') : 'kg likhiye ↑'); cellP('Kul katai', K.qtyText(kgSum, 'kg')); cellP('Kul percentage', kgSum && live ? pct(kgSum, live) : '—');
+    cellP('Zinda murga', live ? K.qtyText(live, 'kg') : 'kg likhiye ↑'); cellP('Total katai', K.qtyText(kgSum, 'kg')); cellP('Total percentage', kgSum && live ? pct(kgSum, live) : '—');
     pr.appendChild(el('td', 'g-act')); f.appendChild(pr);
     $('tCust').textContent = String(tot.n); $('tRec').textContent = K.money(tot.rec); $('tRecSplit').textContent = 'Cash ' + K.money(tot.cash) + ' · Online ' + K.money(tot.online);
     $('tBal').textContent = balT(tot.bal); $('tBill').textContent = K.money(tot.bill); $('tWords').textContent = K.amountInWords(tot.bill);

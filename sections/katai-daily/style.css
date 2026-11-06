@@ -434,3 +434,5 @@ html,body{max-width:100%;overflow-x:clip}
   .gtable tfoot td.g-it+td:not(.g-it){margin-top:4px}
   .gtable tfoot td.g-it+td:not(.g-it)+td{margin-top:4px}
 }
+@media (max-width:767px){.gtable tbody td.g-x:not(.g-pay):not(.g-fin)::before{content:'Pichla Balance';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10.5px}}
+@media (max-width:767px){.gtable tbody td.g-x:not(.g-pay):not(.g-fin){grid-column:span 2}.gtable tbody td.g-x:not(.g-pay):not(.g-fin)::before{font-size:11.5px}.gtable tbody td.g-fin{grid-column:1/-1;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;font-size:12.5px}.gtable tbody td.g-fin::before{content:'Final';margin:0}}
