@@ -414,3 +414,12 @@ html,body{max-width:100%;overflow-x:clip}
 @media (max-width:420px){#saveState{display:none}}
 /* numbers on left (user 2026-11-06) */ input.n,.gtable input{text-align:left}
 /* all entries start from left (user 2026-11-06) */ input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea{text-align:left!important}
+/* 2026-11-07: compact phone totals (user: too long on phone) */
+@media (max-width:767px){
+  .gtable tfoot tr{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px 6px;padding:8px 10px;margin-bottom:8px;border-radius:10px}
+  .gtable tfoot td.g-nm{font-size:14px;margin-bottom:2px}
+  .gtable tfoot td{font-size:12.5px!important;line-height:1.2;font-weight:700}
+  .gtable tfoot td[data-l]::before{font-size:10px!important;font-weight:600;margin-bottom:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#64748B}
+  .gtable tfoot td.g-x,.gtable tfoot td.g-fx{grid-column:span 2}
+  .gtable tfoot *{font-size:inherit}
+}
