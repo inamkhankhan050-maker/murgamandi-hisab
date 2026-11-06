@@ -18,10 +18,11 @@
     bar.innerHTML = '<div class="cb-top"><span class="cb-lbl" id="cbLbl"></span><span class="cb-res" id="cbRes"></span></div>' +
       (touchPad
         ? '<div class="cb-keys pad">' +
-          K('7') + K('8') + K('9') + K('÷', 'op') + K('⌫', 'cb-del') +
-          K('4') + K('5') + K('6') + K('×', 'op') + K('C', 'cb-clr') +
-          K('1') + K('2') + K('3') + K('−', 'op') + K('next', 'cb-next', 'Next ›') +
-          K('.') + K('0') + K('=', 'cb-eq') + K('+', 'op') + K('done', 'cb-done', 'Done') + '</div>'
+          K('C', 'cb-clr', 'AC') + K('⌫', 'cb-del') + K('next', 'cb-next', 'Next ›') + K('÷', 'op') +
+          K('7') + K('8') + K('9') + K('×', 'op') +
+          K('4') + K('5') + K('6') + K('−', 'op') +
+          K('1') + K('2') + K('3') + K('+', 'op') +
+          K('done', 'cb-done', 'Done') + K('0') + K('.') + K('=', 'cb-eq') + '</div>'
         : '<div class="cb-keys">' + K('+', 'op') + K('−', 'op') + K('×', 'op') + K('÷', 'op') + K('⌫', 'cb-del') + K('=', 'cb-eq') + '</div>');
     document.body.appendChild(bar);
     var cur = null;
