@@ -47,12 +47,20 @@
     }
     function open(el) {
       cur = el; bar.classList.add('show'); document.body.classList.add('calc-on'); show();
+      if (!kpHist) { try { history.pushState({ mmhKp: 1 }, ''); kpHist = true; } catch (x) {} }
       if (touchPad) setTimeout(function () {
         var rb = el.getBoundingClientRect(), top = window.innerHeight - bar.offsetHeight - 12;
         if (rb.bottom > top) window.scrollBy({ top: rb.bottom - top, behavior: 'smooth' });
       }, 30);
     }
-    function close() { bar.classList.remove('show'); document.body.classList.remove('calc-on'); cur = null; }
+    var kpHist = false;
+    function hide() { bar.classList.remove('show'); document.body.classList.remove('calc-on'); cur = null; }
+    function close() { hide(); if (kpHist) { kpHist = false; if (history.state && history.state.mmhKp) history.back(); } }
+    // Phone Back button: first closes the calculator, next Back leaves the page.
+    window.addEventListener('popstate', function () {
+      if (!kpHist) return; kpHist = false;
+      var el = cur; if (el) { settle(el); hide(); el.blur(); } else hide();
+    });
     function numInputs() { return Array.prototype.filter.call(document.querySelectorAll('input'), function (i) { return isNumIn(i) && i.offsetParent !== null && !i.disabled; }); }
     function prep(el) { if (touchPad && isNumIn(el) && el.getAttribute('inputmode') !== 'none') { el.setAttribute('data-im', el.getAttribute('inputmode')); el.setAttribute('inputmode', 'none'); } }
     if (touchPad) {
