@@ -107,7 +107,11 @@ button,input{font:inherit;color:inherit}
   .brand-t small{font-size:10px;letter-spacing:.1em}
   .today{display:none}
   .b-nav{width:30px;height:40px;font-size:24px}.b-nav.prev{left:6px}.b-nav.next{right:6px}
-  .menu a{font-size:13px;padding:11px 9px}
+  .menu{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));overflow:visible;padding:4px 6px;gap:0}
+  .menu a{font-size:12px;letter-spacing:0;padding:9px 2px;text-align:center;white-space:nowrap;border-bottom-width:2px}
+  .glance>.g-card:last-child{grid-column:1/-1}
+  .g-buy{grid-column:1/-1}
+  .g-ops button{min-height:38px}
   .search{padding:2px 12px 12px}.s-ic{right:12px}
   .wrap{padding:4px 12px 20px}
   .sec-h.big{font-size:26px;margin:26px 0 14px}
@@ -129,12 +133,12 @@ button,input{font:inherit;color:inherit}
 
 .g-buy{border-color:#93C5FD}
 .g-buy-row{display:flex;gap:6px;margin:4px 0 2px}
-.g-buy-row input{flex:1;min-width:0;min-height:40px;padding:6px 10px;border:2px solid #1D4ED8;border-radius:10px;font-size:18px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.g-buy-row input{flex:1;min-width:0;min-height:40px;padding:6px 10px;border:2px solid #1D4ED8;border-radius:10px;font-size:18px;font-weight:700;text-align:left;font-variant-numeric:tabular-nums}
 .g-buy-btn{min-height:40px;padding:6px 14px;border:0;border-radius:10px;background:#1D4ED8;color:#fff;font-weight:700;cursor:pointer}
 .g-pl.profit{background:#ECFDF5;border-color:#6EE7B7}.g-pl.profit .g-n{color:#047857}
 .g-pl.loss{background:#FEF2F2;border-color:#FCA5A5}.g-pl.loss .g-n{color:#B91C1C}
 .g-ops{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin:2px 0}
-.g-ops button{min-height:32px;border:1px solid #CBD5E1;border-radius:8px;background:#F1F5F9;font-weight:800;font-size:16px;cursor:pointer;color:#0F172A}
+.g-ops button{min-width:0;padding:0;min-height:32px;border:1px solid #CBD5E1;border-radius:8px;background:#F1F5F9;font-weight:800;font-size:16px;cursor:pointer;color:#0F172A}
 .g-ops button:hover{background:#E2E8F0}
 .g-ops .eq{background:#DBEAFE;border-color:#93C5FD;color:#1D4ED8}
 .g-ops .clr{background:#FEE2E2;border-color:#FCA5A5;color:#B91C1C}
