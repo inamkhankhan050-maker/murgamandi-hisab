@@ -244,3 +244,9 @@ input.n{text-align:left}
 .calc-bar.pad .cb-top{padding:0 6px 6px}
 .calc-bar.pad .cb-top button{height:32px}
 @media (max-height:700px){.cb-keys.pad button{max-height:50px;height:50px}}
+/* phone: final balance as a clean box (label on top, amount below) */
+@media (max-width:640px){
+  .rc.big.due-r{flex-direction:column;align-items:flex-start;gap:4px;background:#FFF7ED;border:1px solid #FED7AA;border-top:3px solid var(--due);border-radius:12px;padding:12px 14px;margin-top:10px}
+  .rc.big.due-r .k{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;overflow-wrap:normal;word-break:normal}
+  .rc.big.due-r .val{font-size:20px !important;line-height:1.25;white-space:normal;overflow-wrap:normal;word-break:normal}
+}

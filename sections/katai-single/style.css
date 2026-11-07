@@ -182,3 +182,9 @@ input.n{text-align:left}
   .card .big,.card [class*="bal"],.card [class*="grand"]{overflow-wrap:anywhere;white-space:normal}
 }
 /* all entries start from left (user 2026-11-06) */ input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea{text-align:left!important}
+/* phone: final balance as a clean box (label on top, amount below) */
+@media (max-width:640px){
+  .rc.big.due-r{flex-direction:column;align-items:flex-start;gap:4px;background:#FFF7ED;border:1px solid #FED7AA;border-top:3px solid var(--due);border-radius:12px;padding:12px 14px;margin-top:10px}
+  .rc.big.due-r .k{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;overflow-wrap:normal;word-break:normal}
+  .rc.big.due-r .val{font-size:20px !important;line-height:1.25;white-space:normal;overflow-wrap:normal;word-break:normal}
+}
